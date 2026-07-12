@@ -68,40 +68,62 @@
     <None Remove="build_output.txt" />
   </ItemGroup>
 
-  <!-- Auto-increment build number on every build -->
-  <Target Name="IncrementBuildNumber" BeforeTargets="BeforeBuild">
+  <PropertyGroup>
+    <VersionFile>$(MSBuildProjectDirectory)\version.txt</VersionFile>
+    <VersionStampFile>$(MSBuildProjectDirectory)\.version-build-stamp</VersionStampFile>
+  </PropertyGroup>
+
+  <Target Name="DetectVersionBump" BeforeTargets="IncrementBuildNumber">
+    <ReadLinesFromFile File="$(VersionFile)" Condition="Exists('$(VersionFile)')">
+      <Output TaskParameter="Lines" PropertyName="StampCurrentVersion" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(VersionStampFile)" Condition="Exists('$(VersionStampFile)')">
+      <Output TaskParameter="Lines" PropertyName="StampPreviousVersion" />
+    </ReadLinesFromFile>
     <PropertyGroup>
-      <VersionFile>$(MSBuildProjectDirectory)\version.txt</VersionFile>
+      <VersionWasBumped Condition="Exists('$(VersionStampFile)') and '$(StampCurrentVersion)' != '$(StampPreviousVersion)'">true</VersionWasBumped>
     </PropertyGroup>
-    
-    <!-- Read current version from file -->
+  </Target>
+
+  <Target Name="IncrementBuildNumber" BeforeTargets="BeforeBuild">
     <ReadLinesFromFile File="$(VersionFile)">
       <Output TaskParameter="Lines" PropertyName="CurrentVersion" />
     </ReadLinesFromFile>
-    
-    <!-- Parse version components -->
+
     <PropertyGroup>
       <VersionMajor>$(CurrentVersion.Split('.')[0])</VersionMajor>
       <VersionMinor>$(CurrentVersion.Split('.')[1])</VersionMinor>
       <VersionPatch>$(CurrentVersion.Split('.')[2])</VersionPatch>
-      
-      <!-- Increment patch number using arithmetic -->
       <VersionPatchInt>$([System.Int32]::Parse($(VersionPatch)))</VersionPatchInt>
-      <NewPatchNumber>$([System.Int32]::Parse($(VersionPatch)).ToString())</NewPatchNumber>
-      <NewVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)</NewVersion>
+      <ShouldAutoBumpPatch Condition="'$(Configuration)' == 'Release' and Exists('$(VersionStampFile)') and '$(VersionWasBumped)' != 'true'">true</ShouldAutoBumpPatch>
+      <NewPatchNumber Condition="'$(ShouldAutoBumpPatch)' == 'true'">$([MSBuild]::Add($(VersionPatchInt), 1))</NewPatchNumber>
+      <NewPatchNumber Condition="'$(ShouldAutoBumpPatch)' != 'true'">$(VersionPatch)</NewPatchNumber>
+      <NewVersion>$(VersionMajor).$(VersionMinor).$(NewPatchNumber)</NewVersion>
     </PropertyGroup>
-    
-    <!-- Write new version back to file -->
-    <WriteLinesToFile File="$(VersionFile)" Lines="$(NewVersion)" Overwrite="true" />
-    
-    <!-- Set assembly version properties -->
+
+    <WriteLinesToFile File="$(VersionFile)" Lines="$(NewVersion)" Overwrite="true" Condition="'$(ShouldAutoBumpPatch)' == 'true'" />
+
     <PropertyGroup>
       <AssemblyVersion>$(NewVersion)</AssemblyVersion>
       <FileVersion>$(NewVersion)</FileVersion>
       <InformationalVersion>$(NewVersion)</InformationalVersion>
       <Version>$(NewVersion)</Version>
     </PropertyGroup>
-    
+
     <Message Text="Build version: $(NewVersion)" Importance="high" />
+    <Message Text="VPM version auto-bumped to $(NewVersion) (Release build)." Importance="high" Condition="'$(ShouldAutoBumpPatch)' == 'true'" />
+  </Target>
+
+  <Target Name="VersionBumpReleaseReminder" AfterTargets="Build" BeforeTargets="UpdateVersionStamp" Condition="'$(VersionWasBumped)' == 'true'">
+    <Warning Text="VPM version manually set to $(NewVersion). Run build.bat to create release/VPM.exe, then commit version.txt + release/VPM.exe and push main to publish the GitHub release." />
+    <Message Text="VPM RELEASE REMINDER: version manually set to $(NewVersion). Run build.bat, commit version.txt + release/VPM.exe, push main." Importance="high" />
+  </Target>
+
+  <Target Name="ReleasePublishReminder" AfterTargets="Build" BeforeTargets="UpdateVersionStamp" Condition="'$(Configuration)' == 'Release' and '$(ShouldAutoBumpPatch)' == 'true'">
+    <Message Text="VPM RELEASE REMINDER: version auto-bumped to $(NewVersion). Commit version.txt + release/VPM.exe after build.bat, then push main." Importance="high" />
+  </Target>
+
+  <Target Name="UpdateVersionStamp" AfterTargets="Build" Condition="'$(NewVersion)' != ''">
+    <WriteLinesToFile File="$(VersionStampFile)" Lines="$(NewVersion)" Overwrite="true" />
   </Target>
 </Project>

@@ -19,6 +19,11 @@ REM Clean up extracted native DLLs from output folder
 del /q .build\*.dll 2>nul
 del /q .build\Microsoft.Web.WebView2.*.xml 2>nul
 
+REM Copy release binary for GitHub Actions upload
+if not exist release mkdir release
+copy /Y .build\VPM.exe release\VPM.exe >nul
+
 echo.
 echo Build complete in .build folder.
+echo Release binary copied to release\VPM.exe
 pause

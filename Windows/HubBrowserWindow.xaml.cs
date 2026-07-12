@@ -21,6 +21,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Win32;
 using VPM.Models;
 using VPM.Services;
 
@@ -79,6 +80,7 @@ namespace VPM.Windows
 
         private bool _scrollToTopOnNextResults = false;
         private bool _allowResultsBringIntoView = false;
+        private List<string> _missingDepsExportList = new List<string>();
 
         private async Task LoadAllTagsAsync()
         {
@@ -2329,6 +2331,8 @@ namespace VPM.Windows
                 LoadSubDependenciesButton.Visibility = Visibility.Visible;
             }
 
+            SetMissingDepsActionsPanelVisible(false);
+
             // Set basic info
             DetailTitle.Text = detail.Title ?? "";
             DetailOpenInBrowserButton.Tag = detail.ResourceId;
@@ -4220,6 +4224,7 @@ namespace VPM.Windows
                 }
                 
                 // Update UI
+                SetMissingDepsActionsPanelVisible(false);
                 DetailTitle.Text = $"📦 Available Updates ({updatesAvailable.Count})";
                 DetailOpenInBrowserButton.Visibility = Visibility.Collapsed;
                 DetailOpenInBrowserButton.Tag = null;
@@ -4430,12 +4435,14 @@ namespace VPM.Windows
                 }
                 
                 // Update UI
+                SetMissingDepsExportList(missingDepsList);
                 DetailTitle.Text = $"🔗 Missing Dependencies ({foundCount} available, {notFoundCount} not found)";
                 DetailOpenInBrowserButton.Visibility = Visibility.Collapsed;
                 DetailOpenInBrowserButton.Tag = null;
                 DetailCopyHubLinkButton.Visibility = Visibility.Collapsed;
                 DetailCopyHubLinkButton.Tag = null;
                 DetailCreator.Text = $"Found {foundCount} of {missingDeps.Count} missing dependencies on Hub";
+                SetMissingDepsActionsPanelVisible(true);
                 DetailCreator.Foreground = new SolidColorBrush(Colors.White);  // Normal text, not blue
                 DetailCreator.TextDecorations = null;  // Remove underline
                 DetailCreator.Cursor = Cursors.Arrow;  // Not clickable
@@ -4524,6 +4531,101 @@ namespace VPM.Windows
             DetailCreator.TextDecorations = null;
             DetailCreator.Cursor = Cursors.Arrow;
             DetailCreator.ToolTip = null;
+        }
+
+        private void SetMissingDepsExportList(IEnumerable<string> dependencies)
+        {
+            _missingDepsExportList = dependencies
+                .Where(dep => !string.IsNullOrWhiteSpace(dep))
+                .OrderBy(dep => dep, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private void SetMissingDepsActionsPanelVisible(bool visible)
+        {
+            if (MissingDepsActionsPanel == null)
+                return;
+
+            MissingDepsActionsPanel.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            if (!visible)
+                _missingDepsExportList.Clear();
+        }
+
+        private string GetMissingDepsExportText()
+        {
+            return string.Join(Environment.NewLine, _missingDepsExportList);
+        }
+
+        private void MissingDepsSaveListButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_missingDepsExportList.Count == 0)
+            {
+                StatusText.Text = "No missing dependencies to save";
+                return;
+            }
+
+            try
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Title = "Save Missing Dependencies List",
+                    FileName = $"missing_dependencies_{DateTime.Now:yyyy-MM-dd}.txt",
+                    Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                    DefaultExt = ".txt"
+                };
+
+                if (dialog.ShowDialog(this) != true)
+                    return;
+
+                File.WriteAllText(dialog.FileName, GetMissingDepsExportText());
+                StatusText.Text = $"Saved {_missingDepsExportList.Count} missing dependencies to file";
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = $"Failed to save list: {ex.Message}";
+                MessageBox.Show($"Failed to save list:\n\n{ex.Message}", "Save Failed",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void MissingDepsCopyListButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_missingDepsExportList.Count == 0)
+            {
+                StatusText.Text = "No missing dependencies to copy";
+                return;
+            }
+
+            try
+            {
+                Clipboard.SetText(GetMissingDepsExportText());
+                StatusText.Text = $"Copied {_missingDepsExportList.Count} missing dependencies to clipboard";
+
+                if (MissingDepsCopyListButton != null)
+                {
+                    var oldContent = MissingDepsCopyListButton.Content;
+                    var oldBg = MissingDepsCopyListButton.Background;
+                    var oldBorder = MissingDepsCopyListButton.BorderBrush;
+
+                    MissingDepsCopyListButton.Content = " ✓ Copied! ";
+                    MissingDepsCopyListButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF2E7D32"));
+                    MissingDepsCopyListButton.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF4CAF50"));
+                    MissingDepsCopyListButton.IsEnabled = false;
+
+                    await Task.Delay(900);
+
+                    MissingDepsCopyListButton.Content = oldContent;
+                    MissingDepsCopyListButton.Background = oldBg;
+                    MissingDepsCopyListButton.BorderBrush = oldBorder;
+                    MissingDepsCopyListButton.IsEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = $"Failed to copy list: {ex.Message}";
+                MessageBox.Show($"Failed to copy list:\n\n{ex.Message}", "Copy Failed",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         #endregion

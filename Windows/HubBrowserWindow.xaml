@@ -2073,6 +2073,38 @@
                                 Visibility="Collapsed" />
                         </StackPanel>
 
+                        <!--  Missing Dependencies Export Actions  -->
+                        <Grid
+                            x:Name="MissingDepsActionsPanel"
+                            MaxWidth="420"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                x:Name="MissingDepsSaveListButton"
+                                Grid.Column="0"
+                                Margin="0,0,4,0"
+                                Padding="8,4"
+                                HorizontalAlignment="Stretch"
+                                Click="MissingDepsSaveListButton_Click"
+                                Content="💾 Save list to file"
+                                FontSize="12"
+                                ToolTip="Save missing dependencies list to a text file" />
+                            <Button
+                                x:Name="MissingDepsCopyListButton"
+                                Grid.Column="1"
+                                Margin="4,0,0,0"
+                                Padding="8,4"
+                                HorizontalAlignment="Stretch"
+                                Click="MissingDepsCopyListButton_Click"
+                                Content="📋 Copy list to clipboard"
+                                FontSize="12"
+                                ToolTip="Copy missing dependencies list to clipboard" />
+                        </Grid>
+
                         <!--  Navigation Stack Controls Row  -->
                         <StackPanel
                             x:Name="DetailStackPanel"
