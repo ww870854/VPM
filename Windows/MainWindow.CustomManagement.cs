@@ -66,17 +66,22 @@ namespace VPM
             }
             _customAtomLoadStarted = true;
 
+            // Only show loading overlay when in Custom mode
+            var isCustomMode = _currentContentMode == "Custom";
+
             try
             {
-                // Show loading overlay
-                Application.Current.Dispatcher.Invoke(() =>
+                if (isCustomMode)
                 {
-                    CustomAtomLoadingText.Text = "Scanning custom content...";
-                    CustomAtomLoadingProgress.IsIndeterminate = true;
-                    CustomAtomLoadingCount.Text = "";
-                    CustomAtomLoadingOverlay.Visibility = Visibility.Visible;
-                    CustomAtomDataGrid.Visibility = Visibility.Collapsed;
-                });
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        CustomAtomLoadingText.Text = "Scanning custom content...";
+                        CustomAtomLoadingProgress.IsIndeterminate = true;
+                        CustomAtomLoadingCount.Text = "";
+                        CustomAtomLoadingOverlay.Visibility = Visibility.Visible;
+                        CustomAtomDataGrid.Visibility = Visibility.Collapsed;
+                    });
+                }
 
                 await Task.Run(() =>
                 {
@@ -119,19 +124,25 @@ namespace VPM
                             PopulatePresetStatusFilter();
                         }
 
-                        // Hide loading overlay, show data grid
-                        CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
-                        CustomAtomDataGrid.Visibility = Visibility.Visible;
+                        // Hide loading overlay, show data grid (only if we showed it)
+                        if (isCustomMode)
+                        {
+                            CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
+                            CustomAtomDataGrid.Visibility = Visibility.Visible;
+                        }
                     });
                 });
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                if (isCustomMode)
                 {
-                    CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
-                    CustomAtomDataGrid.Visibility = Visibility.Visible;
-                });
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
+                        CustomAtomDataGrid.Visibility = Visibility.Visible;
+                    });
+                }
                 SetStatus($"Error loading custom items: {ex.Message}");
             }
         }
