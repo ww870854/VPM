@@ -1416,7 +1416,7 @@
                                                         FontSize="10"
                                                         Foreground="#E57373"
                                                         ToolTip="Number of dependencies required"
-                                                        Visibility="{Binding HasDependencies, Converter={StaticResource BoolToVis}}">
+                                                        Visibility="{Binding ShowsDependencyCount, Converter={StaticResource BoolToVis}}">
                                                         <Run Text="📦" />
                                                         <Run Text="{Binding DependencyDisplay, Mode=OneWay}" />
                                                     </TextBlock>

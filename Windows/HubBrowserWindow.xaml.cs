@@ -2102,6 +2102,10 @@ namespace VPM.Windows
                     _currentResource = resource;  // Store the resource for later updates
                     _currentResourceId = resource.ResourceId;  // Store for WebView navigation
 
+                    // Detail API may report hubDownloadable=true even when search marked the item external.
+                    if (resource.IsExternallyHosted)
+                        detail.HubDownloadable = false;
+
                     _currentDependencies.Clear();
                     _currentIndirectDependencies.Clear();
                     _hasLoadedSubDependencies = false;
@@ -2110,43 +2114,51 @@ namespace VPM.Windows
                     
                     PopulateDetailPanel(detail);
                     ExpandPanel();
-                    
-                    // Start background dependency inspection
-                    _dependencyInspectionCts?.Cancel();
-                    _dependencyInspectionCts = new CancellationTokenSource();
-                    var token = _dependencyInspectionCts.Token;
-                    
-                    _ = Task.Run(async () => 
-                    {
-                        try 
-                        {
-                            // Short delay to prioritize UI rendering
-                            await Task.Delay(200, token);
-                            
-                            var includeIndirect = _hubService.HasCachedIndirectDependencies(detail);
-                            var resolution = await _hubService.InspectPackageDependenciesTwoLevelAsync(detail, includeIndirect: includeIndirect, token);
-                            
-                            if (token.IsCancellationRequested) return;
 
-                            await Dispatcher.InvokeAsync(() => 
+                    _dependencyInspectionCts?.Cancel();
+
+                    if (!resource.IsExternallyHosted)
+                    {
+                        _ = ApplyDetailLibraryStatusAsync(resource, detail);
+
+                        // Start background dependency inspection
+                        _dependencyInspectionCts = new CancellationTokenSource();
+                        var token = _dependencyInspectionCts.Token;
+                        
+                        _ = Task.Run(async () => 
+                        {
+                            try 
                             {
-                                if (token.IsCancellationRequested) return;
+                                // Short delay to prioritize UI rendering
+                                await Task.Delay(200, token);
                                 
-                                // Only update if we are still viewing this detail object
-                                if (_currentDetail == detail)
+                                var includeIndirect = _hubService.HasCachedIndirectDependencies(detail);
+                                var resolution = await _hubService.InspectPackageDependenciesTwoLevelAsync(detail, includeIndirect: includeIndirect, token);
+                                
+                                if (token.IsCancellationRequested) return;
+
+                                await Dispatcher.InvokeAsync(() => 
                                 {
+                                    if (token.IsCancellationRequested) return;
+                                    
+                                    // Only update if we are still viewing this detail object
+                                    if (_currentDetail == detail)
+                                    {
                                     if (includeIndirect) _hasLoadedSubDependencies = true;
                                     _allowDependencyPlaceholderUpdate = false;
                                     UpdateDependenciesPanel(detail, resolution);
+                                    if (_currentResource != null)
+                                        _ = ApplyDetailLibraryStatusAsync(_currentResource, detail);
                                 }
-                            });
-                        }
-                        catch (OperationCanceledException) { }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"[HubBrowserWindow] Dependency inspection failed: {ex}");
-                        }
-                    }, token);
+                                });
+                            }
+                            catch (OperationCanceledException) { }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"[HubBrowserWindow] Dependency inspection failed: {ex}");
+                            }
+                        }, token);
+                    }
                     
                     // Push new state to stack (this is the new current item)
                     PushToDetailStack(detail, resource,
@@ -2178,6 +2190,11 @@ namespace VPM.Windows
 
         private void UpdateDependenciesPanel(HubResourceDetail detail, HubDependencyResolution resolution)
         {
+            try
+            {
+                if (IsViewingExternalResource())
+                    return;
+
             if (LoadSubDependenciesButton != null)
             {
                 LoadSubDependenciesButton.IsEnabled = !_isSubDependencyLoading && !_hasLoadedSubDependencies;
@@ -2210,10 +2227,10 @@ namespace VPM.Windows
                 return;
             }
 
-            var directCount = resolution?.DirectDependencies?.Count ?? 0;
-            var indirectCount = resolution?.IndirectDependencies?.Count ?? 0;
+            var directCount = CountListableDependencyGroups(resolution?.DirectDependencies);
+            var indirectCount = CountListableDependencyGroups(resolution?.IndirectDependencies);
 
-            // Stats - Update dependency count display (direct deps only)
+            // Stats - only show count when we can actually list dependency files
             if (directCount > 0)
             {
                 DetailDependencies.Text = $"📦 {directCount} dep{(directCount > 1 ? "s" : "")}";
@@ -2300,9 +2317,12 @@ namespace VPM.Windows
             {
                 LoadSubDependenciesButton.Visibility = Visibility.Visible;
             }
-            
-            UpdateDownloadAllButton();
-            UpdateCancelAllButtonVisibility();
+            }
+            finally
+            {
+                UpdateDownloadAllButton();
+                UpdateCancelAllButtonVisibility();
+            }
         }
 
         private void PopulateDetailPanel(HubResourceDetail detail)
@@ -2470,7 +2490,9 @@ namespace VPM.Windows
             
             // Badges
             DetailInLibraryBadge.Visibility = detail.InLibrary ? Visibility.Visible : Visibility.Collapsed;
-            DetailUpdateBadge.Visibility = detail.UpdateAvailable ? Visibility.Visible : Visibility.Collapsed;
+            DetailUpdateBadge.Visibility = detail.InLibrary && detail.UpdateAvailable
+                ? Visibility.Visible
+                : Visibility.Collapsed;
             DetailExternalBadge.Visibility = detail.IsExternallyHosted ? Visibility.Visible : Visibility.Collapsed;
             
             // Show/hide promotional link button
@@ -2503,13 +2525,30 @@ namespace VPM.Windows
             
             DetailFilesControl.ItemsSource = CollectionViewSource.GetDefaultView(_currentFiles);
 
-            if (detail.Dependencies != null && detail.Dependencies.Count > 0)
+            if (IsViewingExternalResource())
             {
+                _allowDependencyPlaceholderUpdate = true;
+                _currentDependencies.Clear();
+                _currentIndirectDependencies.Clear();
+                DetailDependencies.Visibility = Visibility.Collapsed;
+                DependenciesHeader.Visibility = Visibility.Collapsed;
+                DetailDependenciesControl.ItemsSource = null;
+                IndirectDependenciesHeader.Visibility = Visibility.Collapsed;
+                DetailIndirectDependenciesControl.ItemsSource = null;
+                if (LoadSubDependenciesButton != null)
+                    LoadSubDependenciesButton.Visibility = Visibility.Collapsed;
+            }
+            else if (detail.Dependencies != null && detail.Dependencies.Count > 0)
+            {
+                if (LoadSubDependenciesButton != null)
+                    LoadSubDependenciesButton.Visibility = Visibility.Visible;
                 _allowDependencyPlaceholderUpdate = false;
                 UpdateDependenciesPanel(detail, BuildResolutionFromDetailDependencies(detail));
             }
             else
             {
+                if (LoadSubDependenciesButton != null)
+                    LoadSubDependenciesButton.Visibility = Visibility.Visible;
                 _allowDependencyPlaceholderUpdate = true;
                 UpdateDependenciesPanel(detail, new HubDependencyResolution
                 {
@@ -2517,6 +2556,27 @@ namespace VPM.Windows
                     IndirectDependencies = new Dictionary<string, List<HubFile>>()
                 });
             }
+
+            UpdateDownloadAllButton();
+            UpdateCancelAllButtonVisibility();
+        }
+
+        private static int CountListableDependencyGroups(Dictionary<string, List<HubFile>> dependencyGroups)
+        {
+            if (dependencyGroups == null || dependencyGroups.Count == 0)
+                return 0;
+
+            var count = 0;
+            foreach (var depGroup in dependencyGroups.Values)
+            {
+                if (depGroup == null)
+                    continue;
+
+                if (depGroup.Any(file => file != null && !string.IsNullOrEmpty(file.Filename)))
+                    count++;
+            }
+
+            return count;
         }
 
         private HubDependencyResolution BuildResolutionFromDetailDependencies(HubResourceDetail detail)
@@ -2902,6 +2962,44 @@ namespace VPM.Windows
             return null;
         }
 
+        private bool IsViewingExternalResource()
+        {
+            // Search results and detail API can disagree on hubDownloadable — trust the card flag first.
+            if (_currentResource?.IsExternallyHosted == true)
+                return true;
+
+            if (_currentDetail?.IsExternallyHosted == true)
+                return true;
+
+            return false;
+        }
+
+        private async Task ApplyDetailLibraryStatusAsync(HubResource resource, HubResourceDetail detail)
+        {
+            if (_vm == null || resource == null)
+                return;
+
+            try
+            {
+                await _vm.ApplyResourceLibraryStatusAsync(resource, detail);
+
+                if (_currentDetail != null && _currentResource == resource)
+                {
+                    _currentDetail.InLibrary = resource.InLibrary;
+                    _currentDetail.UpdateAvailable = resource.UpdateAvailable;
+                    _currentDetail.UpdateMessage = resource.UpdateMessage;
+                    DetailInLibraryBadge.Visibility = _currentDetail.InLibrary ? Visibility.Visible : Visibility.Collapsed;
+                    DetailUpdateBadge.Visibility = _currentDetail.InLibrary && _currentDetail.UpdateAvailable
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[HubBrowserWindow] Failed to apply library status: {ex}");
+            }
+        }
+
         private void UpdateDownloadAllButton()
         {
             // Don't update if batch download is in progress
@@ -2918,7 +3016,20 @@ namespace VPM.Windows
             // Make sure button is visible and progress is hidden
             DownloadAllButton.Visibility = Visibility.Visible;
             DownloadProgressContainer.Visibility = Visibility.Collapsed;
-            
+
+            if (IsViewingExternalResource())
+            {
+                DownloadAllButton.IsEnabled = totalDownloadable > 0;
+                DownloadAllButton.Content = totalDownloadable > 0
+                    ? $"⬇ Download Hub Dependencies ({totalDownloadable})"
+                    : "🔗 Externally Hosted";
+                DownloadAllButton.ToolTip = totalDownloadable > 0
+                    ? "Main package is externally hosted; only Hub-hosted dependencies can be downloaded."
+                    : "This package is hosted externally. Install status cannot be verified.";
+                return;
+            }
+
+            DownloadAllButton.ToolTip = null;
             DownloadAllButton.IsEnabled = totalDownloadable > 0;
             DownloadAllButton.Content = totalDownloadable > 0 
                 ? $"⬇ Download All ({totalDownloadable})" 

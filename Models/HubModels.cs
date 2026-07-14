@@ -172,6 +172,11 @@ namespace VPM.Models
         public bool HasDependencies => DependencyCount > 0;
 
         /// <summary>
+        /// Whether dependency count should be shown on cards (external packages don't expose listable deps).
+        /// </summary>
+        public bool ShowsDependencyCount => HasDependencies && !IsExternallyHosted;
+
+        /// <summary>
         /// Dependency count display (e.g., "3 deps")
         /// </summary>
         public string DependencyDisplay => DependencyCount > 0 ? $"{DependencyCount} dep{(DependencyCount > 1 ? "s" : "")}" : "";
