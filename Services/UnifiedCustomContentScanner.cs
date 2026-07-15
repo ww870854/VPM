@@ -141,16 +141,13 @@ namespace VPM.Services
 
             try
             {
-                var appearanceDirInfo = new DirectoryInfo(appearanceDir);
-                var jsonFiles = appearanceDirInfo.EnumerateFiles("*.json", SearchOption.AllDirectories)
-                    .Where(f => !f.Name.EndsWith(".fav", StringComparison.OrdinalIgnoreCase) &&
-                                !f.Name.EndsWith(".hide", StringComparison.OrdinalIgnoreCase));
+                var jsonFiles = SymlinkSafeFileSystem.EnumerateFilesSafe(appearanceDir, "*.json", true);
 
-                foreach (var fileInfo in jsonFiles)
+                foreach (var jsonPath in jsonFiles)
                 {
                     try
                     {
-                        var item = CreateAppearanceItemFromFile(fileInfo);
+                        var item = CreateAppearanceItemFromFile(jsonPath);
                         if (item != null)
                             items.Add(item);
                     }
@@ -171,19 +168,20 @@ namespace VPM.Services
         /// <summary>
         /// Creates a CustomAtomItem from a person appearance .json file
         /// </summary>
-        private CustomAtomItem CreateAppearanceItemFromFile(FileInfo fileInfo)
+        private CustomAtomItem CreateAppearanceItemFromFile(string jsonPath)
         {
-            var fileName = Path.GetFileNameWithoutExtension(fileInfo.Name);
+            var fileInfo = new FileInfo(jsonPath);
+            var fileName = Path.GetFileNameWithoutExtension(jsonPath);
 
             var appearanceDir = Path.Combine(_vamPath, "Saves", "Person", "appearance");
-            var relativePath = Path.GetDirectoryName(fileInfo.FullName).Substring(appearanceDir.Length).TrimStart(Path.DirectorySeparatorChar);
+            var relativePath = Path.GetDirectoryName(jsonPath).Substring(appearanceDir.Length).TrimStart(Path.DirectorySeparatorChar);
 
             var item = new CustomAtomItem
             {
                 Name = fileInfo.Name,
                 DisplayName = fileName,
-                FilePath = fileInfo.FullName,
-                ThumbnailPath = FindAppearanceThumbnail(fileInfo.FullName),
+                FilePath = jsonPath,
+                ThumbnailPath = FindSceneThumbnail(jsonPath),
                 Category = "Appearance",
                 Subfolder = relativePath,
                 ModifiedDate = fileInfo.LastWriteTime,
@@ -194,24 +192,6 @@ namespace VPM.Services
             PresetScanner.ParsePresetDependencies(item);
 
             return item;
-        }
-
-        /// <summary>
-        /// Finds thumbnail for a person appearance file
-        /// </summary>
-        private string FindAppearanceThumbnail(string jsonPath)
-        {
-            var basePath = Path.ChangeExtension(jsonPath, null);
-            var extensions = new[] { ".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG" };
-
-            foreach (var ext in extensions)
-            {
-                var thumbPath = basePath + ext;
-                if (File.Exists(thumbPath))
-                    return thumbPath;
-            }
-
-            return "";
         }
 
         /// <summary>

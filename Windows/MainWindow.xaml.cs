@@ -1,11 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Threading;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
 
@@ -130,7 +129,12 @@ namespace VPM
         public MainWindow(SettingsManager settingsManager = null)
         {
             InitializeComponent();
-            
+
+            this.ContentRendered += (s, e) =>
+            {
+                // 程序完全渲染完成后，一次性执行语言资源全量加载刷新
+                LanguageManager.Instance.InitLanguageAtAppStart();
+            };
             // Set version in menu button
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != null)

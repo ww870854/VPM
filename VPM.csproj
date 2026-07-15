@@ -63,7 +63,17 @@
     <Page Remove="_vb\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="app_user_config.xml" />
     <None Remove="build_output.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="app_user_config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Language\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <PropertyGroup>

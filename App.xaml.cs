@@ -1,27 +1,35 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
+using VPM.Language;
 using VPM.Services;
-using System.Diagnostics;
+using static VPM.MainWindow;
 
 namespace VPM
 {
     public partial class App : Application
     {
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LanguageManager.Instance.NotifyIndexerChanged();
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
             // Suppress WPF binding errors in debug output
             PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Critical;
-            
+
             // Set shutdown mode to manual so closing setup window doesn't close app
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            
+
             // Global exception handlers to catch crashes
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             DispatcherUnhandledException += App_DispatcherUnhandledException;
-            
+
             // Check if this is the first launch
             HandleFirstLaunch();
         }

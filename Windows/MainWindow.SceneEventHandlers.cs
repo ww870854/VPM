@@ -119,6 +119,11 @@ namespace VPM
                 ScenesDataGrid.Visibility = Visibility.Collapsed;
                 if (CustomAtomDataGrid != null)
                     CustomAtomDataGrid.Visibility = Visibility.Collapsed;
+                if (CustomAtomLoadingOverlay != null)
+                {
+                    CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
+                    CustomAtomLoadingProgress.IsIndeterminate = false;
+                }
                 
                 if (CustomAtomItems.Count == 0)
                 {
@@ -175,9 +180,7 @@ namespace VPM
                 // Show custom atom data grid, hide others
                 PackageDataGrid.Visibility = Visibility.Collapsed;
                 ScenesDataGrid.Visibility = Visibility.Collapsed;
-                if (CustomAtomDataGrid != null)
-                    CustomAtomDataGrid.Visibility = Visibility.Visible;
-                
+
                 // Show custom atom search box, hide others
                 if (PackageSearchBoxContainer != null)
                     PackageSearchBoxContainer.Visibility = Visibility.Collapsed;
@@ -227,10 +230,16 @@ namespace VPM
                     PopulatePresetStatusFilter();
                 }
 
-                // Load unified custom content if not already loaded
-                if (CustomAtomItems.Count == 0)
+                // Show overlay while first scan runs (including preload started in Packages mode)
+                if (CustomAtomItems.Count == 0 || _customAtomLoadInProgress)
                 {
-                    _ = LoadCustomAtomItemsAsync();
+                    SetCustomAtomLoadingOverlay(true);
+                    if (!_customAtomLoadStarted)
+                        _ = LoadCustomAtomItemsAsync();
+                }
+                else
+                {
+                    SetCustomAtomLoadingOverlay(false);
                 }
 
                 if (_settingsManager?.Settings != null)

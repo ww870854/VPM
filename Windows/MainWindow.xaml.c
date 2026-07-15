@@ -1,0 +1,352 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Threading;
+using VPM.Models;
+using VPM.Services;
+
+namespace VPM
+{
+    /// <summary>
+    /// Main window for the VPM application
+    /// This partial class contains the core initialization logic.
+    /// Other functionality is split across partial class files:
+    /// - MainWindow.ImageManagement.cs: Image display and layout management
+    /// - MainWindow.PackageOperations.cs: Load/unload operations and button management
+    /// - MainWindow.EventHandlers.cs: UI event handlers
+    /// - MainWindow.FilteringAndSearch.cs: Search and filtering functionality
+    /// - MainWindow.UIManagement.cs: Theme, console, and settings management
+    /// </summary>
+        public partial class MainWindow : Window, IPackageMetadataProvider
+        {
+            // Ensure ImageManager and PackageDownloader are disposed to release resources
+            protected override void OnClosed(EventArgs e)
+            {
+                base.OnClosed(e);
+
+                // Save package metadata cache on exit
+                _packageManager?.SaveBinaryCache();
+
+                // Save Hub image cache on exit
+                _hubService?.SaveImageCache();
+
+                _imageManager?.Dispose();
+                DisposePackageDownloader();
+                _sceneSelectionDebouncer?.Dispose();
+                _presetSelectionDebouncer?.Dispose();
+                _packageSelectionDebouncer?.Dispose();
+                
+                // Cleanup Hub Overview resources
+                CleanupHubOverview();
+            }
+        #region Fields and Properties
+        
+        // UI Constants
+        private const double UI_CORNER_RADIUS = 4.0;
+        
+        // Collections
+        public VirtualPackageList Packages { get; set; }
+        public AsyncObservableCollection<DependencyItem> Dependencies { get; set; }
+        public OptimizedObservableCollection<SceneItem> Scenes { get; set; }
+        public OptimizedObservableCollection<CustomAtomItem> CustomAtomItems { get; set; }
+        public ICollectionView PackagesView { get; set; }
+        public ICollectionView ScenesView { get; set; }
+        public ICollectionView CustomAtomItemsView { get; set; }
+        
+        // Service managers
+        private readonly PackageManager _packageManager;
+        private readonly ImageManager _imageManager;
+        private FilterManager _filterManager;
+        private readonly ReactiveFilterManager _reactiveFilterManager;
+        private readonly SettingsManager _settingsManager;
+        private readonly KeyboardNavigationManager _keyboardNavigationManager;
+        private PackageFileManager _packageFileManager;
+        private readonly SceneScanner _sceneScanner;
+        private readonly UnifiedCustomContentScanner _unifiedCustomContentScanner;
+
+        private readonly string _cacheFolder;
+        
+        // Suppress selection handling when programmatically updating lists/filters
+        private bool _suppressSelectionEvents = false;
+        private readonly bool _suppressDependenciesSelectionEvents = false;
+        
+        // Cascade filtering setting (enabled by default for better UX)
+        private bool _cascadeFiltering = true;
+        
+        // Store original dependencies for filtering
+        private readonly List<DependencyItem> _originalDependencies = [];
+        
+        // Track whether we're showing dependencies or dependents
+        private bool _showingDependents = false;
+        
+        // Store counts for both tabs
+        private int _dependenciesCount = 0;
+        private int _dependentsCount = 0;
+        
+        // Track whether images are currently being displayed
+        private bool _isDisplayingImages = false;
+        
+        // Selection debouncers for scene, preset, and package modes
+        private SelectionDebouncer _sceneSelectionDebouncer;
+        private SelectionDebouncer _presetSelectionDebouncer;
+        private SelectionDebouncer _packageSelectionDebouncer;
+        
+        // Cancellation tokens for pending selection updates
+        private System.Threading.CancellationTokenSource _sceneSelectionCts;
+        private System.Threading.CancellationTokenSource _presetSelectionCts;
+        private System.Threading.CancellationTokenSource _packageSelectionCts;
+        
+        // Cancellation token for image loading operations
+        private System.Threading.CancellationTokenSource _imageLoadingCts;
+        
+        // Cache for dependents counts
+        private Dictionary<string, int> _currentDependentsCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        // Cached result of BA's VAR management enabled flag, refreshed after each package scan
+        private bool? _baVarManagementEnabled;
+        
+        private readonly object _customDependencyIndexLock = new object();
+        
+        private readonly Dictionary<string, List<CustomDependencyLink>> _customDependencyIndex = new Dictionary<string, List<CustomDependencyLink>>(StringComparer.OrdinalIgnoreCase);
+        
+        private sealed class CustomDependencyLink
+        {
+            public CustomAtomItem Item { get; init; }
+            public DependencyVersionInfo DependencyInfo { get; init; }
+        }
+        
+        // Animation configuration - reduced for better responsiveness
+        private const int SELECTION_DEBOUNCE_DELAY_MS = 15;
+        private const int FADE_ANIMATION_DURATION_MS = 300;
+        
+        #endregion
+        
+        #region Constructor
+        
+        public MainWindow(SettingsManager settingsManager = null)
+        {
+            InitializeComponent();
+            
+            // Set version in menu button
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (version != null)
+            {
+                MenuButton.Header = $"☰ VPM v{version.Major}.{version.Minor}.{version.Build}";
+            }
+
+            // Initialize collections
+            Packages = new VirtualPackageList(key => 
+            {
+                if (_packageManager?.PackageMetadata.TryGetValue(key, out var metadata) == true)
+                {
+                    return GetOrCreatePackageItem(key, metadata, _currentDependentsCounts);
+                }
+                return null;
+            });
+            Dependencies = [];
+            Scenes = [];
+            CustomAtomItems = [];
+
+            var packagesSource = (CollectionViewSource)FindResource("PackagesView");
+            packagesSource.Source = Packages;
+            PackagesView = packagesSource.View;
+
+            var scenesSource = new CollectionViewSource { Source = Scenes };
+            ScenesView = scenesSource.View;
+
+            var customAtomItemsSource = new CollectionViewSource { Source = CustomAtomItems };
+            CustomAtomItemsView = customAtomItemsSource.View;
+
+            var previewImagesSource = (CollectionViewSource)FindResource("PreviewImagesView");
+            previewImagesSource.Source = PreviewImages;
+
+            // Initialize settings manager first (use provided instance or create new one)
+            _settingsManager = settingsManager ?? new SettingsManager();
+            _settingsManager.SettingsChanged += OnSettingsChanged;
+
+            // Apply loaded settings to current variables
+            ApplySettingsToUI();
+
+            // Initialize cache folder from settings
+            _cacheFolder = _settingsManager.Settings.CacheFolder;
+
+
+            // Initialize service managers
+            _imageManager = new ImageManager(_cacheFolder, this);
+            
+            // Initialize PackageFileManager first (before PackageManager) so it can be passed to PackageManager
+            InitializePackageFileManager();
+            
+            // Now initialize PackageManager with PackageFileManager reference
+            _packageManager = new PackageManager(_cacheFolder, _imageManager.PreviewImageIndex, _packageFileManager);
+
+            _filterManager = new FilterManager();
+            _reactiveFilterManager = new ReactiveFilterManager(_filterManager);
+            _filterManager.HasCustomDependentsFunc = HasCustomDependents;
+            
+            // Sync file size filter settings from AppSettings to FilterManager
+            _filterManager.FileSizeTinyMax = _settingsManager.Settings.FileSizeTinyMax;
+            _filterManager.FileSizeSmallMax = _settingsManager.Settings.FileSizeSmallMax;
+            _filterManager.FileSizeMediumMax = _settingsManager.Settings.FileSizeMediumMax;
+            _filterManager.HideArchivedPackages = _settingsManager.Settings.HideArchivedPackages;
+
+            // Initialize SceneScanner and UnifiedCustomContentScanner
+            if (!string.IsNullOrEmpty(_settingsManager.Settings.SelectedFolder))
+            {
+                _sceneScanner = new SceneScanner(_settingsManager.Settings.SelectedFolder);
+                _unifiedCustomContentScanner = new UnifiedCustomContentScanner(_settingsManager.Settings.SelectedFolder);
+            }
+
+            // Initialize keyboard navigation manager
+            _keyboardNavigationManager = new KeyboardNavigationManager(this);
+            SetupKeyboardNavigationEvents();
+
+            // Initialize favorites manager
+            InitializeFavoritesManager();
+
+            // Initialize autoinstall manager
+            InitializeAutoInstallManager();
+
+            // Initialize renaming service
+            InitializeRenamingService();
+
+            // Set up data binding
+            PackageDataGrid.ItemsSource = PackagesView;
+            DependenciesDataGrid.ItemsSource = Dependencies;
+
+            // Initialize search boxes
+            InitializeSearchBoxes();
+
+            // Initialize date filter
+            InitializeDateFilter();
+
+            // Initialize file size filter
+            InitializeFileSizeFilter();
+
+            // Initialize sorting
+            InitializeSorting();
+
+            // Set up event handlers for UI elements
+            SetupEventHandlers();
+
+            // Update UI
+            UpdateUI();
+
+            // Set up window event handlers
+            this.Loaded += OnWindowLoaded;
+            this.Closing += OnWindowClosing;
+            this.SizeChanged += OnWindowSizeChanged;
+            this.LocationChanged += OnWindowLocationChanged;
+            this.StateChanged += OnWindowStateChanged;
+
+            // Initialize console window visibility
+            InitializeConsoleWindow();
+
+            // Initialize dependencies tab state
+            InitializeDependenciesTabs();
+
+            // Initialize content mode dropdown selection
+            // App starts in Packages mode, so dropdown should show "Packages"
+            if (ContentModeDropdown != null && ContentModeDropdown.Items.Count > 0)
+            {
+                ContentModeDropdown.SelectedIndex = 0; // Select "📦 Packages"
+            }
+
+            // Initialize selection debouncers for scene and preset modes
+            InitializeSelectionDebouncers();
+        }
+        
+        #endregion
+        
+        #region Initialization Helpers
+        
+        /// <summary>
+        /// Set up event handlers for UI elements
+        /// </summary>
+        private void SetupEventHandlers()
+        {
+            try
+            {
+                // Package data grid events
+                PackageDataGrid.SelectionChanged += PackageDataGrid_SelectionChanged;
+                PackageDataGrid.KeyDown += PackageDataGrid_KeyDown;
+                PackageDataGrid.MouseDoubleClick += PackageDataGrid_MouseDoubleClick;
+                
+                // Dependencies data grid events
+                DependenciesDataGrid.SelectionChanged += DependenciesDataGrid_SelectionChanged;
+                DependenciesDataGrid.PreviewMouseDown += DependenciesDataGrid_PreviewMouseDown;
+                DependenciesDataGrid.PreviewMouseUp += DependenciesDataGrid_PreviewMouseUp;
+                DependenciesDataGrid.PreviewMouseMove += DependenciesDataGrid_PreviewMouseMove;
+                DependenciesDataGrid.KeyDown += DependenciesDataGrid_KeyDown;
+                DependenciesDataGrid.MouseDoubleClick += DependenciesDataGrid_MouseDoubleClick;
+                DependenciesDataGrid.GotFocus += DependenciesDataGrid_GotFocus;
+                DependenciesDataGrid.LostFocus += DependenciesDataGrid_LostFocus;
+                
+                // Search box events
+                PackageSearchBox.TextChanged += PackageSearchBox_TextChanged;
+                PackageSearchBox.GotFocus += PackageSearchBox_GotFocus;
+                PackageSearchBox.LostFocus += PackageSearchBox_LostFocus;
+                
+                DepsSearchBox.TextChanged += DepsSearchBox_TextChanged;
+                DepsSearchBox.GotFocus += DepsSearchBox_GotFocus;
+                DepsSearchBox.LostFocus += DepsSearchBox_LostFocus;
+                
+                // Filter list events
+                StatusFilterList.SelectionChanged += StatusFilterList_SelectionChanged;
+                CreatorsList.SelectionChanged += CreatorsList_SelectionChanged;
+                ContentTypesList.SelectionChanged += ContentTypesList_SelectionChanged;
+                
+                // Image scroll viewer events
+                ImagesListView.PreviewMouseWheel += ImagesListView_PreviewMouseWheel;
+                
+                // NOTE: ImageAreaTabControl.SelectionChanged is registered in XAML, not here
+                // to avoid duplicate event firing
+                
+                // Event handlers setup completed
+            }
+            catch (Exception)
+            {
+                // Error setting up event handlers
+            }
+        }
+
+        private void InitializeDependenciesTabs()
+        {
+            DependenciesTab.Tag = "Active";
+            DependentsTab.Tag = null;
+        }
+
+        /// <summary>
+        /// Initializes selection debouncers for scene, preset, and package modes
+        /// </summary>
+        private void InitializeSelectionDebouncers()
+        {
+            // Scene selection debouncer - debounces rapid scene selections
+            _sceneSelectionDebouncer = new SelectionDebouncer(SELECTION_DEBOUNCE_DELAY_MS, async () =>
+            {
+                // Debouncer callback - no animation here, animations handled in selection handler
+                await Task.CompletedTask;
+            });
+
+            // Preset selection debouncer - debounces rapid preset selections
+            _presetSelectionDebouncer = new SelectionDebouncer(SELECTION_DEBOUNCE_DELAY_MS, async () =>
+            {
+                // Debouncer callback - no animation here, animations handled in selection handler
+                await Task.CompletedTask;
+            });
+
+            // Package selection debouncer - debounces rapid package selections
+            _packageSelectionDebouncer = new SelectionDebouncer(SELECTION_DEBOUNCE_DELAY_MS, async () =>
+            {
+                // Debouncer callback - no animation here, animations handled in selection handler
+                await Task.CompletedTask;
+            });
+        }
+        
+        #endregion
+    }
+}

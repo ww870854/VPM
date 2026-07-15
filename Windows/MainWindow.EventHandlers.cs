@@ -1,22 +1,22 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Xml.Serialization;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
+
 
 namespace VPM
 {
@@ -969,6 +969,11 @@ namespace VPM
             await ArchiveOldVersionsFromMenu();
         }
 
+        private async void Language_Click(object sender, RoutedEventArgs e)
+        {
+            Language_ClickFromMenu();
+        }
+
         private async void ArchiveOldButton_Click(object sender, RoutedEventArgs e)
         {
             await ArchiveSelectedOldVersions();
@@ -977,6 +982,175 @@ namespace VPM
         private async void FixSelectedDuplicates_Click(object sender, RoutedEventArgs e)
         {
             await FixSelectedDuplicates();
+        }
+        // 把异步方法调整为同步执行，避免UI线程上下文错位
+        private void Language_ClickFromMenu()
+        {
+            var selectWindow = new Window
+            {
+                Title = LanguageManager.Instance.GetCodeString("LanguageSettings"),
+                Width = 300,
+                Height = 180,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Application.Current.MainWindow,
+                ResizeMode = ResizeMode.NoResize,
+                Topmost = true // 避免弹窗被主窗口遮挡，丢失交互焦点
+            };
+
+            var stackPanel = new StackPanel { Margin = new Thickness(20) };
+
+            var btnChinese = new Button
+            {
+                Content = LanguageManager.Instance.GetCodeString("SwitchToChinese"),
+                Margin = new Thickness(0, 0, 0, 10),
+                Height = 35,
+                IsEnabled = true
+            };
+            // 切换语言后自动关闭弹窗
+            btnChinese.Click += (s, e) =>
+            {
+                SwitchAppLanguage("zh-CN");
+                selectWindow.Close();
+            };
+
+            var btnEnglish = new Button
+            {
+                Content = LanguageManager.Instance.GetCodeString("SwitchToEnglish"),
+                Height = 35,
+                IsEnabled = true
+            };
+            btnEnglish.Click += (s, e) =>
+            {
+                SwitchAppLanguage("en-US");
+                selectWindow.Close();
+            };
+
+            stackPanel.Children.Add(btnChinese);
+            stackPanel.Children.Add(btnEnglish);
+            selectWindow.Content = stackPanel;
+
+            // 直接同步弹出模态窗口，保证事件路由完全正常
+            selectWindow.ShowDialog();
+        }
+        private void SwitchAppLanguage(string cultureCode)
+        {
+            var newCulture = new CultureInfo(cultureCode);
+            CultureInfo.DefaultThreadCurrentCulture = newCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = newCulture;
+            Thread.CurrentThread.CurrentCulture = newCulture;
+            Thread.CurrentThread.CurrentUICulture = newCulture;
+
+            // 修复单条匹配漏删问题，全量清理所有旧语言资源字典，避免残留冲突
+            var oldLangDicts = Application.Current.Resources.MergedDictionaries
+                .Where(d => d.Source?.OriginalString.Contains("Resources/Language/Resources.") == true)
+                .ToList();
+            foreach (var dict in oldLangDicts)
+            {
+                Application.Current.Resources.MergedDictionaries.Remove(dict);
+            }
+
+            // 新增容错逻辑，避免无效语言编码导致程序崩溃
+            try
+            {
+                var newDictUri = new Uri($"pack://application:,,,/VPM;component/Resources/Language/Resources.{cultureCode}.xaml");
+                // 提前校验资源是否存在，不存在直接跳过加载
+                if (Application.GetResourceStream(newDictUri) != null)
+                {
+                    var newLangDict = new ResourceDictionary { Source = newDictUri };
+                    Application.Current.Resources.MergedDictionaries.Add(newLangDict);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"语言资源加载失败，已自动保留当前语言：{ex.Message}");
+                return;
+            }
+
+            // 触发LanguageManager的索引器变更通知，所有绑定到它的UI自动刷新
+            LanguageManager.Instance.NotifyIndexerChanged();
+
+            AppConfig.SelectedLanguage = cultureCode;
+        }
+
+        // 新增递归刷新方法，触发所有元素的动态资源重载
+        private void UpdateAllDependencyObjects(DependencyObject parent)
+        {
+            if (parent == null) return;
+
+            // 用OfType过滤出所有UI元素，避免非元素类型调用方法报错
+            var children = LogicalTreeHelper.GetChildren(parent).OfType<DependencyObject>().ToList();
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child is not FrameworkElement fe)
+                {
+                    UpdateAllDependencyObjects(child);
+                    continue;
+                }
+
+                // 遍历元素的所有依赖属性，重新绑定动态资源
+                var properties = fe.GetLocalValueEnumerator();
+                while (properties.MoveNext())
+                {
+                    var prop = properties.Current.Property;
+                    if (prop.ReadOnly) continue;
+
+                    // 移除对内部私有类型ResourceReferenceExpression的依赖，完全规避CS0246报错
+                    var value = fe.ReadLocalValue(prop);
+                    if (value is DynamicResourceExtension)
+                    {
+                        fe.ClearValue(prop);
+                        // 从资源字典中重新拉取资源值，替代旧的SetResourceReference逻辑
+                        fe.SetValue(prop, Application.Current.Resources[prop.Name]);
+                    }
+                }
+                UpdateAllDependencyObjects(fe);
+            }
+        }
+        // 把序列化用的数据类移到命名空间下，设为公开类型
+        [Serializable]
+        public class AppConfigData
+        {
+            public string SelectedLanguage { get; set; }
+        }
+
+        public static class AppConfig
+        {
+            private static readonly string ConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_user_config.xml");
+
+            public static string SelectedLanguage
+            {
+                get
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
+                    if (!File.Exists(ConfigPath)) return "zh-CN";
+                    try
+                    {
+                        var serializer = new XmlSerializer(typeof(AppConfigData));
+                        using var reader = new StreamReader(ConfigPath);
+                        var data = (AppConfigData)serializer.Deserialize(reader);
+                        return data.SelectedLanguage;
+                    }
+                    catch
+                    {
+                        return "zh-CN";
+                    }
+                }
+                set
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
+                    try
+                    {
+                        var serializer = new XmlSerializer(typeof(AppConfigData));
+                        using var writer = new StreamWriter(ConfigPath);
+                        serializer.Serialize(writer, new AppConfigData { SelectedLanguage = value });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"配置写入失败：{ex.Message}");
+                    }
+                }
+            }
         }
 
         private async Task ArchiveOldVersionsFromMenu()
@@ -2260,28 +2434,43 @@ namespace VPM
             var settings = _settingsManager?.Settings;
             if (settings != null && LinkedFiltersButton != null)
             {
-                // Update button appearance based on state
-                // CascadeFiltering = true means filters are linked (multiple selections, all visible)
-                // CascadeFiltering = false means filters are isolated (single selection, hide incompatible)
-                if (settings.CascadeFiltering)
+                bool isOn = settings.CascadeFiltering;
+
+                // 1. 更新按钮样式
+                if (isOn)
                 {
-                    // On state - linked/connected
-                    if (LinkedStatusText != null)
-                        LinkedStatusText.Text = "On";
                     LinkedFiltersButton.FontWeight = FontWeights.Bold;
                     LinkedFiltersButton.BorderThickness = new Thickness(2);
                     LinkedFiltersButton.Background = new System.Windows.Media.SolidColorBrush(
-                        System.Windows.Media.Color.FromArgb(0x40, 0x00, 0xFF, 0x00)); // Subtle green tint
+                        System.Windows.Media.Color.FromArgb(0x40, 0x00, 0xFF, 0x00));
                 }
                 else
                 {
-                    // Off state - isolated/disconnected
-                    if (LinkedStatusText != null)
-                        LinkedStatusText.Text = "Off";
                     LinkedFiltersButton.FontWeight = FontWeights.Normal;
                     LinkedFiltersButton.BorderThickness = new Thickness(1);
                     LinkedFiltersButton.Background = (System.Windows.Media.Brush)FindResource(SystemColors.ControlBrushKey);
                 }
+
+                // 2. 更新文本可见性（不碰 Text 属性！）
+                UpdateLinkedStatusVisibility(isOn);
+            }
+        }
+
+        // 专门处理可见性的辅助方法
+        private void UpdateLinkedStatusVisibility(bool? forceState = null)
+        {
+            // 如果没传状态，就从设置里读
+            bool isOn = forceState ?? (_settingsManager?.Settings?.CascadeFiltering ?? false);
+
+            if (isOn)
+            {
+                TxtStatusOn.Visibility = Visibility.Visible;
+                TxtStatusOff.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                TxtStatusOn.Visibility = Visibility.Collapsed;
+                TxtStatusOff.Visibility = Visibility.Visible;
             }
         }
 
@@ -2791,21 +2980,29 @@ namespace VPM
                     }
                 }
 
-                // Handle Delete key to discard selected custom items
-                if (e.Key == Key.Delete && CustomAtomDataGrid.SelectedItems.Count > 0)
-                {
-                    if (e.IsRepeat)
-                    {
-                        e.Handled = true;
-                        return;
-                    }
+                return;
+            }
 
-                    DiscardSelectedCustomAtoms_Click(sender, null);
+            // Handle Delete key to discard selected custom items
+            if (e.Key == Key.Delete && CustomAtomDataGrid.SelectedItems.Count > 0)
+            {
+                if (e.IsRepeat)
+                {
                     e.Handled = true;
                     return;
                 }
 
-                return;
+                var count = CustomAtomDataGrid.SelectedItems.Count;
+                var confirm = DarkMessageBox.Show(
+                    $"Discard {count} selected custom item(s)?\n\nFiles move to DiscardedPackages.",
+                    "Confirm Discard",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (confirm == MessageBoxResult.Yes)
+                    DiscardSelectedCustomAtoms_Click(sender, null);
+
+                e.Handled = true;
             }
         }
 

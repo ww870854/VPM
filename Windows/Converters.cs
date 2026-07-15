@@ -1,18 +1,16 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using VPM.Language;
 using VPM.Models;
-using VPM.Services;
 
 namespace VPM.Windows
 {
@@ -83,16 +81,16 @@ namespace VPM.Windows
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
-                return "📥 Load";
+                return LanguageManager.Instance.GetCodeString("Unload");
 
             try
             {
                 string status = value.ToString();
-                return status == "Loaded" ? "📤 Unload" : "📥 Load";
+                return status == "Loaded" ? LanguageManager.Instance.GetCodeString("Unload") : LanguageManager.Instance.GetCodeString("Load");
             }
             catch
             {
-                return "📥 Load";
+                return LanguageManager.Instance.GetCodeString("Load");
             }
         }
 
