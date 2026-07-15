@@ -19,6 +19,7 @@ namespace VPM
     {
         private List<CustomAtomItem> _originalCustomAtomItems = new List<CustomAtomItem>();
         private bool _customAtomLoadStarted = false;
+        private bool _customAtomLoadInProgress = false;
         private bool _customDependencyIndexBuilt = false;
         
         // Search text for custom atom filtering (used by CollectionView.Filter)
@@ -52,6 +53,33 @@ namespace VPM
         }
         
         /// <summary>
+        /// Show/hide Custom-tab scan overlay. Only affects UI when Custom mode is active
+        /// (same cell as package grid — must not cover Packages).
+        /// </summary>
+        private void SetCustomAtomLoadingOverlay(bool show)
+        {
+            if (_currentContentMode != "Custom")
+                return;
+
+            if (show)
+            {
+                CustomAtomLoadingText.Text = "Scanning custom content...";
+                CustomAtomLoadingProgress.IsIndeterminate = true;
+                CustomAtomLoadingCount.Text = "";
+                CustomAtomLoadingOverlay.Visibility = Visibility.Visible;
+                if (CustomAtomDataGrid != null)
+                    CustomAtomDataGrid.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
+                CustomAtomLoadingProgress.IsIndeterminate = false;
+                if (CustomAtomDataGrid != null)
+                    CustomAtomDataGrid.Visibility = Visibility.Visible;
+            }
+        }
+
+        /// <summary>
         /// Loads all custom content (presets and scenes) from both Custom\Atom\Person and Saves\scene folders
         /// </summary>
         public async Task LoadCustomAtomItemsAsync()
@@ -65,23 +93,11 @@ namespace VPM
                 return;
             }
             _customAtomLoadStarted = true;
-
-            // Only show loading overlay when in Custom mode
-            var isCustomMode = _currentContentMode == "Custom";
+            _customAtomLoadInProgress = true;
 
             try
             {
-                if (isCustomMode)
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        CustomAtomLoadingText.Text = "Scanning custom content...";
-                        CustomAtomLoadingProgress.IsIndeterminate = true;
-                        CustomAtomLoadingCount.Text = "";
-                        CustomAtomLoadingOverlay.Visibility = Visibility.Visible;
-                        CustomAtomDataGrid.Visibility = Visibility.Collapsed;
-                    });
-                }
+                Application.Current.Dispatcher.Invoke(() => SetCustomAtomLoadingOverlay(true));
 
                 await Task.Run(() =>
                 {
@@ -124,25 +140,18 @@ namespace VPM
                             PopulatePresetStatusFilter();
                         }
 
-                        // Hide loading overlay, show data grid (only if we showed it)
-                        if (isCustomMode)
-                        {
-                            CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
-                            CustomAtomDataGrid.Visibility = Visibility.Visible;
-                        }
+                        _customAtomLoadInProgress = false;
+                        SetCustomAtomLoadingOverlay(false);
                     });
                 });
             }
             catch (Exception ex)
             {
-                if (isCustomMode)
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        CustomAtomLoadingOverlay.Visibility = Visibility.Collapsed;
-                        CustomAtomDataGrid.Visibility = Visibility.Visible;
-                    });
-                }
+                    _customAtomLoadInProgress = false;
+                    SetCustomAtomLoadingOverlay(false);
+                });
                 SetStatus($"Error loading custom items: {ex.Message}");
             }
         }

@@ -2791,21 +2791,29 @@ namespace VPM
                     }
                 }
 
-                // Handle Delete key to discard selected custom items
-                if (e.Key == Key.Delete && CustomAtomDataGrid.SelectedItems.Count > 0)
-                {
-                    if (e.IsRepeat)
-                    {
-                        e.Handled = true;
-                        return;
-                    }
+                return;
+            }
 
-                    DiscardSelectedCustomAtoms_Click(sender, null);
+            // Handle Delete key to discard selected custom items
+            if (e.Key == Key.Delete && CustomAtomDataGrid.SelectedItems.Count > 0)
+            {
+                if (e.IsRepeat)
+                {
                     e.Handled = true;
                     return;
                 }
 
-                return;
+                var count = CustomAtomDataGrid.SelectedItems.Count;
+                var confirm = DarkMessageBox.Show(
+                    $"Discard {count} selected custom item(s)?\n\nFiles move to DiscardedPackages.",
+                    "Confirm Discard",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (confirm == MessageBoxResult.Yes)
+                    DiscardSelectedCustomAtoms_Click(sender, null);
+
+                e.Handled = true;
             }
         }
 
