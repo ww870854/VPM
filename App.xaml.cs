@@ -15,10 +15,15 @@ namespace VPM
         {
             base.OnStartup(e);
 
+
             Dispatcher.BeginInvoke(new Action(() =>
             {
+                // 先同步执行语言全量加载，保证资源字典完全替换完成
+                LanguageManager.Instance.InitLanguageAtAppStart();
+                // 再发送通知，此时所有后续创建的窗口绑定都能直接读取到已加载的有效资源
                 LanguageManager.Instance.NotifyIndexerChanged();
-            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }), System.Windows.Threading.DispatcherPriority.Normal);
+
 
             // Suppress WPF binding errors in debug output
             PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Critical;
@@ -95,10 +100,12 @@ namespace VPM
                         }
                         catch (Exception saveEx)
                         {
+                            string template = LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Full");
+                            string message = string.Format(template, saveEx.Message);
+                            message = message.Replace("\\n", "\n");
                             MessageBox.Show(
-                                $"Settings could not be saved to disk:\n\n{saveEx.Message}\n\n" +
-                                "The application will continue to work, but your settings may not persist between sessions.",
-                                "Settings Save Warning",
+                                message,
+                                LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Title"),
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                         }
@@ -106,6 +113,8 @@ namespace VPM
                         // Create and show main window with the settings manager instance
                         try
                         {
+                            // 新增：主窗口实例化前最后一次确认语言资源就绪
+                            LanguageManager.Instance.InitLanguageAtAppStart();
                             var mainWindow = new MainWindow(settingsManager);
                             MainWindow = mainWindow;
                             
@@ -116,9 +125,12 @@ namespace VPM
                         }
                         catch (Exception mainWindowEx)
                         {
+                            string template = LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Create");
+                            string message = string.Format(template, mainWindowEx.Message);
+                            message = message.Replace("\\n", "\n");
                             MessageBox.Show(
-                                $"Failed to create main window:\n\n{mainWindowEx.Message}\n\nStack Trace:\n{mainWindowEx.StackTrace}",
-                                "Main Window Error",
+                                message,
+                                LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Create_Title"),
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);
                             Shutdown();
@@ -127,10 +139,11 @@ namespace VPM
                     else
                     {
                         // User cancelled setup, exit application
+                        string message = LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Cancelled");
+                        message = message.Replace("\\n", "\n");
                         MessageBox.Show(
-                            "Setup was cancelled. The application will now close.\n\n" +
-                            "You can run the application again to complete the setup.",
-                            "Setup Cancelled",
+                            message,
+                            LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Cancelled_Title"),
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
                         Shutdown();
@@ -142,6 +155,8 @@ namespace VPM
                     // Not first launch, show main window normally with loaded settings
                     try
                     {
+                        // 新增：主窗口实例化前最后一次确认语言资源就绪
+                        LanguageManager.Instance.InitLanguageAtAppStart();
                         var mainWindow = new MainWindow(settingsManager);
                         MainWindow = mainWindow;
                         
@@ -152,9 +167,12 @@ namespace VPM
                     }
                     catch (Exception mainWindowEx)
                     {
+                        string template = LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Create");
+                        string message = string.Format(template, mainWindowEx.Message);
+                        message = message.Replace("\\n", "\n");
                         MessageBox.Show(
-                            $"Failed to create main window:\n\n{mainWindowEx.Message}\n\nStack Trace:\n{mainWindowEx.StackTrace}",
-                            "Main Window Error",
+                            message,
+                            LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Create_Title"),
                             MessageBoxButton.OK,
                             MessageBoxImage.Error);
                         Shutdown();
@@ -163,9 +181,11 @@ namespace VPM
             }
             catch (Exception ex)
             {
+                string template = LanguageManager.Instance.GetCodeString("HandleFirstLaunch_error");
+                string message = string.Format(template, ex.Message);
                 MessageBox.Show(
-                    $"An error occurred during first launch setup:\n\n{ex.Message}",
-                    "Setup Error",
+                    message,
+                    LanguageManager.Instance.GetCodeString("HandleFirstLaunch_Error_Title"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 Shutdown();

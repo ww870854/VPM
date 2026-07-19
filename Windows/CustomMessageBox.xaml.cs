@@ -1,6 +1,7 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -66,23 +67,23 @@ namespace VPM
             switch (buttons)
             {
                 case MessageBoxButton.OK:
-                    AddButton("OK", MessageBoxResult.OK, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Btn_Confirm"), MessageBoxResult.OK, true);
                     break;
 
                 case MessageBoxButton.OKCancel:
-                    AddButton("OK", MessageBoxResult.OK, true);
-                    AddButton("Cancel", MessageBoxResult.Cancel, false, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Btn_Confirm"), MessageBoxResult.OK, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Cancel"), MessageBoxResult.Cancel, false, true);
                     break;
 
                 case MessageBoxButton.YesNo:
-                    AddButton("Yes", MessageBoxResult.Yes, true);
-                    AddButton("No", MessageBoxResult.No, false, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Btn_Yes"), MessageBoxResult.Yes, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Btn_No"), MessageBoxResult.No, false, true);
                     break;
 
                 case MessageBoxButton.YesNoCancel:
-                    AddButton("Yes", MessageBoxResult.Yes, true);
-                    AddButton("No", MessageBoxResult.No, false);
-                    AddButton("Cancel", MessageBoxResult.Cancel, false, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Btn_Yes"), MessageBoxResult.Yes, true);
+                    AddButton(LanguageManager.Instance.GetCodeString("Btn_No"), MessageBoxResult.No, false);
+                    AddButton(LanguageManager.Instance.GetCodeString("Cancel"), MessageBoxResult.Cancel, false, true);
                     break;
             }
         }

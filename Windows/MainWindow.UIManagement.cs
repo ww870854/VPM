@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
 
@@ -1937,13 +1938,13 @@ namespace VPM
                                 selectedContentTypes.Add(contentTypeName);
                             }
                         }
-                        
+
                         ContentTypesList.Items.Clear();
                         foreach (var category in categoryCounts.OrderBy(c => c.Key))
                         {
                             var displayText = $"{category.Key} ({category.Value:N0})";
                             ContentTypesList.Items.Add(displayText);
-                            
+
                             if (selectedContentTypes.Contains(category.Key))
                             {
                                 ContentTypesList.SelectedItems.Add(displayText);
@@ -2093,15 +2094,26 @@ namespace VPM
                             }
 
                             DateFilterList.Items.Clear();
+                            //var dateOptions = new[]
+                            //{
+                            //    new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
+                            //    new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
+                            //    new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
+                            //    new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
+                            //    new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
+                            //    new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
+                            //    new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
+                            //};
+                            var lm = LanguageManager.Instance;
                             var dateOptions = new[]
                             {
-                                new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
-                                new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
-                                new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
-                                new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
-                                new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
-                                new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
-                                new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
+                                new { Text = lm.GetCodeString("DateFilter_AllTime"), Tag = "AllTime", Count = dateCounts["AllTime"] },
+                                new { Text = lm.GetCodeString("DateFilter_Today"), Tag = "Today", Count = dateCounts["Today"] },
+                                new { Text = lm.GetCodeString("DateFilter_PastWeek"), Tag = "PastWeek", Count = dateCounts["PastWeek"] },
+                                new { Text = lm.GetCodeString("DateFilter_PastMonth"), Tag = "PastMonth", Count = dateCounts["PastMonth"] },
+                                new { Text = lm.GetCodeString("DateFilter_Past3Months"), Tag = "Past3Months", Count = dateCounts["Past3Months"] },
+                                new { Text = lm.GetCodeString("DateFilter_PastYear"), Tag = "PastYear", Count = dateCounts["PastYear"] },
+                                new { Text = lm.GetCodeString("DateFilter_CustomRange"), Tag = "CustomRange", Count = 0 }
                             };
 
                             foreach (var option in dateOptions)
@@ -2115,7 +2127,37 @@ namespace VPM
                                 }
                             }
                         }
+                        // Update file size filter list
+                        //if (FileSizeFilterList != null && _filterManager != null)
+                        //{
+                        //    var selectedFileSizeRanges = new List<string>();
+                        //    foreach (var item in FileSizeFilterList.SelectedItems)
+                        //    {
+                        //        string itemText = item?.ToString() ?? "";
+                        //        if (!string.IsNullOrEmpty(itemText))
+                        //        {
+                        //            var rangeName = itemText.Split('(')[0].Trim();
+                        //            selectedFileSizeRanges.Add(rangeName);
+                        //        }
+                        //    }
 
+                        //    FileSizeFilterList.Items.Clear();
+
+                        //    var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
+                        //    foreach (var range in orderedRanges)
+                        //    {
+                        //        if (fileSizeCounts.ContainsKey(range) && fileSizeCounts[range] > 0)
+                        //        {
+                        //            var displayText = $"{range} ({fileSizeCounts[range]:N0})";
+                        //            FileSizeFilterList.Items.Add(displayText);
+
+                        //            if (selectedFileSizeRanges.Contains(range))
+                        //            {
+                        //                FileSizeFilterList.SelectedItems.Add(displayText);
+                        //            }
+                        //        }
+                        //    }
+                        //}
                         // Update file size filter list
                         if (FileSizeFilterList != null && _filterManager != null)
                         {
@@ -2129,25 +2171,33 @@ namespace VPM
                                     selectedFileSizeRanges.Add(rangeName);
                                 }
                             }
-                            
+
                             FileSizeFilterList.Items.Clear();
-                            
-                            var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-                            foreach (var range in orderedRanges)
+
+                            var orderedRanges = new[]
                             {
-                                if (fileSizeCounts.ContainsKey(range) && fileSizeCounts[range] > 0)
+                                nameof(FilterManager.FileSizeCategory.Tiny),
+                                nameof(FilterManager.FileSizeCategory.Small),
+                                nameof(FilterManager.FileSizeCategory.Medium),
+                                nameof(FilterManager.FileSizeCategory.Large)
+                            };
+
+                            foreach (var rangeKey in orderedRanges)
+                            {
+                                if (fileSizeCounts.ContainsKey(rangeKey) && fileSizeCounts[rangeKey] > 0)
                                 {
-                                    var displayText = $"{range} ({fileSizeCounts[range]:N0})";
+                                    var localizedName = LanguageManager.Instance.GetCodeString(rangeKey);
+                                    var displayText = $"{localizedName} ({fileSizeCounts[rangeKey]:N0})";
                                     FileSizeFilterList.Items.Add(displayText);
-                                    
-                                    if (selectedFileSizeRanges.Contains(range))
+
+                                    // 兼容性：之前可能用的是枚举名，也可能用本地化文本，两个都检查
+                                    if (selectedFileSizeRanges.Contains(rangeKey) || selectedFileSizeRanges.Contains(localizedName))
                                     {
                                         FileSizeFilterList.SelectedItems.Add(displayText);
                                     }
                                 }
                             }
                         }
-
                         // Update subfolders filter list
                         if (SubfoldersFilterList != null && _filterManager != null)
                         {
@@ -2353,14 +2403,59 @@ namespace VPM
             }
         }
 
+        //private void PopulateDateFilterList(Dictionary<string, VarMetadata> packagesToCount = null)
+        //{
+        //    if (DateFilterList == null || _packageManager?.PackageMetadata == null) return;
+
+        //    try
+        //    {
+        //        // Store current selection
+        //        var selectedTag = "";
+        //        if (DateFilterList.SelectedItem is ListBoxItem selectedItem)
+        //        {
+        //            selectedTag = selectedItem.Tag?.ToString() ?? "";
+        //        }
+
+        //        // Clear and repopulate with counts
+        //        DateFilterList.Items.Clear();
+        //        var dateCounts = GetDateFilterCounts(packagesToCount ?? _packageManager.PackageMetadata);
+
+        //        // Add all date filter options with counts
+        //        var dateOptions = new[]
+        //        {
+        //            new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
+        //            new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
+        //            new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
+        //            new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
+        //            new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
+        //            new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
+        //            new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
+        //        };
+
+        //        foreach (var option in dateOptions)
+        //        {
+        //            var displayText = option.Tag == "CustomRange" ? option.Text : $"{option.Text} ({option.Count})";
+        //            DateFilterList.Items.Add(displayText);
+
+        //            // Restore selection
+        //            if (option.Tag == selectedTag || (string.IsNullOrEmpty(selectedTag) && option.Tag == "AllTime"))
+        //            {
+        //                DateFilterList.SelectedItem = displayText;
+        //            }
+        //        }
+
+        //    }
+        //    catch (Exception)
+        //    {
+        //    }
+        //}
         private void PopulateDateFilterList(Dictionary<string, VarMetadata> packagesToCount = null)
         {
             if (DateFilterList == null || _packageManager?.PackageMetadata == null) return;
-
             try
             {
                 // Store current selection
-                var selectedTag = "";
+               var selectedTag = "";
                 if (DateFilterList.SelectedItem is ListBoxItem selectedItem)
                 {
                     selectedTag = selectedItem.Tag?.ToString() ?? "";
@@ -2369,19 +2464,19 @@ namespace VPM
                 // Clear and repopulate with counts
                 DateFilterList.Items.Clear();
                 var dateCounts = GetDateFilterCounts(packagesToCount ?? _packageManager.PackageMetadata);
-
-                // Add all date filter options with counts
+                
+                // Add all date filter options with counts (display text localized)
+                var lm = LanguageManager.Instance;
                 var dateOptions = new[]
                 {
-                    new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
-                    new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
-                    new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
-                    new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
-                    new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
-                    new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
-                    new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
+                    new { Text = lm.GetCodeString("DateFilter_AllTime"), Tag = "AllTime", Count = dateCounts["AllTime"] },
+                    new { Text = lm.GetCodeString("DateFilter_Today"), Tag = "Today", Count = dateCounts["Today"] },
+                    new { Text = lm.GetCodeString("DateFilter_PastWeek"), Tag = "PastWeek", Count = dateCounts["PastWeek"] },
+                    new { Text = lm.GetCodeString("DateFilter_PastMonth"), Tag = "PastMonth", Count = dateCounts["PastMonth"] },
+                    new { Text = lm.GetCodeString("DateFilter_Past3Months"), Tag = "Past3Months", Count = dateCounts["Past3Months"] },
+                    new { Text = lm.GetCodeString("DateFilter_PastYear"), Tag = "PastYear", Count = dateCounts["PastYear"] },
+                    new { Text = lm.GetCodeString("DateFilter_CustomRange"), Tag = "CustomRange", Count = 0 }
                 };
-
                 foreach (var option in dateOptions)
                 {
                     var displayText = option.Tag == "CustomRange" ? option.Text : $"{option.Text} ({option.Count})";
@@ -2393,13 +2488,11 @@ namespace VPM
                         DateFilterList.SelectedItem = displayText;
                     }
                 }
-
             }
             catch (Exception)
             {
             }
         }
-
         private Dictionary<string, int> GetDateFilterCounts(Dictionary<string, VarMetadata> packages)
         {
             if (packages == null)

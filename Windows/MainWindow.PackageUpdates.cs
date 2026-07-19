@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -310,7 +311,7 @@ namespace VPM
             try
             {
                 // Button removed from menu - this method is kept for compatibility
-                SetStatus("Checking for updates...");
+                SetStatus(LanguageManager.Instance.GetCodeString("Checking_For_Updates"));
                 await CheckForPackageUpdatesAsync();
                 
                 // If no updates found, return early
@@ -322,8 +323,8 @@ namespace VPM
                 // Otherwise, button shows results - open downloads window if updates available
                 if (_availableUpdatePackages == null || _availableUpdatePackages.Count == 0)
                 {
-                    CustomMessageBox.Show("No updates available.",
-                        "No Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Updates_Available"),
+                        LanguageManager.Instance.GetCodeString("No_Updates"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 
@@ -331,8 +332,8 @@ namespace VPM
                 if (string.IsNullOrEmpty(_selectedFolder))
                 {
                     CustomMessageBox.Show(
-                        "Please select a VAM root folder first.",
-                        "No Folder Selected",
+                        LanguageManager.Instance.GetCodeString("No_Folder_Selected_Message"),
+                        LanguageManager.Instance.GetCodeString("No_Folder_Selected_Title"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;
@@ -406,8 +407,10 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error opening downloads window: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string template = LanguageManager.Instance.GetCodeString("Error_Opening_Downloads_Window");
+                string message = string.Format(template, ex.Message);
+                CustomMessageBox.Show(message, 
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         

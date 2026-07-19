@@ -1,4 +1,5 @@
 ﻿using System;
+using VPM.Language;
 
 namespace VPM.Models
 {
@@ -28,24 +29,41 @@ namespace VPM.Models
         /// <summary>
         /// Gets the display name for the current filter type
         /// </summary>
+        //public string DisplayName
+        //{
+        //    get
+        //    {
+        //        return FilterType switch
+        //        {
+        //            DateFilterType.AllTime => "All Time",
+        //            DateFilterType.Today => "Today",
+        //            DateFilterType.PastWeek => "Past Week",
+        //            DateFilterType.PastMonth => "Past Month",
+        //            DateFilterType.Past3Months => "Past 3 Months",
+        //            DateFilterType.PastYear => "Past Year",
+        //            DateFilterType.CustomRange => "Custom Range",
+        //            _ => "All Time"
+        //        };
+        //    }
+        //}
+        // 替换 DisplayName 与 GetDescription 中的字符串为 LanguageManager 调用
         public string DisplayName
         {
             get
             {
                 return FilterType switch
                 {
-                    DateFilterType.AllTime => "All Time",
-                    DateFilterType.Today => "Today",
-                    DateFilterType.PastWeek => "Past Week",
-                    DateFilterType.PastMonth => "Past Month",
-                    DateFilterType.Past3Months => "Past 3 Months",
-                    DateFilterType.PastYear => "Past Year",
-                    DateFilterType.CustomRange => "Custom Range",
-                    _ => "All Time"
+                    DateFilterType.AllTime => LanguageManager.Instance.GetCodeString("DateFilter_AllTime"),
+                    DateFilterType.Today => LanguageManager.Instance.GetCodeString("DateFilter_Today"),
+                    DateFilterType.PastWeek => LanguageManager.Instance.GetCodeString("DateFilter_PastWeek"),
+                    DateFilterType.PastMonth => LanguageManager.Instance.GetCodeString("DateFilter_PastMonth"),
+                    DateFilterType.Past3Months => LanguageManager.Instance.GetCodeString("DateFilter_Past3Months"),
+                    DateFilterType.PastYear => LanguageManager.Instance.GetCodeString("DateFilter_PastYear"),
+                    DateFilterType.CustomRange => LanguageManager.Instance.GetCodeString("DateFilter_CustomRange"),
+                    _ => LanguageManager.Instance.GetCodeString("DateFilter_AllTime")
                 };
             }
         }
-
         /// <summary>
         /// Gets the date range for the current filter type
         /// </summary>
@@ -98,25 +116,46 @@ namespace VPM.Models
         /// <summary>
         /// Gets a user-friendly description of the current filter
         /// </summary>
+        //public string GetDescription()
+        //{
+        //    var (startDate, endDate) = GetDateRange();
+
+        //    return FilterType switch
+        //    {
+        //        DateFilterType.AllTime => "Showing packages from all time periods",
+        //        DateFilterType.Today => "Showing packages modified today",
+        //        DateFilterType.PastWeek => "Showing packages modified in the past 7 days",
+        //        DateFilterType.PastMonth => "Showing packages modified in the past 30 days",
+        //        DateFilterType.Past3Months => "Showing packages modified in the past 90 days",
+        //        DateFilterType.PastYear => "Showing packages modified in the past year",
+        //        DateFilterType.CustomRange when startDate.HasValue && endDate.HasValue => 
+        //            $"Showing packages from {startDate.Value:MMM dd, yyyy} to {endDate.Value:MMM dd, yyyy}",
+        //        DateFilterType.CustomRange when startDate.HasValue => 
+        //            $"Showing packages from {startDate.Value:MMM dd, yyyy} onwards",
+        //        DateFilterType.CustomRange when endDate.HasValue => 
+        //            $"Showing packages up to {endDate.Value:MMM dd, yyyy}",
+        //        _ => "Showing packages from all time periods"
+        //    };
+        //}
         public string GetDescription()
         {
             var (startDate, endDate) = GetDateRange();
 
             return FilterType switch
             {
-                DateFilterType.AllTime => "Showing packages from all time periods",
-                DateFilterType.Today => "Showing packages modified today",
-                DateFilterType.PastWeek => "Showing packages modified in the past 7 days",
-                DateFilterType.PastMonth => "Showing packages modified in the past 30 days",
-                DateFilterType.Past3Months => "Showing packages modified in the past 90 days",
-                DateFilterType.PastYear => "Showing packages modified in the past year",
-                DateFilterType.CustomRange when startDate.HasValue && endDate.HasValue => 
-                    $"Showing packages from {startDate.Value:MMM dd, yyyy} to {endDate.Value:MMM dd, yyyy}",
-                DateFilterType.CustomRange when startDate.HasValue => 
-                    $"Showing packages from {startDate.Value:MMM dd, yyyy} onwards",
-                DateFilterType.CustomRange when endDate.HasValue => 
-                    $"Showing packages up to {endDate.Value:MMM dd, yyyy}",
-                _ => "Showing packages from all time periods"
+                DateFilterType.AllTime => LanguageManager.Instance.GetCodeString("DateFilter_Desc_AllTime"),
+                DateFilterType.Today => LanguageManager.Instance.GetCodeString("DateFilter_Desc_Today"),
+                DateFilterType.PastWeek => LanguageManager.Instance.GetCodeString("DateFilter_Desc_PastWeek"),
+                DateFilterType.PastMonth => LanguageManager.Instance.GetCodeString("DateFilter_Desc_PastMonth"),
+                DateFilterType.Past3Months => LanguageManager.Instance.GetCodeString("DateFilter_Desc_Past3Months"),
+                DateFilterType.PastYear => LanguageManager.Instance.GetCodeString("DateFilter_Desc_PastYear"),
+                DateFilterType.CustomRange when startDate.HasValue && endDate.HasValue =>
+                    string.Format(LanguageManager.Instance.GetCodeString("DateFilter_Desc_CustomRange"), startDate.Value.ToString("MMM dd, yyyy"), endDate.Value.ToString("MMM dd, yyyy")),
+                DateFilterType.CustomRange when startDate.HasValue =>
+                    string.Format(LanguageManager.Instance.GetCodeString("DateFilter_Desc_CustomFrom"), startDate.Value.ToString("MMM dd, yyyy")),
+                DateFilterType.CustomRange when endDate.HasValue =>
+                    string.Format(LanguageManager.Instance.GetCodeString("DateFilter_Desc_CustomTo"), endDate.Value.ToString("MMM dd, yyyy")),
+                _ => LanguageManager.Instance.GetCodeString("DateFilter_Desc_AllTime")
             };
         }
     }

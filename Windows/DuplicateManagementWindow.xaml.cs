@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
 
@@ -728,9 +729,17 @@ namespace VPM
                 };
 
                 var selectionResult = batchSelectionWindow.ShowDialog();
+                //if (selectionResult != true)
+                //{
+                //    DarkMessageBox.Show("Duplicate fix cancelled. No files were changed.", "Fix Duplicates",
+                //        MessageBoxButton.OK, MessageBoxImage.Information);
+                //    return;
+                //}
                 if (selectionResult != true)
                 {
-                    DarkMessageBox.Show("Duplicate fix cancelled. No files were changed.", "Fix Duplicates",
+                    DarkMessageBox.Show(
+                        LanguageManager.Instance.GetCodeString("DuplicateFixCancelled") ?? "Duplicate fix cancelled. No files were changed.",
+                        LanguageManager.Instance.GetCodeString("FixDuplicates") ?? "Fix Duplicates",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }

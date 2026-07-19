@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -7,6 +7,7 @@ using System.Windows;
 using Microsoft.Web.WebView2.Core;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -256,14 +257,14 @@ namespace VPM
             // Get the selected package
             if (PackageDataGrid?.SelectedItems?.Count != 1)
             {
-                ShowHubOverviewPlaceholder("Select a single package to view Hub overview");
+                ShowHubOverviewPlaceholder(LanguageManager.Instance.GetCodeString("Select_Single_Package"));
                 return;
             }
             
             var selectedPackage = PackageDataGrid.SelectedItem as PackageItem;
             if (selectedPackage == null)
             {
-                ShowHubOverviewPlaceholder("Select a single package to view Hub overview");
+                ShowHubOverviewPlaceholder(LanguageManager.Instance.GetCodeString("Select_Single_Package"));
                 return;
             }
 
@@ -287,7 +288,10 @@ namespace VPM
             _currentHubResourceId = null;
             
             // Show loading state
-            ShowHubOverviewLoading($"Loading Hub Overview for:\n{packageGroupName}");
+            string template = LanguageManager.Instance.GetCodeString("Loading_Hub_Overview");
+            string message = string.Format(template, packageGroupName);
+            message = message.Replace("\\n", "\n"); 
+            ShowHubOverviewLoading(message);
             
             try
             {
@@ -301,14 +305,15 @@ namespace VPM
                 
                 if (detail == null || string.IsNullOrEmpty(detail.ResourceId))
                 {
-                    ShowHubOverviewPlaceholder($"Hub page not available for:\n{packageGroupName}");
+
+                    ShowHubOverviewPlaceholder(message);
                     return;
                 }
                 
                 // Validate that the returned resource actually matches our package
                 if (!ValidateHubResourceMatch(detail, packageGroupName, selectedPackage.Name))
                 {
-                    ShowHubOverviewPlaceholder($"Hub page not available for:\n{packageGroupName}");
+                    ShowHubOverviewPlaceholder(message);
                     return;
                 }
                 
@@ -325,7 +330,10 @@ namespace VPM
             {
                 if (!token.IsCancellationRequested)
                 {
-                    ShowHubOverviewError($"Can't load Hub page. Check your connection and try Retry.\n\nDetails: {ex.Message}");
+                    string template1 = LanguageManager.Instance.GetCodeString("Cant_load_Hub_page");
+                    string message1 = string.Format(template1, ex.Message);
+                    message1 = message1.Replace("\\n", "\n");
+                    ShowHubOverviewError(message1);
                 }
             }
         }
@@ -476,7 +484,7 @@ namespace VPM
         {
             if (string.IsNullOrEmpty(resourceId))
             {
-                ShowHubOverviewPlaceholder("No resource ID available");
+                ShowHubOverviewPlaceholder(LanguageManager.Instance.GetCodeString("No_Resource_ID_Available"));
                 return;
             }
             
@@ -487,7 +495,7 @@ namespace VPM
                 
                 if (!_hubOverviewWebViewInitialized)
                 {
-                    ShowHubOverviewError("WebView2 is not available. Please install the WebView2 Runtime.");
+                    ShowHubOverviewError(LanguageManager.Instance.GetCodeString("WebView2_Not_Available"));
                     return;
                 }
             }
@@ -504,7 +512,10 @@ namespace VPM
                 HubOverviewPlaceholder.Visibility = Visibility.Collapsed;
                 if (HubOverviewLoadingBannerText != null)
                 {
-                    HubOverviewLoadingBannerText.Text = $"Loading Hub Overview for:\n{_currentHubPackageName}";
+                    string template = LanguageManager.Instance.GetCodeString("Loading_Hub_Overview");
+                    string message = string.Format(template, _currentHubPackageName);
+                    message = message.Replace("\\n", "\n");
+                    HubOverviewLoadingBannerText.Text = message;
                 }
                 if (HubOverviewLoadingBanner != null)
                 {
@@ -537,7 +548,10 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                ShowHubOverviewError($"Can't load Hub page. Check your connection and try Retry.\n\nDetails: {ex.Message}");
+                string template = LanguageManager.Instance.GetCodeString("Cant_load_Hub_page");
+                string message = string.Format(template, ex.Message);
+                message = message.Replace("\\n", "\n");
+                ShowHubOverviewError(message);
             }
         }
         
@@ -603,13 +617,16 @@ namespace VPM
                 var packageGroupName = GetPackageGroupName(selectedPackage.Name);
                 if (!string.IsNullOrEmpty(packageGroupName))
                 {
-                    ShowHubOverviewLoading($"Loading Hub Overview for:\n{packageGroupName}");
+                    string template = LanguageManager.Instance.GetCodeString("Loading_Hub_Overview");
+                    string message = string.Format(template, packageGroupName);
+                    message = message.Replace("\\n", "\n");
+                    ShowHubOverviewLoading(message);
                     return;
                 }
             }
 
             // Fallback: still keep it package-oriented (selection should almost always yield a group name)
-            ShowHubOverviewLoading("Loading Hub Overview for:\n(Unknown package)");
+            ShowHubOverviewLoading(LanguageManager.Instance.GetCodeString("Loading_Hub_Overview_Unknown"));
         }
 
         private async void HubOverviewRetry_Click(object sender, RoutedEventArgs e)

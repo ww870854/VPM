@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM.Windows
 {
@@ -61,41 +62,44 @@ namespace VPM.Windows
             if (BranchComboBox.SelectedItem as string != _gitRef)
                 BranchComboBox.SelectedItem = _gitRef;
             _suppressBranchEvent = false;
-            CountsText.Text = $"Patch files: {_check.TotalFiles}   Missing: {_check.MissingFiles}   Outdated: {_check.OutdatedFiles}   Patched: {_check.PatchedFiles}";
+            string template = LanguageManager.Instance.GetCodeString("VPB_Patch_files");
+            string message = string.Format(template, _check.TotalFiles, _check.MissingFiles, _check.OutdatedFiles, _check.PatchedFiles);
+            CountsText.Text = message;
 
             MissingGrid.ItemsSource = _check.MissingDetails ?? Array.Empty<VpbPatchFileIssue>();
             OutdatedGrid.ItemsSource = _check.OutdatedDetails ?? Array.Empty<VpbPatchFileIssue>();
             PatchedGrid.ItemsSource = _check.PatchedDetails ?? Array.Empty<VpbPatchFileIssue>();
 
-            MissingTab.Header = $"Missing ({_check.MissingFiles})";
-            OutdatedTab.Header = $"Outdated ({_check.OutdatedFiles})";
-            PatchedTab.Header = $"Patched ({_check.PatchedFiles})";
+            MissingTab.Header = string.Format(LanguageManager.Instance.GetCodeString("VPB_Patch_Missing"), _check.MissingFiles);
+            OutdatedTab.Header = string.Format(LanguageManager.Instance.GetCodeString("VPB_Patch_Outdated"), _check.OutdatedFiles);
+            PatchedTab.Header = string.Format(LanguageManager.Instance.GetCodeString("VPB_Patch_Patched"), _check.PatchedFiles);
 
-            var patchStatus = "Not installed";
+
+            var patchStatus = LanguageManager.Instance.GetCodeString("VPB_Patch_Status_Not_installed");
             if (_check.Status == VpbPatchStatus.UpToDate)
-                patchStatus = "Installed";
+                patchStatus = LanguageManager.Instance.GetCodeString("VPB_Patch_Status_Installed");
             else if (_check.Status == VpbPatchStatus.NeedsUpdate)
-                patchStatus = "Outdated";
+                patchStatus = LanguageManager.Instance.GetCodeString("VPB_Patch_Status_Outdated");
 
             PatchStatusText.Text = patchStatus;
 
             if (_check.Status == VpbPatchStatus.NeedsInstall)
             {
-                PrimaryActionButton.Content = "Install Patch";
+                PrimaryActionButton.Content = LanguageManager.Instance.GetCodeString("VPB_Patch_Install_Patch");
                 PrimaryActionButton.IsEnabled = true;
                 UninstallButton.Visibility = Visibility.Collapsed;
                 ForceReinstallCheckBox.Visibility = Visibility.Visible;
             }
             else if (_check.Status == VpbPatchStatus.NeedsUpdate)
             {
-                PrimaryActionButton.Content = "Update Patch";
+                PrimaryActionButton.Content = LanguageManager.Instance.GetCodeString("VPB_Patch_Update_Patch");
                 PrimaryActionButton.IsEnabled = true;
                 UninstallButton.Visibility = Visibility.Collapsed;
                 ForceReinstallCheckBox.Visibility = Visibility.Visible;
             }
             else
             {
-                PrimaryActionButton.Content = "Update Patch";
+                PrimaryActionButton.Content = LanguageManager.Instance.GetCodeString("VPB_Patch_Update_Patch");
                 PrimaryActionButton.IsEnabled = false;
                 UninstallButton.Visibility = Visibility.Visible;
                 ForceReinstallCheckBox.Visibility = Visibility.Collapsed;
@@ -123,7 +127,7 @@ namespace VPM.Windows
 
             PrimaryActionButton.IsEnabled = !busy && _check != null && _check.Status != VpbPatchStatus.UpToDate;
             UninstallButton.IsEnabled = !busy;
-            CancelButton.Content = busy || _runCompleted ? "Close" : "Cancel";
+            CancelButton.Content = busy || _runCompleted ? LanguageManager.Instance.GetCodeString("Close_Tip") : LanguageManager.Instance.GetCodeString("VPB_Patch_Cancel");
         }
 
         private async Task RefreshCheckAsync()
@@ -215,7 +219,7 @@ namespace VPM.Windows
 
             _cts = new CancellationTokenSource();
 
-            SetBusy(true, $"Checking branch '{selected}'...");
+            SetBusy(true, string.Format(LanguageManager.Instance.GetCodeString("Checking_branch"),selected));
             try
             {
                 await RefreshCheckAsync().ConfigureAwait(true);
@@ -235,8 +239,8 @@ namespace VPM.Windows
                 finally { _suppressBranchEvent = false; }
 
                 CustomMessageBox.Show(
-                    $"Failed to check branch '{selected}':\n\n{ex.Message}",
-                    "VPB Patch Error",
+                    string.Format(LanguageManager.Instance.GetCodeString("Failed_branch"),selected,ex.Message),
+                    LanguageManager.Instance.GetCodeString("VPB_Patch_Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -250,7 +254,7 @@ namespace VPM.Windows
         {
             var force = ForceReinstallCheckBox.IsChecked == true;
             _runCompleted = false;
-            SetBusy(true, "Applying patch...");
+            SetBusy(true, LanguageManager.Instance.GetCodeString("Applying_patch"));
 
             var progress = new Progress<VpbPatcherProgress>(p =>
             {
@@ -270,18 +274,18 @@ namespace VPM.Windows
                 if (applyResult.FailedFiles is { Count: > 0 } failed)
                 {
                     var report = new StringBuilder();
-                    report.AppendLine("Some patch files could not be updated:");
+                    report.AppendLine(LanguageManager.Instance.GetCodeString("Some_patch"));
                     report.AppendLine();
                     var show = Math.Min(failed.Count, 12);
                     for (var i = 0; i < show; i++)
                         report.AppendLine($"• {failed[i].RelativePath}: {failed[i].ErrorMessage}");
                     if (failed.Count > show)
-                        report.AppendLine($"... and {failed.Count - show} more.");
+                        report.AppendLine(string.Format(LanguageManager.Instance.GetCodeString("And_more"), failed.Count - show));
                     report.AppendLine();
-                    report.AppendLine("Common causes: VaM or a plugin still has the file open (close the game and Hub), or antivirus locking the folder.");
+                    report.AppendLine(LanguageManager.Instance.GetCodeString("VPB_Patch_message"));
                     CustomMessageBox.Show(
                         report.ToString(),
-                        "VPB Patch — Partial failure",
+                        LanguageManager.Instance.GetCodeString("VPB_Patch_Partial_failure"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                 }
@@ -298,7 +302,7 @@ namespace VPM.Windows
         private async Task RunUninstallAsync()
         {
             _runCompleted = false;
-            SetBusy(true, "Uninstalling patch...");
+            SetBusy(true, LanguageManager.Instance.GetCodeString("Uninstalling_patch"));
 
             var progress = new Progress<VpbPatcherProgress>(p =>
             {
@@ -350,9 +354,11 @@ namespace VPM.Windows
             }
             catch (Exception ex)
             {
+                string message = string.Format(LanguageManager.Instance.GetCodeString("VPB_patch_failed"), ex.Message);
+                message = message.Replace("\\n", "\n");
                 CustomMessageBox.Show(
-                    $"VPB patch failed:\n\n{ex.Message}",
-                    "VPB Patch Error",
+                    message,
+                    LanguageManager.Instance.GetCodeString("VPB_Patch_Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -361,8 +367,8 @@ namespace VPM.Windows
         private async void Uninstall_Click(object sender, RoutedEventArgs e)
         {
             var confirm = CustomMessageBox.Show(
-                "This will remove VPB patch files from your VaM folder. Continue?",
-                "Uninstall VPB Patch",
+                LanguageManager.Instance.GetCodeString("Uninstall_Click_message"),
+                LanguageManager.Instance.GetCodeString("VPB_Patch_Uninstall"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -389,9 +395,11 @@ namespace VPM.Windows
             }
             catch (Exception ex)
             {
+                string message = string.Format(LanguageManager.Instance.GetCodeString("VPB_Uninstall_failed"), ex.Message);
+                message = message.Replace("\\n", "\n");
                 CustomMessageBox.Show(
-                    $"VPB uninstall failed:\n\n{ex.Message}",
-                    "VPB Patch Error",
+                    message,
+                    LanguageManager.Instance.GetCodeString("VPB_Patch_Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }

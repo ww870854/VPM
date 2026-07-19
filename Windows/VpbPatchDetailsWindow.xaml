@@ -1,8 +1,10 @@
-<Window
+﻿<Window
     x:Class="VPM.Windows.VpbPatchDetailsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="VPB Patch"
+    xmlns:local="clr-namespace:VPM"
+    xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+    Title="{Binding [VPB_Patch_Tetle], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="980"
     Height="720"
     MinWidth="820"
@@ -258,7 +260,7 @@
             FontSize="18"
             FontWeight="SemiBold"
             Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
-            Text="VPB Patch" />
+            Text="{Binding [VPB_Patch], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
         <Border
             Grid.Row="1"
@@ -286,7 +288,7 @@
                     Grid.Column="0"
                     Margin="0,0,10,0"
                     FontWeight="SemiBold"
-                    Text="Folder" />
+                    Text="{Binding [VPB_Folder], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                 <TextBlock
                     x:Name="FolderText"
                     Grid.Row="0"
@@ -299,7 +301,7 @@
                     Margin="24,0,10,0"
                     VerticalAlignment="Center"
                     FontWeight="SemiBold"
-                    Text="Branch" />
+                    Text="{Binding [VPB_Branch], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                 <ComboBox
                     x:Name="BranchComboBox"
                     Grid.Row="0"
@@ -317,7 +319,7 @@
                     Grid.Column="0"
                     Margin="0,6,10,0"
                     FontWeight="SemiBold"
-                    Text="Patch Status" />
+                    Text="{Binding [VPB_Patch_Status], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                 <TextBlock
                     x:Name="PatchStatusText"
                     Grid.Row="1"
@@ -329,7 +331,7 @@
                     Grid.Column="2"
                     Margin="24,6,10,0"
                     FontWeight="SemiBold"
-                    Text="Files" />
+                    Text="{Binding [VPB_Files], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                 <TextBlock
                     x:Name="CountsText"
                     Grid.Row="1"
@@ -342,13 +344,13 @@
                     Grid.ColumnSpan="4"
                     Margin="0,10,0,0"
                     Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
-                    Text="Outdated means the local file exists but its Git blob checksum does not match the file in the VPB GitHub patch."
+                    Text="{Binding [VPB_Patch_Text], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                     TextWrapping="Wrap" />
             </Grid>
         </Border>
 
         <TabControl Grid.Row="2">
-            <TabItem x:Name="MissingTab" Header="Missing (0)">
+            <TabItem x:Name="MissingTab" Header="{Binding [VPB_Patch_Missing], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                 <DataGrid
                     x:Name="MissingGrid"
                     AutoGenerateColumns="False"
@@ -365,28 +367,28 @@
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding RelativePath}"
-                            Header="Path" />
+                            Header="{Binding [VPB_Patch_Path], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridCheckBoxColumn
                             Width="90"
                             Binding="{Binding IsRequired}"
-                            Header="Required" />
+                            Header="{Binding [VPB_Patch_Required], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridCheckBoxColumn
                             Width="70"
                             Binding="{Binding IsDirectory}"
-                            Header="Dir" />
+                            Header="{Binding [VPB_Patch_Dir], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridTextColumn
                             Width="160"
                             Binding="{Binding Reason}"
-                            Header="Reason" />
+                            Header="{Binding [VPB_Patch_Reason], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridTextColumn
                             Width="260"
                             Binding="{Binding ExpectedSha}"
-                            Header="Expected SHA" />
+                            Header="{Binding [VPB_Patch_Expected], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
 
-            <TabItem x:Name="OutdatedTab" Header="Outdated (0)">
+            <TabItem x:Name="OutdatedTab" Header="{Binding [VPB_Patch_Outdated], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                 <DataGrid
                     x:Name="OutdatedGrid"
                     AutoGenerateColumns="False"
@@ -403,28 +405,28 @@
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding RelativePath}"
-                            Header="Path" />
+                            Header="{Binding [VPB_Patch_Path], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridCheckBoxColumn
                             Width="90"
                             Binding="{Binding IsRequired}"
-                            Header="Required" />
+                            Header="{Binding [VPB_Patch_Required], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridTextColumn
                             Width="160"
                             Binding="{Binding Reason}"
-                            Header="Reason" />
+                            Header="{Binding [VPB_Patch_Reason], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridTextColumn
                             Width="260"
                             Binding="{Binding ExpectedSha}"
-                            Header="Expected SHA" />
+                            Header="{Binding [VPB_Patch_Expected], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridTextColumn
                             Width="260"
                             Binding="{Binding LocalSha}"
-                            Header="Local SHA" />
+                            Header="{Binding [VPB_Patch_Local_SHA], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
 
-            <TabItem x:Name="PatchedTab" Header="Patched (0)">
+            <TabItem x:Name="PatchedTab" Header="{Binding [VPB_Patch_Patched], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                 <DataGrid
                     x:Name="PatchedGrid"
                     AutoGenerateColumns="False"
@@ -441,19 +443,19 @@
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding RelativePath}"
-                            Header="Path" />
+                            Header="{Binding [VPB_Patch_Path], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridCheckBoxColumn
                             Width="90"
                             Binding="{Binding IsRequired}"
-                            Header="Required" />
+                            Header="{Binding [VPB_Patch_Required], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridCheckBoxColumn
                             Width="70"
                             Binding="{Binding IsDirectory}"
-                            Header="Dir" />
+                            Header="{Binding [VPB_Patch_Dir], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <DataGridTextColumn
                             Width="260"
                             Binding="{Binding LocalSha}"
-                            Header="Local SHA" />
+                            Header="{Binding [VPB_Patch_Local_SHA], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
@@ -478,7 +480,7 @@
                     x:Name="ForceReinstallCheckBox"
                     Grid.Row="0"
                     VerticalAlignment="Center"
-                    Content="Force reinstall (overwrite all patch files)" />
+                    Content="{Binding [VPB_Patch_ForceReinstall], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                 <StackPanel
                     x:Name="ProgressPanel"
@@ -504,7 +506,7 @@
                 Margin="0,0,10,0"
                 Padding="6,6"
                 Click="CopyReport_Click"
-                Content="Copy Report" />
+                Content="{Binding [VPB_Patch_Copy_Report], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
             <Button
                 x:Name="PrimaryActionButton"
@@ -514,7 +516,7 @@
                 Margin="0,0,10,0"
                 Padding="6,6"
                 Click="PrimaryAction_Click"
-                Content="Install Patch" />
+                Content="{Binding [VPB_Patch_Install_Patch], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
             <Button
                 x:Name="UninstallButton"
@@ -524,7 +526,7 @@
                 Margin="0,0,10,0"
                 Padding="6,6"
                 Click="Uninstall_Click"
-                Content="Uninstall Patch"
+                Content="{Binding [VPB_Patch_Uninstall_Patch], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 Visibility="Collapsed" />
 
             <Button
@@ -534,7 +536,7 @@
                 MinWidth="120"
                 Padding="6,6"
                 Click="Cancel_Click"
-                Content="Cancel" />
+                Content="{Binding [VPB_Patch_Cancel], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
         </Grid>
     </Grid>
 </Window>

@@ -1,8 +1,13 @@
-<Window
+﻿<Window
     x:Class="VPM.Windows.MoveToDestinationsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Configure Move To Destinations"
+    xmlns:System="clr-namespace:System;assembly=mscorlib"
+    xmlns:local="clr-namespace:VPM"
+    xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+    xmlns:windows="clr-namespace:VPM.Windows"
+    Title="{Binding [Configure_Move_To_Destinations_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="700"
     Height="500"
     MinWidth="500"
@@ -32,16 +37,16 @@
                 FontSize="18"
                 FontWeight="Bold"
                 Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"
-                Text="📁 Move To Destinations" />
+                Text="{Binding [Configure_Move_To_Destinations_Text], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
             <TextBlock
                 FontSize="13"
                 Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
-                Text="Configure destination folders for quickly moving packages. These will appear in the right-click context menu under 'Move To'."
+                Text="{Binding [Configure_Move_To_Destinations_Description], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 TextWrapping="Wrap" />
             <CheckBox
                 x:Name="DisableMoveToConfirmationCheckBox"
                 Margin="0,10,0,0"
-                Content="Disable move confirmation dialogs"
+                Content="{Binding [Disable_Move_Confirmation_Checkbox], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
         </StackPanel>
 
@@ -103,7 +108,7 @@
                     </Style>
                 </DataGrid.RowStyle>
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Width="60" Header="Color">
+                    <DataGridTemplateColumn Width="60" Header="{Binding [Color_Header], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button
@@ -114,7 +119,7 @@
                                     BorderThickness="1"
                                     Click="ColorPickerButton_Click"
                                     Cursor="Hand"
-                                    ToolTip="Click to change status color">
+                                    ToolTip="{Binding [Click_to_change_status_color_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
                                             <Border
@@ -136,14 +141,14 @@
                             <Style TargetType="CheckBox">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="ToolTip" Value="Show this destination in the context menu" />
+                                <Setter Property="ToolTip" Value="{Binding [menu_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </Style>
                         </DataGridCheckBoxColumn.ElementStyle>
                     </DataGridCheckBoxColumn>
                     <DataGridTextColumn
                         Width="100"
                         Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                        Header="Name">
+                        Header="{Binding [Name_Header], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center" />
@@ -155,7 +160,7 @@
                     <DataGridTextColumn
                         Width="*"
                         Binding="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
-                        Header="Path"
+                        Header="{Binding [Path_Header], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                         IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
@@ -168,19 +173,19 @@
                     <DataGridCheckBoxColumn
                         Width="60"
                         Binding="{Binding ShowInMainTable, UpdateSourceTrigger=PropertyChanged}"
-                        Header="Show">
+                        Header="{Binding [Show_Header], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                         <DataGridCheckBoxColumn.ElementStyle>
                             <Style TargetType="CheckBox">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="ToolTip" Value="Show packages from this destination in main table" />
+                                <Setter Property="ToolTip" Value="{Binding [Show_Header_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </Style>
                         </DataGridCheckBoxColumn.ElementStyle>
                     </DataGridCheckBoxColumn>
                     <DataGridTextColumn
                         Width="120"
                         Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                        Header="Description">
+                        Header="{Binding [Description_Header], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextAlignment" Value="Center" />
@@ -203,14 +208,14 @@
                 Height="32"
                 Margin="0,0,10,0"
                 Click="AddButton_Click"
-                Content="➕ Add" />
+                Content="{Binding [Add_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
             <Button
                 x:Name="EditButton"
                 Width="80"
                 Height="32"
                 Margin="0,0,10,0"
                 Click="EditButton_Click"
-                Content="✏️ Edit"
+                Content="{Binding [Edit_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 IsEnabled="False" />
             <Button
                 x:Name="RemoveButton"
@@ -218,7 +223,7 @@
                 Height="32"
                 Margin="0,0,10,0"
                 Click="RemoveButton_Click"
-                Content="🗑️ Remove"
+                Content="{Binding [Remove_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 IsEnabled="False" />
             <Button
                 x:Name="MoveUpButton"
@@ -226,14 +231,14 @@
                 Height="32"
                 Margin="0,0,10,0"
                 Click="MoveUpButton_Click"
-                Content="⬆️ Up"
+                Content="{Binding [MoveUp_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 IsEnabled="False" />
             <Button
                 x:Name="MoveDownButton"
                 Width="80"
                 Height="32"
                 Click="MoveDownButton_Click"
-                Content="⬇️ Down"
+                Content="{Binding [MoveDown_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 IsEnabled="False" />
         </StackPanel>
 
@@ -263,13 +268,13 @@
                     MinWidth="100"
                     Margin="0,0,10,0"
                     Click="SaveButton_Click"
-                    Content="💾 Save"
+                    Content="{Binding [Save_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                     FontWeight="SemiBold" />
                 <Button
                     Height="36"
                     MinWidth="80"
                     Click="CancelButton_Click"
-                    Content="Cancel" />
+                    Content="{Binding [Cancel_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
             </StackPanel>
         </Grid>
     </Grid>

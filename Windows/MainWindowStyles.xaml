@@ -1,7 +1,8 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:VPM"
+    xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
     xmlns:windows="clr-namespace:VPM.Windows">
 
     <!--  UI Constants  -->
@@ -623,7 +624,7 @@
         <Setter Property="Margin" Value="0,0,6,0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="ToolTip" Value="Toggle filter section visibility" />
+        <Setter Property="ToolTip" Value="{Binding [Filter_Toggle_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
     </Style>
 
     <!--  Filter Move Up Button Style  -->
@@ -638,7 +639,7 @@
         <Setter Property="Content" Value="▲" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="ToolTip" Value="Move filter up" />
+        <Setter Property="ToolTip" Value="{Binding [Filter_MoveUp_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
     </Style>
 
     <!--  Filter Move Down Button Style  -->
@@ -653,7 +654,7 @@
         <Setter Property="Content" Value="▼" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="ToolTip" Value="Move filter down" />
+        <Setter Property="ToolTip" Value="{Binding [Filter_MoveDown_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
     </Style>
 
     <!--  Filter Sort Button Style  -->
@@ -667,7 +668,7 @@
         <Setter Property="Content" Value="⇅" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="ToolTip" Value="Sort alphabetically" />
+        <Setter Property="ToolTip" Value="{Binding [Filter_Sort_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
     </Style>
 
     <!--  Filter Clear Button Style  -->
@@ -681,7 +682,7 @@
         <Setter Property="Content" Value="✕" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="ToolTip" Value="Clear filter" />
+        <Setter Property="ToolTip" Value="{Binding [Filter_Clear_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
         <Setter Property="Visibility" Value="Collapsed" />
     </Style>
 

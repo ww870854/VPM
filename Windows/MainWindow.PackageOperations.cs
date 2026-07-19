@@ -10,6 +10,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using VPM.Models;
 using System.IO;
+using VPM.Helpers;
+using VPM.Language;
 
 namespace VPM
 {
@@ -1541,9 +1543,10 @@ namespace VPM
                     
                     // Show Fix Duplicates button
                     FixDuplicatesButton.Visibility = Visibility.Visible;
-                    FixDuplicatesButton.Content = duplicateCount == 1
-                        ? "🔧 Fix Duplicates"
-                        : $"🔧 Fix Duplicates ({duplicateCount})";
+                    //FixDuplicatesButton.Content = duplicateCount == 1
+                    //    ? "🔧 Fix Duplicates"
+                    //    : $"🔧 Fix Duplicates ({duplicateCount})";
+                    LangUiHelper.SetButtonContentWithCount(FixDuplicatesButton, "FixDuplicates", "FixDuplicates_Count", duplicateCount);
                     return;
                 }
 
@@ -1556,9 +1559,10 @@ namespace VPM
                 if (oldVersionCount > 0)
                 {
                     ArchiveOldButton.Visibility = Visibility.Visible;
-                    ArchiveOldButton.Content = oldVersionCount == 1 
-                        ? "📦 Archive" 
-                        : $"📦 Archive ({oldVersionCount})";
+                    LangUiHelper.SetButtonContentWithCount(ArchiveOldButton, "ArchiveOld", "ArchiveOld_Count", oldVersionCount);
+                    //ArchiveOldButton.Content = oldVersionCount == 1 
+                    //    ? "📦 Archive" 
+                    //    : $"📦 Archive ({oldVersionCount})";
                 }
                 else
                 {
@@ -1652,14 +1656,18 @@ namespace VPM
                     // Show keyboard shortcut if all selected items have same status
                     if (allSameStatus && normalizedStatuses[0] == "Loaded")
                     {
-                        UnloadPackagesButton.Content = loadedCount == 1 ? "📤 Unload (Space)" : $"📤 Unload ({loadedCount}) (Ctrl+Space)";
-                        UnloadPackagesButton.ToolTip = loadedCount == 1 ? "Unload selected package" : $"Unload {loadedCount} selected packages";
+                        LangUiHelper.SetButtonContentWithCount(UnloadPackagesButton, "Unload_Single", "Unload_Multi_Shortcut", loadedCount);
+                        LangUiHelper.SetButtonContentWithCount(UnloadPackagesButton, "Tip_Unload_Single", "Tip_Unload_Multi", loadedCount);
+                        //UnloadPackagesButton.Content = loadedCount == 1 ? "📤 Unload (Space)" : $"📤 Unload ({loadedCount}) (Ctrl+Space)";
+                        //UnloadPackagesButton.ToolTip = loadedCount == 1 ? "Unload selected package" : $"Unload {loadedCount} selected packages";
                     }
                     else
                     {
                         // Mixed statuses - no keyboard shortcut
-                        UnloadPackagesButton.Content = loadedCount == 1 ? "📤 Unload" : $"📤 Unload ({loadedCount})";
-                        UnloadPackagesButton.ToolTip = $"Unload {loadedCount} loaded packages";
+                        LangUiHelper.SetButtonContentWithCount(UnloadPackagesButton, "Unload", "Unload_Multi", loadedCount);
+                        LanguageManager.Instance.GetCodeString("Tip_Unload_Loaded");
+                        //UnloadPackagesButton.Content = loadedCount == 1 ? "📤 Unload" : $"📤 Unload ({loadedCount})";
+                        //UnloadPackagesButton.ToolTip = $"Unload {loadedCount} loaded packages";
                     }
                 }
 
@@ -1785,11 +1793,15 @@ namespace VPM
                     // Show keyboard shortcut only if all selected items have same status AND DependenciesDataGrid has focus
                     if (allSameStatus && (allStatuses[0] == "Available" || allStatuses[0] == "Outdated" || allStatuses[0] == "Archived") && _dependenciesDataGridHasFocus)
                     {
-                        LoadDependenciesButton.Content = loadableCount == 1 ? "📥 Load (Space)" : $"📥 Load ({loadableCount}) (Ctrl+Space)";
+                        string template = LanguageManager.Instance.GetCodeString("Load_Btn_Text_0");
+                        string message = string.Format(template, loadableCount);
+                        LoadDependenciesButton.Content = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load_Btn_Text_1") : message;
                     }
                     else
                     {
-                        LoadDependenciesButton.Content = loadableCount == 1 ? "📥 Load" : $"📥 Load ({loadableCount})";
+                        string template = LanguageManager.Instance.GetCodeString("Load_Btn_Text_2");
+                        string message = string.Format (template, loadableCount);
+                        LoadDependenciesButton.Content = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load_Btn_Text_3") : message;
                     }
                 }
 
@@ -1800,11 +1812,15 @@ namespace VPM
                     // Show keyboard shortcut only if all selected items have same status AND DependenciesDataGrid has focus
                     if (allSameStatus && allStatuses[0] == "Loaded" && _dependenciesDataGridHasFocus)
                     {
-                        UnloadDependenciesButton.Content = loadedCount == 1 ? "📤 Unload (Space)" : $"📤 Unload ({loadedCount}) (Ctrl+Space)";
+                        string template = LanguageManager.Instance.GetCodeString("Unload_Multi_Shortcut");
+                        string message =string.Format(template, loadedCount);
+                        UnloadDependenciesButton.Content = loadedCount == 1 ? LanguageManager.Instance.GetCodeString("Unload_Single") : message;
                     }
                     else
                     {
-                        UnloadDependenciesButton.Content = loadedCount == 1 ? "📤 Unload" : $"📤 Unload ({loadedCount})";
+                        string template = LanguageManager.Instance.GetCodeString("Unload_Multi");
+                        string message = string.Format(template, loadedCount);
+                        UnloadDependenciesButton.Content = loadedCount == 1 ? LanguageManager.Instance.GetCodeString("Unload") : message;
                     }
                 }
 

@@ -4,11 +4,20 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using VPM.Models;
+using VPM.Language;
 
 namespace VPM.Services
 {
     public class FilterManager
     {
+        public enum FileSizeCategory
+        {
+            Tiny,
+            Small,
+            Medium,
+            Large
+        }
+
         // File size thresholds (in MB) - can be configured
         public double FileSizeTinyMax { get; set; } = 1;
         public double FileSizeSmallMax { get; set; } = 10;
@@ -259,8 +268,8 @@ namespace VPM.Services
             // Playlist filter (applies to both local and external)
             if (state.SelectedPlaylistFilters != null && state.SelectedPlaylistFilters.Count > 0)
             {
-                bool wantsIn = state.SelectedPlaylistFilters.Contains("In Playlists");
-                bool wantsNotIn = state.SelectedPlaylistFilters.Contains("Not in Playlists");
+                bool wantsIn = state.SelectedPlaylistFilters.Contains(LanguageManager.Instance.GetCodeString("In_Playlists"));
+                bool wantsNotIn = state.SelectedPlaylistFilters.Contains(LanguageManager.Instance.GetCodeString("Not_in_Playlists"));
 
                 // If both are selected, they cancel out
                 if (!(wantsIn && wantsNotIn))
@@ -625,27 +634,67 @@ namespace VPM.Services
             }
         }
 
+        //private bool MatchesFileSizeFilter(long fileSizeBytes, FilterState state)
+        //{
+        //    if (state.SelectedFileSizeRanges.Count == 0)
+        //        return true;
+
+        //    // Convert bytes to MB for comparison
+        //    double fileSizeMB = fileSizeBytes / (1024.0 * 1024.0);
+
+        //    foreach (var range in state.SelectedFileSizeRanges)
+        //    {
+        //        // Extract the range name without the count (e.g., "Tiny (5)" -> "Tiny")
+        //        var rangeName = range.Split('(')[0].Trim();
+
+        //        if (rangeName == LanguageManager.Instance.GetCodeString("Tiny") && fileSizeMB < state.FileSizeTinyMax)
+        //            return true;
+        //        if (rangeName == LanguageManager.Instance.GetCodeString("Small") && fileSizeMB >= state.FileSizeTinyMax && fileSizeMB < state.FileSizeSmallMax)
+        //            return true;
+        //        if (rangeName == LanguageManager.Instance.GetCodeString("Medium") && fileSizeMB >= state.FileSizeSmallMax && fileSizeMB < state.FileSizeMediumMax)
+        //            return true;
+        //        if (rangeName == LanguageManager.Instance.GetCodeString("Large") && fileSizeMB >= state.FileSizeMediumMax)
+        //            return true;
+        //    }
+
+        //    return false;
+        //}
         private bool MatchesFileSizeFilter(long fileSizeBytes, FilterState state)
         {
             if (state.SelectedFileSizeRanges.Count == 0)
                 return true;
 
-            // Convert bytes to MB for comparison
+            // 预加载当前语言下所有分类的标准显示文本，避免循环内重复调用资源
+            string locTiny = LanguageManager.Instance.GetCodeString("Tiny");
+            string locSmall = LanguageManager.Instance.GetCodeString("Small");
+            string locMedium = LanguageManager.Instance.GetCodeString("Medium");
+            string locLarge = LanguageManager.Instance.GetCodeString("Large");
+
+            // 把所有显示文本和对应的数值范围绑定成映射关系
+            var categoryMap = new Dictionary<string, (double MinThreshold, double MaxThreshold)>()
+    {
+        { locTiny, (double.MinValue, state.FileSizeTinyMax) },
+        { locSmall, (state.FileSizeTinyMax, state.FileSizeSmallMax) },
+        { locMedium, (state.FileSizeSmallMax, state.FileSizeMediumMax) },
+        { locLarge, (state.FileSizeMediumMax, double.MaxValue) }
+    };
+
             double fileSizeMB = fileSizeBytes / (1024.0 * 1024.0);
 
             foreach (var range in state.SelectedFileSizeRanges)
             {
-                // Extract the range name without the count (e.g., "Tiny (5)" -> "Tiny")
-                var rangeName = range.Split('(')[0].Trim();
-                
-                if (rangeName == "Tiny" && fileSizeMB < state.FileSizeTinyMax)
-                    return true;
-                if (rangeName == "Small" && fileSizeMB >= state.FileSizeTinyMax && fileSizeMB < state.FileSizeSmallMax)
-                    return true;
-                if (rangeName == "Medium" && fileSizeMB >= state.FileSizeSmallMax && fileSizeMB < state.FileSizeMediumMax)
-                    return true;
-                if (rangeName == "Large" && fileSizeMB >= state.FileSizeMediumMax)
-                    return true;
+                // 清洗输入字符串：移除括号内的计数、多余空格，拿到纯分类名
+                var cleanRangeName = range.Split('(')[0].Trim();
+
+                // 检查该分类是否在当前语言的映射表中
+                if (categoryMap.TryGetValue(cleanRangeName, out var rangeRule))
+                {
+                    // 直接用数值范围判断，完全脱离对显示文本的逻辑依赖
+                    if (fileSizeMB >= rangeRule.MinThreshold && fileSizeMB < rangeRule.MaxThreshold)
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;
@@ -888,29 +937,57 @@ namespace VPM.Services
         /// <summary>
         /// Get file size range counts from packages
         /// </summary>
+        //public Dictionary<string, int> GetFileSizeCounts(Dictionary<string, VarMetadata> packages)
+        //{
+        //    var counts = new Dictionary<string, int>
+        //    {
+        //        ["Tiny"] = 0,
+        //        ["Small"] = 0,
+        //        ["Medium"] = 0,
+        //        ["Large"] = 0
+        //    };
+
+        //    // MEMORY FIX: Iterate directly instead of creating a copy with ToList()
+        //    foreach (var package in packages.Values)
+        //    {
+        //        double fileSizeMB = package.FileSize / (1024.0 * 1024.0);
+
+        //        if (fileSizeMB < FileSizeTinyMax)
+        //            counts["Tiny"]++;
+        //        else if (fileSizeMB < FileSizeSmallMax)
+        //            counts["Small"]++;
+        //        else if (fileSizeMB < FileSizeMediumMax)
+        //            counts["Medium"]++;
+        //        else
+        //            counts["Large"]++;
+        //    }
+
+        //    return counts;
+        //}
         public Dictionary<string, int> GetFileSizeCounts(Dictionary<string, VarMetadata> packages)
         {
+            // 用枚举名生成字典Key，保证全项目统一，避免人工拼写错误
             var counts = new Dictionary<string, int>
             {
-                ["Tiny"] = 0,
-                ["Small"] = 0,
-                ["Medium"] = 0,
-                ["Large"] = 0
+                [nameof(FileSizeCategory.Tiny)] = 0,
+                [nameof(FileSizeCategory.Small)] = 0,
+                [nameof(FileSizeCategory.Medium)] = 0,
+                [nameof(FileSizeCategory.Large)] = 0
             };
 
-            // MEMORY FIX: Iterate directly instead of creating a copy with ToList()
+            // 完全保留你原有的无ToList内存优化逻辑，避免大集合时额外内存占用
             foreach (var package in packages.Values)
             {
                 double fileSizeMB = package.FileSize / (1024.0 * 1024.0);
 
                 if (fileSizeMB < FileSizeTinyMax)
-                    counts["Tiny"]++;
+                    counts[nameof(FileSizeCategory.Tiny)]++;
                 else if (fileSizeMB < FileSizeSmallMax)
-                    counts["Small"]++;
+                    counts[nameof(FileSizeCategory.Small)]++;
                 else if (fileSizeMB < FileSizeMediumMax)
-                    counts["Medium"]++;
+                    counts[nameof(FileSizeCategory.Medium)]++;
                 else
-                    counts["Large"]++;
+                    counts[nameof(FileSizeCategory.Large)]++;
             }
 
             return counts;

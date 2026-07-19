@@ -30,6 +30,7 @@ namespace VPM
 
         private void ApplyPaneVisibility(AppSettings settings)
         {
+            LanguageManager.Instance.InitLanguageAtAppStart();
             if (settings == null)
                 return;
 
@@ -48,7 +49,7 @@ namespace VPM
                 LeftPaneSplitter.Visibility = Visibility.Visible;
             if (ShowFiltersPaneMenuItem != null)
             {
-                ShowFiltersPaneMenuItem.Header = showFilters ? "Hide _Filters" : "Show _Filters";
+                ShowFiltersPaneMenuItem.Header = showFilters ? LanguageManager.Instance.GetCodeString("Hide_Filters") : LanguageManager.Instance.GetCodeString("Show_Filters");
             }
 
             // Dependencies (right)
@@ -66,7 +67,7 @@ namespace VPM
                 DepsPaneSplitter.Visibility = Visibility.Visible;
             if (ShowDependenciesPaneMenuItem != null)
             {
-                ShowDependenciesPaneMenuItem.Header = showDeps ? "Hide _Dependencies" : "Show _Dependencies";
+                ShowDependenciesPaneMenuItem.Header = showDeps ? LanguageManager.Instance.GetCodeString("Hide_Dependencies") : LanguageManager.Instance.GetCodeString("Show_Dependencies");
             }
 
             // Images (far right)
@@ -85,7 +86,7 @@ namespace VPM
 
             if (ShowImagesPaneMenuItem != null)
             {
-                ShowImagesPaneMenuItem.Header = showImages ? "Hide _Images" : "Show _Images";
+                ShowImagesPaneMenuItem.Header = showImages ? LanguageManager.Instance.GetCodeString("Hide_Images") : LanguageManager.Instance.GetCodeString("Show_Images");
             }
         }
 
@@ -282,7 +283,7 @@ namespace VPM
                 DependentsCountText.Text = "(0)";
                 ClearCategoryTabs();
                 ClearImageGrid();
-                SetStatus("No packages selected");
+                SetStatus(LanguageManager.Instance.GetCodeString("NoPackagesSelected"));
                 return;
             }
 
@@ -983,55 +984,119 @@ namespace VPM
         {
             await FixSelectedDuplicates();
         }
+        public class LanguageOption
+        {
+            public string DisplayName { get; set; } // 界面上显示的文字，如 "日本語"
+            public string CultureCode { get; set; } // 文化代码，如 "ja-JP"
+        }
+
+        // 在 LanguageManager 或主窗口类中定义支持的语言列表
+        private static readonly List<LanguageOption> SupportedLanguages = new List<LanguageOption>
+        {
+            new LanguageOption { DisplayName = "简体中文", CultureCode = "zh-CN" },
+            new LanguageOption { DisplayName = "English", CultureCode = "en-US" },
+            new LanguageOption { DisplayName = "日本語", CultureCode = "ja-JP" }, // 新增日语
+            new LanguageOption { DisplayName = "Français", CultureCode = "fr-FR" }, // 新增法语
+            new LanguageOption { DisplayName = "Deutsch", CultureCode = "de-DE" }  // 新增德语
+        };
+
         // 把异步方法调整为同步执行，避免UI线程上下文错位
+        //private void Language_ClickFromMenu()
+        //{
+        //    var selectWindow = new Window
+        //    {
+        //        Title = LanguageManager.Instance.GetCodeString("LanguageSettings"),
+        //        Width = 300,
+        //        Height = 180,
+        //        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        //        Owner = Application.Current.MainWindow,
+        //        ResizeMode = ResizeMode.NoResize,
+        //        Topmost = true // 避免弹窗被主窗口遮挡，丢失交互焦点
+        //    };
+
+        //    var stackPanel = new StackPanel { Margin = new Thickness(20) };
+
+        //    var btnChinese = new Button
+        //    {
+        //        Content = LanguageManager.Instance.GetCodeString("SwitchToChinese"),
+        //        Margin = new Thickness(0, 0, 0, 10),
+        //        Height = 35,
+        //        IsEnabled = true
+        //    };
+        //    // 切换语言后自动关闭弹窗
+        //    btnChinese.Click += (s, e) =>
+        //    {
+        //        SwitchAppLanguage("zh-CN");
+        //        PerformRefresh(isFullRefresh: true);
+        //        selectWindow.Close();
+        //    };
+
+        //    var btnEnglish = new Button
+        //    {
+        //        Content = LanguageManager.Instance.GetCodeString("SwitchToEnglish"),
+        //        Height = 35,
+        //        IsEnabled = true
+        //    };
+        //    btnEnglish.Click += (s, e) =>
+        //    {
+        //        SwitchAppLanguage("en-US");
+        //        PerformRefresh(isFullRefresh: true);
+        //        selectWindow.Close();
+        //    };
+
+        //    stackPanel.Children.Add(btnChinese);
+        //    stackPanel.Children.Add(btnEnglish);
+        //    selectWindow.Content = stackPanel;
+
+        //    // 直接同步弹出模态窗口，保证事件路由完全正常
+        //    selectWindow.ShowDialog();
+        //}
         private void Language_ClickFromMenu()
         {
             var selectWindow = new Window
             {
                 Title = LanguageManager.Instance.GetCodeString("LanguageSettings"),
                 Width = 300,
-                Height = 180,
+                // 根据语言数量动态调整高度，避免固定高度导致内容截断或留白过多
+                Height = 100 + (SupportedLanguages.Count * 45),
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Application.Current.MainWindow,
                 ResizeMode = ResizeMode.NoResize,
-                Topmost = true // 避免弹窗被主窗口遮挡，丢失交互焦点
+                Topmost = true
             };
 
             var stackPanel = new StackPanel { Margin = new Thickness(20) };
 
-            var btnChinese = new Button
+            // 遍历支持的语言列表，动态生成按钮
+            foreach (var lang in SupportedLanguages)
             {
-                Content = LanguageManager.Instance.GetCodeString("SwitchToChinese"),
-                Margin = new Thickness(0, 0, 0, 10),
-                Height = 35,
-                IsEnabled = true
-            };
-            // 切换语言后自动关闭弹窗
-            btnChinese.Click += (s, e) =>
-            {
-                SwitchAppLanguage("zh-CN");
-                selectWindow.Close();
-            };
+                var btn = new Button
+                {
+                    Content = lang.DisplayName, // 直接显示语言名称，无需翻译键（或者你也可以用 GetCodeString 获取翻译后的名称）
+                    Margin = new Thickness(0, 0, 0, 10),
+                    Height = 35,
+                    Tag = lang.CultureCode // 使用 Tag 属性存储文化代码
+                };
 
-            var btnEnglish = new Button
-            {
-                Content = LanguageManager.Instance.GetCodeString("SwitchToEnglish"),
-                Height = 35,
-                IsEnabled = true
-            };
-            btnEnglish.Click += (s, e) =>
-            {
-                SwitchAppLanguage("en-US");
-                selectWindow.Close();
-            };
+                // 统一绑定点击事件
+                btn.Click += (s, e) =>
+                {
+                    var button = s as Button;
+                    if (button != null && button.Tag is string cultureCode)
+                    {
+                        SwitchAppLanguage(cultureCode);
+                        PerformRefresh(isFullRefresh: true);
+                        selectWindow.Close();
+                    }
+                };
 
-            stackPanel.Children.Add(btnChinese);
-            stackPanel.Children.Add(btnEnglish);
+                stackPanel.Children.Add(btn);
+            }
+
             selectWindow.Content = stackPanel;
-
-            // 直接同步弹出模态窗口，保证事件路由完全正常
             selectWindow.ShowDialog();
         }
+
         private void SwitchAppLanguage(string cultureCode)
         {
             var newCulture = new CultureInfo(cultureCode);
@@ -1069,8 +1134,15 @@ namespace VPM
             // 触发LanguageManager的索引器变更通知，所有绑定到它的UI自动刷新
             LanguageManager.Instance.NotifyIndexerChanged();
 
+            // 👇 新增：语言资源更新完成后，递归刷新所有依赖动态资源的 UI 元素
+            if (Application.Current.MainWindow != null)
+            {
+                UpdateAllDependencyObjects(Application.Current.MainWindow);
+            }
+
             AppConfig.SelectedLanguage = cultureCode;
         }
+
 
         // 新增递归刷新方法，触发所有元素的动态资源重载
         private void UpdateAllDependencyObjects(DependencyObject parent)
@@ -1161,8 +1233,10 @@ namespace VPM
                 
                 if (oldVersions.Count == 0)
                 {
-                    DarkMessageBox.Show("All packages are at their latest versions.", "No old versions found", 
-                                      MessageBoxButton.OK, MessageBoxImage.Information);
+                    string message1 = LanguageManager.Instance.GetCodeString("NoOldVersionsFound");
+                    string message2 = LanguageManager.Instance.GetCodeString("NoOldVersionsFoundMessage");
+                    DarkMessageBox.Show(message1, message2, 
+                                      MessageBoxButton.OK, MessageBoxImage.Information, customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Confirm"));
                     return;
                 }
                 
@@ -1170,19 +1244,18 @@ namespace VPM
                 var packagesWithDependents = _packageManager.CheckPackagesForDependents(oldVersions);
                 var warningMessage = _packageManager.GetDependentsWarningMessage(packagesWithDependents);
                 
-                var message = $"Found {oldVersions.Count} old version package(s).\n\n" +
-                             $"These packages will be moved to:\n" +
-                             $"{Path.Combine(_selectedFolder, "ArchivedPackages", "OldPackages")}\n\n";
-                
+                string template = LanguageManager.Instance.GetCodeString("FoundOldVersions");                
+                var message = string.Format(template, oldVersions.Count, Path.Combine(_selectedFolder, "ArchivedPackages", "OldPackages"));
+                message = message.Replace("\\n", "\n");
                 if (!string.IsNullOrEmpty(warningMessage))
                 {
                     message += warningMessage + "\n";
                 }
                 
-                message += "Do you want to continue?";
+                message += LanguageManager.Instance.GetCodeString("DoYouWantToContinue");
                 
-                var result = DarkMessageBox.Show(message, "Archive Old Versions", 
-                                                MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = DarkMessageBox.Show(message, LanguageManager.Instance.GetCodeString("ArchiveOldVersions1"), 
+                                                MessageBoxButton.YesNo, MessageBoxImage.Question, customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Yes"), customBtn2Text: LanguageManager.Instance.GetCodeString("Btn_No"));
                 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -1191,8 +1264,10 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Failed to archive old versions: {ex.Message}", "Error", 
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                string template = LanguageManager.Instance.GetCodeString("FailedToArchiveOldVersions");
+                string errorMessage = string.Format(template, ex.Message);
+                DarkMessageBox.Show(errorMessage, LanguageManager.Instance.GetCodeString("Error"), 
+                                  MessageBoxButton.OK, MessageBoxImage.Error, customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Confirm"));
             }
         }
 
@@ -1495,11 +1570,144 @@ namespace VPM
             await RefreshCurrentlyDisplayedImagesAsync();
         }
 
+        //private void ConfigureFileSizeRanges_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var dialog = new Window
+        //    {
+        //        Title = "Configure File Size Filter Ranges",
+        //        Width = 450,
+        //        Height = 300,
+        //        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        //        Owner = this,
+        //        ResizeMode = ResizeMode.NoResize,
+        //        Background = this.Background
+        //    };
+
+        //    var grid = new Grid { Margin = new Thickness(20) };
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        //    // Tiny range
+        //    var tinyPanel = new StackPanel { Orientation = Orientation.Horizontal };
+        //    tinyPanel.Children.Add(new TextBlock { Text = "Tiny (0 - ", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+        //    var tinyBox = new TextBox { Width = 80, Text = _filterManager.FileSizeTinyMax.ToString("F1") };
+        //    tinyPanel.Children.Add(tinyBox);
+        //    tinyPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
+        //    Grid.SetRow(tinyPanel, 0);
+        //    grid.Children.Add(tinyPanel);
+
+        //    // Small range
+        //    var smallPanel = new StackPanel { Orientation = Orientation.Horizontal };
+        //    smallPanel.Children.Add(new TextBlock { Text = "Small (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+        //    var smallMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+        //    smallPanel.Children.Add(smallMinLabel);
+        //    smallPanel.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
+        //    var smallBox = new TextBox { Width = 80, Text = _filterManager.FileSizeSmallMax.ToString("F1") };
+        //    smallPanel.Children.Add(smallBox);
+        //    smallPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
+        //    Grid.SetRow(smallPanel, 2);
+        //    grid.Children.Add(smallPanel);
+
+        //    // Medium range
+        //    var mediumPanel = new StackPanel { Orientation = Orientation.Horizontal };
+        //    mediumPanel.Children.Add(new TextBlock { Text = "Medium (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+        //    var mediumMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+        //    mediumPanel.Children.Add(mediumMinLabel);
+        //    mediumPanel.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
+        //    var mediumBox = new TextBox { Width = 80, Text = _filterManager.FileSizeMediumMax.ToString("F1") };
+        //    mediumPanel.Children.Add(mediumBox);
+        //    mediumPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
+        //    Grid.SetRow(mediumPanel, 4);
+        //    grid.Children.Add(mediumPanel);
+
+        //    // Large range
+        //    var largePanel = new StackPanel { Orientation = Orientation.Horizontal };
+        //    largePanel.Children.Add(new TextBlock { Text = "Large (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+        //    var largeMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+        //    largePanel.Children.Add(largeMinLabel);
+        //    largePanel.Children.Add(new TextBlock { Text = " MB+)", VerticalAlignment = VerticalAlignment.Center });
+        //    Grid.SetRow(largePanel, 6);
+        //    grid.Children.Add(largePanel);
+
+        //    // Update labels when values change
+        //    Action updateLabels = () =>
+        //    {
+        //        if (double.TryParse(tinyBox.Text, out double tiny))
+        //        {
+        //            smallMinLabel.Text = tiny.ToString("F1");
+        //        }
+        //        if (double.TryParse(smallBox.Text, out double small))
+        //        {
+        //            mediumMinLabel.Text = small.ToString("F1");
+        //        }
+        //        if (double.TryParse(mediumBox.Text, out double medium))
+        //        {
+        //            largeMinLabel.Text = medium.ToString("F1");
+        //        }
+        //    };
+
+        //    tinyBox.TextChanged += (s, args) => updateLabels();
+        //    smallBox.TextChanged += (s, args) => updateLabels();
+        //    mediumBox.TextChanged += (s, args) => updateLabels();
+        //    updateLabels();
+
+        //    // Buttons
+        //    var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        //    var okButton = new Button { Content = "OK", Width = 80, Height = 30, Margin = new Thickness(0, 0, 10, 0), IsDefault = true };
+        //    var cancelButton = new Button { Content = "Cancel", Width = 80, Height = 30, IsCancel = true };
+
+        //    okButton.Click += (s, args) =>
+        //    {
+        //        if (double.TryParse(tinyBox.Text, out double tiny) &&
+        //            double.TryParse(smallBox.Text, out double small) &&
+        //            double.TryParse(mediumBox.Text, out double medium) &&
+        //            tiny > 0 && small > tiny && medium > small)
+        //        {
+        //            _settingsManager.Settings.FileSizeTinyMax = tiny;
+        //            _settingsManager.Settings.FileSizeSmallMax = small;
+        //            _settingsManager.Settings.FileSizeMediumMax = medium;
+
+        //            // Update FilterManager
+        //            _filterManager.FileSizeTinyMax = tiny;
+        //            _filterManager.FileSizeSmallMax = small;
+        //            _filterManager.FileSizeMediumMax = medium;
+
+        //            // Refresh filters
+        //            RefreshFilterLists();
+        //            ApplyFilters();
+
+        //            dialog.DialogResult = true;
+        //            dialog.Close();
+        //            SetStatus($"File size ranges updated: Tiny<{tiny}MB, Small<{small}MB, Medium<{medium}MB");
+        //        }
+        //        else
+        //        {
+        //            CustomMessageBox.Show("Please enter valid numbers where each range is larger than the previous.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        }
+        //    };
+
+        //    cancelButton.Click += (s, args) => dialog.Close();
+
+        //    buttonPanel.Children.Add(okButton);
+        //    buttonPanel.Children.Add(cancelButton);
+        //    Grid.SetRow(buttonPanel, 8);
+        //    grid.Children.Add(buttonPanel);
+
+        //    dialog.Content = grid;
+        //    dialog.ShowDialog();
+        //}
         private void ConfigureFileSizeRanges_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Window
             {
-                Title = "Configure File Size Filter Ranges",
+                Title = LanguageManager.Instance.GetCodeString("ConfigureFileSizeRanges_Title") ?? "Configure File Size Filter Ranges",
                 Width = 450,
                 Height = 300,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -1519,9 +1727,15 @@ namespace VPM
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
+            // 本地化名
+            string locTiny = LanguageManager.Instance.GetCodeString(nameof(FilterManager.FileSizeCategory.Tiny));
+            string locSmall = LanguageManager.Instance.GetCodeString(nameof(FilterManager.FileSizeCategory.Small));
+            string locMedium = LanguageManager.Instance.GetCodeString(nameof(FilterManager.FileSizeCategory.Medium));
+            string locLarge = LanguageManager.Instance.GetCodeString(nameof(FilterManager.FileSizeCategory.Large));
+
             // Tiny range
             var tinyPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            tinyPanel.Children.Add(new TextBlock { Text = "Tiny (0 - ", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+            tinyPanel.Children.Add(new TextBlock { Text = $"{locTiny} (0 - ", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
             var tinyBox = new TextBox { Width = 80, Text = _filterManager.FileSizeTinyMax.ToString("F1") };
             tinyPanel.Children.Add(tinyBox);
             tinyPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
@@ -1530,7 +1744,7 @@ namespace VPM
 
             // Small range
             var smallPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            smallPanel.Children.Add(new TextBlock { Text = "Small (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+            smallPanel.Children.Add(new TextBlock { Text = $"{locSmall} (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
             var smallMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
             smallPanel.Children.Add(smallMinLabel);
             smallPanel.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
@@ -1542,7 +1756,7 @@ namespace VPM
 
             // Medium range
             var mediumPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            mediumPanel.Children.Add(new TextBlock { Text = "Medium (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+            mediumPanel.Children.Add(new TextBlock { Text = $"{locMedium} (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
             var mediumMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
             mediumPanel.Children.Add(mediumMinLabel);
             mediumPanel.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
@@ -1554,7 +1768,7 @@ namespace VPM
 
             // Large range
             var largePanel = new StackPanel { Orientation = Orientation.Horizontal };
-            largePanel.Children.Add(new TextBlock { Text = "Large (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
+            largePanel.Children.Add(new TextBlock { Text = $"{locLarge} (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
             var largeMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
             largePanel.Children.Add(largeMinLabel);
             largePanel.Children.Add(new TextBlock { Text = " MB+)", VerticalAlignment = VerticalAlignment.Center });
@@ -1585,9 +1799,16 @@ namespace VPM
 
             // Buttons
             var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-            var okButton = new Button { Content = "OK", Width = 80, Height = 30, Margin = new Thickness(0, 0, 10, 0), IsDefault = true };
-            var cancelButton = new Button { Content = "Cancel", Width = 80, Height = 30, IsCancel = true };
-            
+            var okButton = new Button { Content = LanguageManager.Instance.GetCodeString("Btn_Confirm") ?? "OK", Width = 80, Height = 30, Margin = new Thickness(0, 0, 10, 0), IsDefault = true };
+            var cancelButton = new Button { Content = LanguageManager.Instance.GetCodeString("Cancel_1") ?? "Cancel", Width = 80, Height = 30, IsCancel = true };
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+            Grid.SetRow(buttonPanel, 8);
+            grid.Children.Add(buttonPanel);
+
+            dialog.Content = grid;
+
             okButton.Click += (s, args) =>
             {
                 if (double.TryParse(tinyBox.Text, out double tiny) &&
@@ -1598,37 +1819,30 @@ namespace VPM
                     _settingsManager.Settings.FileSizeTinyMax = tiny;
                     _settingsManager.Settings.FileSizeSmallMax = small;
                     _settingsManager.Settings.FileSizeMediumMax = medium;
-                    
+
                     // Update FilterManager
                     _filterManager.FileSizeTinyMax = tiny;
                     _filterManager.FileSizeSmallMax = small;
                     _filterManager.FileSizeMediumMax = medium;
-                    
+
                     // Refresh filters
                     RefreshFilterLists();
                     ApplyFilters();
-                    
+
                     dialog.DialogResult = true;
                     dialog.Close();
-                    SetStatus($"File size ranges updated: Tiny<{tiny}MB, Small<{small}MB, Medium<{medium}MB");
+                    SetStatus($"{LanguageManager.Instance.GetCodeString("FileSizeRangesUpdated") ?? "File size ranges updated"}: {locTiny}<{tiny}MB, {locSmall}<{small}MB, {locMedium}<{medium}MB");
                 }
                 else
                 {
-                    CustomMessageBox.Show("Please enter valid numbers where each range is larger than the previous.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("InvalidFileSizeInput") ?? "Please enter valid numbers where each range is larger than the previous.",
+                                          LanguageManager.Instance.GetCodeString("InvalidInput_Title") ?? "Invalid Input",
+                                          MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             };
-            
-            cancelButton.Click += (s, args) => dialog.Close();
-            
-            buttonPanel.Children.Add(okButton);
-            buttonPanel.Children.Add(cancelButton);
-            Grid.SetRow(buttonPanel, 8);
-            grid.Children.Add(buttonPanel);
 
-            dialog.Content = grid;
             dialog.ShowDialog();
         }
-
         private void KeyboardShortcuts_Click(object sender, RoutedEventArgs e)
         {
             CustomMessageBox.Show("Keyboard shortcuts:\n\nF5 - Refresh packages\nCtrl+F - Focus search\nCtrl+B - Build cache\nCtrl+, - Settings\nCtrl+/- - Image columns", "Keyboard Shortcuts", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1720,9 +1934,11 @@ namespace VPM
             // Check if VAR management is enabled first
             if (!Services.BrowserAssistService.IsVarManagementEnabled(_settingsManager.Settings.SelectedFolder))
             {
+                string message = LanguageManager.Instance.GetCodeString("BrowserAssistIntegrationUnavailable");
+                message = message.Replace("\\n", "\n");
                 CustomMessageBox.Show(
-                    "VAR Management is not enabled in BrowserAssist.\n\nThis integration is only useful if BrowserAssist is actively configured to manage your offloaded VARs.",
-                    "Integration Unavailable", 
+                    message,
+                    LanguageManager.Instance.GetCodeString("BrowserAssistIntegrationUnavailable_Title"), 
                     MessageBoxButton.OK, 
                     MessageBoxImage.Information);
                 
@@ -3484,7 +3700,8 @@ namespace VPM
                 
                 if (selectedPackages.Count == 0)
                 {
-                    PackageInfoTextBlock.Text = "No packages selected";
+                    LanguageManager.Instance.InitLanguageAtAppStart();
+                    PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
                     
                     // Clear images when no packages are selected
                     PreviewImages.Clear();
@@ -3559,9 +3776,10 @@ namespace VPM
                 
                 if (selectedPackages.Count == 0)
                 {
+                    LanguageManager.Instance.InitLanguageAtAppStart();
                     // Clear images when no selection
                     PreviewImages.Clear();
-                    PackageInfoTextBlock.Text = "No packages selected";
+                    PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
                     ClearDependenciesDisplay();
                     ClearCategoryTabs();
                     
@@ -5437,7 +5655,24 @@ namespace VPM
                     "Launch Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        
+        /// <summary>
+        /// 执行包刷新的核心逻辑
+        /// </summary>
+        /// <param name="isFullRefresh">是否强制全量刷新</param>
+        private void PerformRefresh(bool isFullRefresh = false)
+        {
+            if (isFullRefresh)
+            {
+                SetStatus("Full refresh requested...");
+                // 假设 RefreshPackages 是执行具体业务逻辑的方法
+                RefreshPackages();
+            }
+            else
+            {
+                // 默认增量刷新逻辑
+                RefreshPackages();
+            }
+        }
         /// <summary>
         /// Handles the Refresh Packages button click in the filter panel
         /// Hold Shift for full refresh, otherwise uses incremental refresh
@@ -5445,15 +5680,17 @@ namespace VPM
         private void RefreshPackagesButton_Click(object sender, RoutedEventArgs e)
         {
             // Hold Shift for full refresh, otherwise use incremental
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-            {
-                SetStatus("Full refresh requested...");
-                RefreshPackages();
-            }
-            else
-            {
-                RefreshPackages();
-            }
+            //if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            //{
+            //    SetStatus("Full refresh requested...");
+            //    RefreshPackages();
+            //}
+            //else
+            //{
+            //    RefreshPackages();
+            //}
+            bool isShiftPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+            PerformRefresh(isShiftPressed);
         }
         
         private void ScrollHereArea_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -7541,7 +7778,7 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show("No packages selected.", "Add to Playlist",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), "Add to Playlist",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -7670,7 +7907,7 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show("No packages selected.", "Move To",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), "Move To",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }

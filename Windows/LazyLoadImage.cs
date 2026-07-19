@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM.Windows
 {
@@ -227,7 +228,7 @@ namespace VPM.Windows
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Margin = new Thickness(0, 0, 12, 12),
                 Visibility = Visibility.Collapsed, // Start hidden, will be shown by SetExtractionState
-                ToolTip = "Extract files from archive",
+                ToolTip = LanguageManager.Instance.GetCodeString("ExtractFilesFromArchive"),
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Colors.Transparent),
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -256,7 +257,7 @@ namespace VPM.Windows
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(12, 0, 0, 12),
                 Visibility = Visibility.Collapsed,
-                ToolTip = "Remove extracted files",
+                ToolTip = LanguageManager.Instance.GetCodeString("RemoveExtractedFiles"),
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Colors.Transparent),
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -576,6 +577,103 @@ namespace VPM.Windows
         /// <summary>
         /// Updates the extract button state (shows button or checkmark)
         /// </summary>
+        //public void SetExtractionState(bool isExtracted)
+        //{
+        //    try
+        //    {
+        //        // Don't set IsExtracted here - it's already set by the binding or caller
+        //        // Setting it again would cause a loop
+        //        Dispatcher.Invoke(() =>
+        //        {
+        //            // Ensure clean state by rebuilding the grid children
+        //            EnsureSingleButtonInstances();
+
+        //            // Get category name - handle null path
+        //            var category = string.IsNullOrEmpty(InternalImagePath) 
+        //                ? "Content" 
+        //                : VarContentExtractor.GetCategoryFromPath(InternalImagePath);
+
+        //            // Clear previous content to prevent button duplication
+        //            _extractButton.Content = null;
+
+        //            // Create content with icon and text
+        //            var stackPanel = new StackPanel 
+        //            { 
+        //                Orientation = Orientation.Horizontal,
+        //                VerticalAlignment = VerticalAlignment.Center
+        //            };
+
+        //            var iconBlock = new TextBlock 
+        //            { 
+        //                Margin = new Thickness(0, 0, 6, 0),
+        //                FontWeight = FontWeights.Bold,
+        //                VerticalAlignment = VerticalAlignment.Center,
+        //                FontFamily = new FontFamily("Segoe UI Emoji, Segoe UI Symbol"),
+        //                FontSize = 12
+        //            };
+
+        //            var textBlock = new TextBlock 
+        //            { 
+        //                Text = category,
+        //                VerticalAlignment = VerticalAlignment.Center,
+        //                FontWeight = FontWeights.SemiBold,
+        //                FontSize = 12
+        //            };
+
+        //            stackPanel.Children.Add(iconBlock);
+        //            stackPanel.Children.Add(textBlock);
+
+        //            if (isExtracted)
+        //            {
+        //                // Show checkmark with label
+        //                iconBlock.Text = "✓";
+        //                _extractButton.Content = stackPanel;
+        //                // Neutral green for extracted state (not too bright)
+        //                _extractButton.Background = new SolidColorBrush(Color.FromArgb(140, 60, 120, 70)); 
+        //                string template = LanguageManager.Instance.GetCodeString("ExtractedButtonTooltip");
+        //                string BtnTooltipText = string.Format(template, category);
+        //                _extractButton.ToolTip = BtnTooltipText;
+        //                _extractButton.IsEnabled = true; // Enable button to allow opening in Explorer
+
+        //                // Show remove button
+        //                _removeButton.Visibility = Visibility.Visible;
+        //            }
+        //            else
+        //            {
+        //                // Determine icon based on category
+        //                string iconText = "📥"; // Default
+        //                if (string.Equals(category, "Hair", StringComparison.OrdinalIgnoreCase)) iconText = "✂️";
+        //                else if (string.Equals(category, "Clothing", StringComparison.OrdinalIgnoreCase)) iconText = "👕";
+        //                else if (string.Equals(category, "Skin", StringComparison.OrdinalIgnoreCase)) iconText = "🎨";
+        //                else if (string.Equals(category, "Appearance", StringComparison.OrdinalIgnoreCase)) iconText = "👤";
+        //                else if (string.Equals(category, "Scene", StringComparison.OrdinalIgnoreCase)) iconText = "🎬";
+        //                else if (string.Equals(category, "Pose", StringComparison.OrdinalIgnoreCase)) iconText = "🧍";
+
+        //                // Show extract button with icon and label
+        //                iconBlock.Text = iconText;
+        //                _extractButton.Content = stackPanel;
+        //                // Transparent gray for available state
+        //                _extractButton.Background = new SolidColorBrush(Color.FromArgb(100, 80, 80, 80));
+        //                string template = LanguageManager.Instance.GetCodeString("ExtractButtonTooltip");
+        //                string tooltipText = string.Format(template, category);
+        //                _extractButton.ToolTip = tooltipText;
+        //                _extractButton.IsEnabled = true;
+
+        //                // Hide remove button
+        //                _removeButton.Visibility = Visibility.Collapsed;
+        //            }
+
+
+        //            // Update padding for a more stylish look
+        //            _extractButton.Padding = new Thickness(12, 6, 12, 6);
+        //            _extractButton.Visibility = Visibility.Visible;
+        //        });
+        //    }
+        //    catch (Exception)
+        //    {
+        //        // Ignore errors during state update
+        //    }
+        //}
         public void SetExtractionState(bool isExtracted)
         {
             try
@@ -586,39 +684,45 @@ namespace VPM.Windows
                 {
                     // Ensure clean state by rebuilding the grid children
                     EnsureSingleButtonInstances();
-                    
+
                     // Get category name - handle null path
-                    var category = string.IsNullOrEmpty(InternalImagePath) 
-                        ? "Content" 
+                    var category = string.IsNullOrEmpty(InternalImagePath)
+                        ? "Content"
                         : VarContentExtractor.GetCategoryFromPath(InternalImagePath);
-                    
+
+                    // 👇 新增全局统一的国际化处理：把原始英文category转为本地化显示文本，全方法复用，不会遗漏
+                    string categoryLocalizedKey = $"Category_{category}";
+                    string categoryDisplayText = LanguageManager.Instance.GetCodeString(categoryLocalizedKey);
+                    // 兜底逻辑：找不到对应翻译时直接用原始category名，避免显示裸Key
+                    categoryDisplayText = string.IsNullOrWhiteSpace(categoryDisplayText) ? category : categoryDisplayText;
+
                     // Clear previous content to prevent button duplication
                     _extractButton.Content = null;
-                    
+
                     // Create content with icon and text
-                    var stackPanel = new StackPanel 
-                    { 
+                    var stackPanel = new StackPanel
+                    {
                         Orientation = Orientation.Horizontal,
                         VerticalAlignment = VerticalAlignment.Center
                     };
-                    
-                    var iconBlock = new TextBlock 
-                    { 
+
+                    var iconBlock = new TextBlock
+                    {
                         Margin = new Thickness(0, 0, 6, 0),
                         FontWeight = FontWeights.Bold,
                         VerticalAlignment = VerticalAlignment.Center,
                         FontFamily = new FontFamily("Segoe UI Emoji, Segoe UI Symbol"),
                         FontSize = 12
                     };
-                    
-                    var textBlock = new TextBlock 
-                    { 
-                        Text = category,
+
+                    var textBlock = new TextBlock
+                    {
+                        Text = categoryDisplayText, // ✅ 替换原来直接绑定原始category的硬编码，直接用本地化文本
                         VerticalAlignment = VerticalAlignment.Center,
                         FontWeight = FontWeights.SemiBold,
                         FontSize = 12
                     };
-                    
+
                     stackPanel.Children.Add(iconBlock);
                     stackPanel.Children.Add(textBlock);
 
@@ -628,8 +732,11 @@ namespace VPM.Windows
                         iconBlock.Text = "✓";
                         _extractButton.Content = stackPanel;
                         // Neutral green for extracted state (not too bright)
-                        _extractButton.Background = new SolidColorBrush(Color.FromArgb(140, 60, 120, 70)); 
-                        _extractButton.ToolTip = $"Click to open extracted {category} files in Explorer";
+                        _extractButton.Background = new SolidColorBrush(Color.FromArgb(140, 60, 120, 70));
+                        string template = LanguageManager.Instance.GetCodeString("ExtractedButtonTooltip");
+                        // ✅ tooltip如果需要显示本地化分类名，替换为categoryDisplayText；如果需要保留原始英文用于目录跳转等内部逻辑，保持原category即可
+                        string BtnTooltipText = string.Format(template, categoryDisplayText);
+                        _extractButton.ToolTip = BtnTooltipText;
                         _extractButton.IsEnabled = true; // Enable button to allow opening in Explorer
 
                         // Show remove button
@@ -637,7 +744,7 @@ namespace VPM.Windows
                     }
                     else
                     {
-                        // Determine icon based on category
+                        // Determine icon based on category 👇 保留原始英文category做内部匹配，完全不受国际化影响，不会出错
                         string iconText = "📥"; // Default
                         if (string.Equals(category, "Hair", StringComparison.OrdinalIgnoreCase)) iconText = "✂️";
                         else if (string.Equals(category, "Clothing", StringComparison.OrdinalIgnoreCase)) iconText = "👕";
@@ -645,19 +752,22 @@ namespace VPM.Windows
                         else if (string.Equals(category, "Appearance", StringComparison.OrdinalIgnoreCase)) iconText = "👤";
                         else if (string.Equals(category, "Scene", StringComparison.OrdinalIgnoreCase)) iconText = "🎬";
                         else if (string.Equals(category, "Pose", StringComparison.OrdinalIgnoreCase)) iconText = "🧍";
-                        
+
                         // Show extract button with icon and label
-                        iconBlock.Text = iconText; 
+                        iconBlock.Text = iconText;
                         _extractButton.Content = stackPanel;
                         // Transparent gray for available state
-                        _extractButton.Background = new SolidColorBrush(Color.FromArgb(100, 80, 80, 80)); 
-                        _extractButton.ToolTip = $"Extract {category} files";
+                        _extractButton.Background = new SolidColorBrush(Color.FromArgb(100, 80, 80, 80));
+                        string template = LanguageManager.Instance.GetCodeString("ExtractButtonTooltip");
+                        // ✅ tooltip同步使用本地化分类名，保持显示统一
+                        string tooltipText = string.Format(template, categoryDisplayText);
+                        _extractButton.ToolTip = tooltipText;
                         _extractButton.IsEnabled = true;
 
                         // Hide remove button
                         _removeButton.Visibility = Visibility.Collapsed;
                     }
-                    
+
                     // Update padding for a more stylish look
                     _extractButton.Padding = new Thickness(12, 6, 12, 6);
                     _extractButton.Visibility = Visibility.Visible;
@@ -668,7 +778,7 @@ namespace VPM.Windows
                 // Ignore errors during state update
             }
         }
-        
+
         /// <summary>
         /// Creates a custom button template with rounded corners and hover effects
         /// </summary>
@@ -765,7 +875,8 @@ namespace VPM.Windows
             {
                 if (string.IsNullOrWhiteSpace(InternalImagePath) || string.IsNullOrWhiteSpace(VarFilePath))
                 {
-                    MessageBox.Show("Cannot determine image location.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_Error");
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -793,7 +904,8 @@ namespace VPM.Windows
                     }
                     catch (Exception dirEx)
                     {
-                        MessageBox.Show($"Cannot create temporary directory: {dirEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_TempDirError");
+                        MessageBox.Show($"{message}: {dirEx.Message}", LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -814,7 +926,9 @@ namespace VPM.Windows
                     }
                     catch (Exception saveEx)
                     {
-                        MessageBox.Show($"Failed to save image to temporary location: {saveEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_SaveError");
+                        string message = string.Format(template, saveEx.Message);
+                        MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -828,7 +942,8 @@ namespace VPM.Windows
                     }
                     catch (OperationCanceledException)
                     {
-                        MessageBox.Show("Image loading timed out.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_LoadTimeout");
+                        MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     
@@ -846,26 +961,32 @@ namespace VPM.Windows
                         }
                         catch (Exception saveEx)
                         {
-                            MessageBox.Show($"Failed to save image to temporary location: {saveEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_SaveError");
+                            string message = string.Format(template, saveEx.Message);
+                            MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Failed to load image.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_LoadFailed");
+                        MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Cannot load image.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_NoImage");
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 // Verify the file was created before trying to open it
                 if (!File.Exists(tempFilePath))
                 {
-                    MessageBox.Show($"Failed to create temporary image file at: {tempFilePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_TempFileCreationFailed");
+                    string message = string.Format(template, tempFilePath);
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -880,12 +1001,16 @@ namespace VPM.Windows
                 }
                 catch (Exception processEx)
                 {
-                    MessageBox.Show($"Failed to open image viewer: {processEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_ProcessStartFailed");
+                    string message = string.Format(template, processEx.Message);
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to open image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_UnexpectedError");
+                string message = string.Format(template, ex.Message);
+                MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

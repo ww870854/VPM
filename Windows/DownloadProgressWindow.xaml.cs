@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
+using VPM.Language;
 
 namespace VPM.Windows
 {
@@ -53,10 +54,10 @@ namespace VPM.Windows
                 var item = new DownloadItemViewModel
                 {
                     PackageName = packageName,
-                    StatusText = "Queued",
+                    StatusText = LanguageManager.Instance.GetCodeString("Queued"),
                     StatusColor = Brushes.Gray,
                     Progress = 0,
-                    ProgressText = "Waiting to start..."
+                    ProgressText = LanguageManager.Instance.GetCodeString("Waiting_to_start")
                 };
                 
                 _downloadItems.Add(item);
@@ -75,8 +76,8 @@ namespace VPM.Windows
             return Dispatcher.Invoke(() =>
             {
                 return _downloadItems.Count(d => 
-                    d.StatusText == "Queued" || 
-                    d.StatusText == "Downloading");
+                    d.StatusText == LanguageManager.Instance.GetCodeString("Queued") || 
+                    d.StatusText == LanguageManager.Instance.GetCodeString("Downloading"));
             });
         }
         
@@ -97,7 +98,7 @@ namespace VPM.Windows
                         GetBaseName(d.PackageName).Equals(baseName, StringComparison.OrdinalIgnoreCase));
                 }
                 
-                return item?.StatusText == "Cancelled";
+                return item?.StatusText == LanguageManager.Instance.GetCodeString("Cancelled");
             });
         }
         
@@ -129,17 +130,19 @@ namespace VPM.Windows
                 if (item != null)
                 {
                     // If item is cancelled or already completed, ignore progress updates
-                    if (item.StatusText == "Cancelled" || item.StatusText.Contains("Completed") || item.StatusText.Contains("Failed"))
+                    if (item.StatusText == LanguageManager.Instance.GetCodeString("Cancelled") || item.StatusText.Contains(LanguageManager.Instance.GetCodeString("Completed")) || item.StatusText.Contains(LanguageManager.Instance.GetCodeString("Failed")))
                     {
                         return;
                     }
                     
-                    item.StatusText = "Downloading";
+                    item.StatusText = LanguageManager.Instance.GetCodeString("Downloading");
                     item.StatusColor = new SolidColorBrush(Color.FromRgb(3, 169, 244)); // Light blue
                     
                     var mbDownloaded = downloadedBytes / (1024.0 * 1024.0);
                     var sourceText = !string.IsNullOrEmpty(downloadSource) ? $" (*{downloadSource})" : "";
-                    item.ProgressText = $"{mbDownloaded:F1} MB downloaded...{sourceText}";
+                    string template = LanguageManager.Instance.GetCodeString("Downloading_size");
+                    string message = string.Format(template, mbDownloaded, sourceText);
+                    item.ProgressText = message;
                     
                     DownloadCountChanged?.Invoke(this, EventArgs.Empty);
                 }
@@ -178,7 +181,7 @@ namespace VPM.Windows
                 if (item != null)
                 {
                     // If item is already cancelled, ignore completion events
-                    if (item.StatusText == "Cancelled")
+                    if (item.StatusText == LanguageManager.Instance.GetCodeString("Cancelled"))
                     {
                         // Download was cancelled by user, ignore this completion event
                         return;
@@ -186,15 +189,15 @@ namespace VPM.Windows
                     
                     if (success)
                     {
-                        item.StatusText = "✓ Completed";
+                        item.StatusText = LanguageManager.Instance.GetCodeString("Completed");
                         item.StatusColor = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Green
-                        item.ProgressText = message ?? "Download completed successfully";
+                        item.ProgressText = message ?? LanguageManager.Instance.GetCodeString("Downloading_success");
                     }
                     else
                     {
-                        item.StatusText = "✗ Failed";
+                        item.StatusText = LanguageManager.Instance.GetCodeString("Failed");
                         item.StatusColor = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Red
-                        item.ProgressText = message ?? "Download failed";
+                        item.ProgressText = message ?? LanguageManager.Instance.GetCodeString("Download_failed");
                     }
                     
                     // Hide cancel button when completed/failed
@@ -248,11 +251,11 @@ namespace VPM.Windows
             Dispatcher.BeginInvoke(() =>
             {
                 var item = _downloadItems.FirstOrDefault(d => d.PackageName.Equals(packageName, StringComparison.OrdinalIgnoreCase));
-                if (item != null && item.StatusText != "✓ Completed" && item.StatusText != "✗ Failed")
+                if (item != null && item.StatusText != LanguageManager.Instance.GetCodeString("Completed") && item.StatusText != LanguageManager.Instance.GetCodeString("Failed"))
                 {
-                    item.StatusText = "Cancelled";
+                    item.StatusText = LanguageManager.Instance.GetCodeString("Cancelled");
                     item.StatusColor = Brushes.Orange;
-                    item.ProgressText = "Download cancelled";
+                    item.ProgressText = LanguageManager.Instance.GetCodeString("Download_cancelled");
                     item.CancelButtonVisibility = Visibility.Collapsed;
                     
                     _completedCount++;
@@ -263,22 +266,28 @@ namespace VPM.Windows
 
         private void UpdateSummary()
         {
-            var successCount = _downloadItems.Count(d => d.StatusText == "✓ Completed");
-            var failedCount = _downloadItems.Count(d => d.StatusText == "✗ Failed");
-            var cancelledCount = _downloadItems.Count(d => d.StatusText == "Cancelled");
-            var downloadingCount = _downloadItems.Count(d => d.StatusText == "Downloading");
+            var successCount = _downloadItems.Count(d => d.StatusText == LanguageManager.Instance.GetCodeString("Completed"));
+            var failedCount = _downloadItems.Count(d => d.StatusText == LanguageManager.Instance.GetCodeString("Failed"));
+            var cancelledCount = _downloadItems.Count(d => d.StatusText == LanguageManager.Instance.GetCodeString("Cancelled"));
+            var downloadingCount = _downloadItems.Count(d => d.StatusText == LanguageManager.Instance.GetCodeString("Downloading"));
             
             if (downloadingCount > 0)
             {
-                SummaryText.Text = $"Downloading {downloadingCount} package(s)... ({_completedCount} / {_totalCount} completed)";
+                string template = LanguageManager.Instance.GetCodeString("Downloading_package");
+                string message = string.Format("",downloadingCount, _completedCount, _totalCount);
+                SummaryText.Text = message;
             }
             else if (_completedCount >= _totalCount && _totalCount > 0)
             {
-                SummaryText.Text = $"All downloads completed! ({successCount} successful, {failedCount} failed, {cancelledCount} cancelled)";
+                string template = LanguageManager.Instance.GetCodeString("All_downloads_completed");
+                string message = string.Format(template, successCount, failedCount, cancelledCount);
+                SummaryText.Text = message;
             }
             else
             {
-                SummaryText.Text = $"Preparing downloads... ({_completedCount} / {_totalCount} completed)";
+                string template = LanguageManager.Instance.GetCodeString("");
+                string message = string.Format(template, _completedCount, _totalCount);
+                SummaryText.Text = message;
             }
         }
         
@@ -286,13 +295,13 @@ namespace VPM.Windows
         {
             // Show Cancel All button only if there are packages and some are in progress
             var hasActiveDownloads = _downloadItems.Any(d => 
-                d.StatusText == "Queued" || 
-                d.StatusText == "Downloading");
+                d.StatusText == LanguageManager.Instance.GetCodeString("Queued") || 
+                d.StatusText == LanguageManager.Instance.GetCodeString("Downloading"));
             
             // Check if there are any completed/failed items (not just cancelled)
             var hasCompletedOrFailed = _downloadItems.Any(d => 
-                d.StatusText == "✓ Completed" || 
-                d.StatusText == "✗ Failed");
+                d.StatusText == LanguageManager.Instance.GetCodeString("Completed") || 
+                d.StatusText == LanguageManager.Instance.GetCodeString("Failed"));
             
             // Show button if: active downloads OR (all completed AND has completed/failed items, not just cancelled)
             CancelAllButton.Visibility = (_downloadItems.Count > 0 && (hasActiveDownloads || (_allCompleted && hasCompletedOrFailed))) 
@@ -303,7 +312,7 @@ namespace VPM.Windows
         private void OnAllDownloadsCompleted()
         {
             _allCompleted = true;
-            CancelAllButton.Content = "Clear Completed";
+            CancelAllButton.Content = LanguageManager.Instance.GetCodeString("Clear_Completed");
             CancelAllButton.IsEnabled = true;
             UpdateCancelButtonVisibility();
         }
@@ -311,13 +320,13 @@ namespace VPM.Windows
         private void CancelAllButton_Click(object sender, RoutedEventArgs e)
         {
             // Check if button says "Clear Completed" (all downloads done)
-            if (CancelAllButton.Content.ToString() == "Clear Completed")
+            if (CancelAllButton.Content.ToString() == LanguageManager.Instance.GetCodeString("Clear_Completed"))
             {
                 // Clear all completed/failed/cancelled items
                 var itemsToRemove = _downloadItems.Where(d => 
-                    d.StatusText == "✓ Completed" || 
-                    d.StatusText == "✗ Failed" || 
-                    d.StatusText == "Cancelled").ToList();
+                    d.StatusText == LanguageManager.Instance.GetCodeString("Completed") || 
+                    d.StatusText == LanguageManager.Instance.GetCodeString("Failed") || 
+                    d.StatusText == LanguageManager.Instance.GetCodeString("Cancelled")).ToList();
                 
                 foreach (var item in itemsToRemove)
                 {
@@ -333,7 +342,7 @@ namespace VPM.Windows
                 if (_downloadItems.Count == 0)
                 {
                     // No items left, reset to initial state
-                    CancelAllButton.Content = "Cancel All";
+                    CancelAllButton.Content = LanguageManager.Instance.GetCodeString("Cancel_all");
                     CancelAllButton.IsEnabled = true;
                     _allCompleted = false;
                     _completedCount = 0;
@@ -342,7 +351,7 @@ namespace VPM.Windows
                 else
                 {
                     // Reset button if there are still active downloads
-                    CancelAllButton.Content = "Cancel All";
+                    CancelAllButton.Content = LanguageManager.Instance.GetCodeString("Cancel_all");
                     _allCompleted = false;
                 }
             }
@@ -350,8 +359,8 @@ namespace VPM.Windows
             {
                 // Cancel all downloads
                 var result = VPM.CustomMessageBox.Show(
-                    "Are you sure you want to cancel all downloads?",
-                    "Cancel Downloads",
+                    LanguageManager.Instance.GetCodeString("Cancel_down_message"),
+                    LanguageManager.Instance.GetCodeString("Cancel_fown_title"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
                 
@@ -360,7 +369,7 @@ namespace VPM.Windows
                     _cancellationTokenSource.Cancel();
                     
                     // Mark all non-completed items as cancelled
-                    foreach (var item in _downloadItems.Where(d => d.StatusText != "✓ Completed" && d.StatusText != "✗ Failed"))
+                    foreach (var item in _downloadItems.Where(d => d.StatusText != LanguageManager.Instance.GetCodeString("Completed") && d.StatusText != LanguageManager.Instance.GetCodeString("Failed")))
                     {
                         MarkCancelled(item.PackageName);
                     }
@@ -404,9 +413,9 @@ namespace VPM.Windows
                 {
                     // Mark as cancelled (don't actually cancel the download token)
                     // Just update the UI - the download will be ignored when it tries to complete
-                    item.StatusText = "Cancelled";
+                    item.StatusText = LanguageManager.Instance.GetCodeString("Cancelled");
                     item.StatusColor = Brushes.Orange;
-                    item.ProgressText = "Download cancelled by user";
+                    item.ProgressText = LanguageManager.Instance.GetCodeString("Cncelled_by_user");
                     
                     // Hide the cancel button - no retry option
                     item.CancelButtonVisibility = Visibility.Collapsed;
@@ -450,7 +459,7 @@ namespace VPM.Windows
         private Visibility _cancelButtonVisibility = Visibility.Visible;
         private string _cancelButtonText = "✓";
         private Brush _cancelButtonColor = new SolidColorBrush(Color.FromRgb(196, 43, 28)); // Red
-        private string _cancelButtonTooltip = "Cancel download";
+        private string _cancelButtonTooltip = LanguageManager.Instance.GetCodeString("Cancel_download");
 
         public event PropertyChangedEventHandler PropertyChanged;
 

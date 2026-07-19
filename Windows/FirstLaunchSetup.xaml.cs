@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
+using VPM.Language;
 using VPM.Models;
 
 namespace VPM
@@ -14,7 +15,12 @@ namespace VPM
         public FirstLaunchSetup()
         {
             InitializeComponent();
-            
+            this.ContentRendered += (s, e) =>
+            {
+                // 程序完全渲染完成后，一次性执行语言资源全量加载刷新
+                LanguageManager.Instance.InitLanguageAtAppStart();
+            };
+
             // Try to auto-detect game folder
             TryAutoDetectGameFolder();
         }
@@ -43,11 +49,11 @@ namespace VPM
                     DetectedPathText.Text = $"📝 {_selectedPath}";
                     
                     // Update manual selection title
-                    ManualSelectionTitle.Text = "✗ Or Choose a Different Folder";
+                    ManualSelectionTitle.Text = LanguageManager.Instance.GetCodeString("OrChooseDifferentFolder");
                     
                     // Enable continue button
                     ContinueButton.IsEnabled = true;
-                    StatusText.Text = "✓ Ready to continue with detected path";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("ReadyToContinueWithDetectedPath");
                 }
                 else
                 {
@@ -65,10 +71,10 @@ namespace VPM
                             
                             AutoDetectedPanel.Visibility = Visibility.Visible;
                             DetectedPathText.Text = $"📝 {_selectedPath}";
-                            ManualSelectionTitle.Text = "✗ Or Choose a Different Folder";
+                            ManualSelectionTitle.Text = LanguageManager.Instance.GetCodeString("OrChooseDifferentFolder");
                             
                             ContinueButton.IsEnabled = true;
-                            StatusText.Text = "✓ Ready to continue with detected path";
+                            StatusText.Text = LanguageManager.Instance.GetCodeString("ReadyToContinueWithDetectedPath");
                         }
                     }
                 }
@@ -105,7 +111,7 @@ namespace VPM
             // Use FolderBrowserDialog (Windows Forms) for better folder selection
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "Select your VaM game folder (contains VaM.exe and AddonPackages)";
+                dialog.Description = LanguageManager.Instance.GetCodeString("BrowsedialogDescription");
                 dialog.ShowNewFolderButton = false;
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -122,20 +128,18 @@ namespace VPM
 
                         // Enable continue button
                         ContinueButton.IsEnabled = true;
-                        StatusText.Text = "✓ Valid game folder selected";
+                        StatusText.Text = LanguageManager.Instance.GetCodeString("BrowsedialogStatusText");
                     }
                     else
                     {
+                        string message = LanguageManager.Instance.GetCodeString("Browse_Folder_Full");
                         MessageBox.Show(
-                            "The selected folder doesn't appear to be a valid VaM game folder.\n\n" +
-                            "Please select the folder that contains:\n" +
-                            "• VaM.exe\n" +
-                            "• AddonPackages folder",
-                            "Invalid Game Folder",
+                            message,
+                            LanguageManager.Instance.GetCodeString("Browse_Folder_Title"),
                             MessageBoxButton.OK,
                             MessageBoxImage.Warning);
 
-                        StatusText.Text = "– Invalid folder selected. Please try again.";
+                        StatusText.Text = LanguageManager.Instance.GetCodeString("BrowsedialogStatusText1");
                     }
                 }
             }
@@ -145,14 +149,16 @@ namespace VPM
         {
             if (!string.IsNullOrEmpty(_selectedPath) && ValidateGameFolder(_selectedPath))
             {
+                LanguageManager.Instance.NotifyIndexerChanged();
                 DialogResult = true;
                 Close();
             }
             else
             {
+                string message = LanguageManager.Instance.GetCodeString("Continue_Full");
                 MessageBox.Show(
-                    "Please select a valid VaM game folder before continuing.",
-                    "No Folder Selected",
+                    message,
+                    LanguageManager.Instance.GetCodeString("Continue_Title"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }

@@ -1,6 +1,8 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using VPM.Language;
 using VPM.Models;
 
 namespace VPM
@@ -10,33 +12,80 @@ namespace VPM
         /// <summary>
         /// Handles date filter list selection changes
         /// </summary>
+        //private void DateFilterList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    // Prevent recursion during programmatic updates
+        //    if (_suppressSelectionEvents) return;
+
+        //    if (DateFilterList.SelectedItem is string selectedText)
+        //    {
+        //        // Extract the filter type from the display text
+        //        var filterTypeString = selectedText.Split('(')[0].Trim() switch
+        //        {
+        //            "All Time" => "AllTime",
+        //            "Today" => "Today",
+        //            "Past Week" => "PastWeek",
+        //            "Past Month" => "PastMonth",
+        //            "Past 3 Months" => "Past3Months",
+        //            "Past Year" => "PastYear",
+        //            "Custom Range..." => "CustomRange",
+        //            _ => null
+        //        };
+
+        //        if (filterTypeString != null && Enum.TryParse<DateFilterType>(filterTypeString, out var filterType))
+        //        {
+        //            // Update the filter manager
+        //            if (_filterManager != null)
+        //            {
+        //                _filterManager.DateFilter.FilterType = filterType;
+
+        //                // Show/hide custom date range panel
+        //                if (filterType == DateFilterType.CustomRange)
+        //                {
+        //                    CustomDateRangePanel.Visibility = Visibility.Visible;
+        //                }
+        //                else
+        //                {
+        //                    CustomDateRangePanel.Visibility = Visibility.Collapsed;
+        //                    // Apply filter immediately for predefined ranges
+        //                    ApplyDateFilter();
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
         private void DateFilterList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Prevent recursion during programmatic updates
             if (_suppressSelectionEvents) return;
-            
+
             if (DateFilterList.SelectedItem is string selectedText)
             {
-                // Extract the filter type from the display text
-                var filterTypeString = selectedText.Split('(')[0].Trim() switch
-                {
-                    "All Time" => "AllTime",
-                    "Today" => "Today",
-                    "Past Week" => "PastWeek",
-                    "Past Month" => "PastMonth",
-                    "Past 3 Months" => "Past3Months",
-                    "Past Year" => "PastYear",
-                    "Custom Range..." => "CustomRange",
-                    _ => null
-                };
-                
+                // Extract pure name (remove counts like " (123)")
+                var displayName = selectedText.Split('(')[0].Trim();
+
+                // Build localized => tag mapping
+                var lm = LanguageManager.Instance;
+                var nameToTag = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { lm.GetCodeString("DateFilter_AllTime"), "AllTime" },
+            { lm.GetCodeString("DateFilter_Today"), "Today" },
+            { lm.GetCodeString("DateFilter_PastWeek"), "PastWeek" },
+            { lm.GetCodeString("DateFilter_PastMonth"), "PastMonth" },
+            { lm.GetCodeString("DateFilter_Past3Months"), "Past3Months" },
+            { lm.GetCodeString("DateFilter_PastYear"), "PastYear" },
+            { lm.GetCodeString("DateFilter_CustomRange"), "CustomRange" }
+        };
+
+                nameToTag.TryGetValue(displayName, out var filterTypeString);
+
                 if (filterTypeString != null && Enum.TryParse<DateFilterType>(filterTypeString, out var filterType))
                 {
                     // Update the filter manager
                     if (_filterManager != null)
                     {
                         _filterManager.DateFilter.FilterType = filterType;
-                        
+
                         // Show/hide custom date range panel
                         if (filterType == DateFilterType.CustomRange)
                         {
@@ -52,7 +101,6 @@ namespace VPM
                 }
             }
         }
-
         /// <summary>
         /// Handles custom date range changes
         /// </summary>

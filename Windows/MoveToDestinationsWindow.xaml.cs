@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -13,6 +13,8 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
+
 
 namespace VPM.Windows
 {
@@ -28,7 +30,7 @@ namespace VPM.Windows
         {
             InitializeComponent();
             _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
-            
+
             LoadDestinations();
             UpdateStatus();
         }
@@ -76,7 +78,9 @@ namespace VPM.Windows
         private void UpdateStatus()
         {
             int enabledCount = _destinations.Count(d => d.IsEnabled);
-            StatusText.Text = $"{_destinations.Count} destination(s) configured, {enabledCount} enabled";
+            string template = LanguageManager.Instance.GetCodeString("UpdateStatus_Text");
+            string statusText = string.Format(template, _destinations.Count, enabledCount);
+            StatusText.Text = statusText;
         }
 
         private MessageBoxResult ShowDarkThemedDialog(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
@@ -153,7 +157,7 @@ namespace VPM.Windows
             {
                 var yesButton = new Button
                 {
-                    Content = "Yes",
+                    Content = LanguageManager.Instance.GetCodeString("Btn_Yes"),
                     Width = 80,
                     Height = 32,
                     Margin = new Thickness(0, 0, 10, 0)
@@ -163,7 +167,7 @@ namespace VPM.Windows
 
                 var noButton = new Button
                 {
-                    Content = "No",
+                    Content = LanguageManager.Instance.GetCodeString("Btn_No"),
                     Width = 80,
                     Height = 32
                 };
@@ -177,7 +181,7 @@ namespace VPM.Windows
             {
                 var okButton = new Button
                 {
-                    Content = "OK",
+                    Content = LanguageManager.Instance.GetCodeString("Btn_Confirm"),
                     Width = 80,
                     Height = 32
                 };
@@ -247,9 +251,11 @@ namespace VPM.Windows
         {
             if (DestinationsDataGrid.SelectedItem is MoveToDestinationViewModel selected)
             {
+                string template = LanguageManager.Instance.GetCodeString("RemoveButton_Dialog");
+                string message = string.Format(template, selected.Name);
                 var result = ShowDarkThemedDialog(
-                    $"Are you sure you want to remove the destination '{selected.Name}'?",
-                    "Confirm Removal",
+                    message,
+                    LanguageManager.Instance.GetCodeString("Confirm_Removal_Title"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
@@ -302,9 +308,10 @@ namespace VPM.Windows
             var invalidDests = _destinations.Where(d => !d.IsValid()).ToList();
             if (invalidDests.Any())
             {
+                string message = LanguageManager.Instance.GetCodeString("SaveButton_Dialog");
                 ShowDarkThemedDialog(
-                    "Some destinations have invalid names or paths. Please fix them before saving.",
-                    "Validation Error",
+                    message,
+                    LanguageManager.Instance.GetCodeString("Validation_Error_Title"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;
@@ -319,9 +326,11 @@ namespace VPM.Windows
 
             if (duplicateNames.Any())
             {
+                string template = LanguageManager.Instance.GetCodeString("DuplicateNames_Dialog");
+                string message = string.Format(template, string.Join(", ", duplicateNames));
                 ShowDarkThemedDialog(
-                    $"Duplicate destination names found: {string.Join(", ", duplicateNames)}. Please use unique names.",
-                    "Validation Error",
+                    message,
+                    LanguageManager.Instance.GetCodeString("Validation_Error_Title"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;
@@ -339,7 +348,8 @@ namespace VPM.Windows
             }
             else
             {
-                ShowDarkThemedDialog("Error: Settings manager is not available.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string message = LanguageManager.Instance.GetCodeString("SettingsManagerUnavailable_Dialog");
+                ShowDarkThemedDialog(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             
@@ -392,7 +402,7 @@ namespace VPM.Windows
 
         public ColorPickerDialog(string currentColor)
         {
-            Title = "Select Color";
+            Title = LanguageManager.Instance.GetCodeString("Select_Color_Title");
             Width = 400;
             Height = 480;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -515,7 +525,7 @@ namespace VPM.Windows
 
             // Color preview
             var previewPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            var previewLabel = new TextBlock { Text = "Selected:", Foreground = Foreground, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+            var previewLabel = new TextBlock { Text = LanguageManager.Instance.GetCodeString("Selected_Text"), Foreground = Foreground, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
             _previewBorder = new Border
             {
                 Width = 80,
@@ -554,7 +564,7 @@ namespace VPM.Windows
             var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
             var okButton = new Button
             {
-                Content = "OK",
+                Content = LanguageManager.Instance.GetCodeString("Btn_Confirm"),
                 Width = 90,
                 Height = 32,
                 Margin = new Thickness(0, 0, 10, 0),
@@ -567,7 +577,7 @@ namespace VPM.Windows
             
             var cancelButton = new Button
             {
-                Content = "Cancel",
+                Content = LanguageManager.Instance.GetCodeString("Cancel"),
                 Width = 90,
                 Height = 32,
                 Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(70, 70, 70)),
@@ -963,7 +973,7 @@ namespace VPM.Windows
 
         private void InitializeDialog(MoveToDestination existing)
         {
-            Title = existing == null ? "Add Destination" : "Edit Destination";
+            Title = existing == null ? LanguageManager.Instance.GetCodeString("Add_Destination_Title") : LanguageManager.Instance.GetCodeString("Edit_Destination_Title");
             Width = 500;
             Height = 280;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -987,7 +997,7 @@ namespace VPM.Windows
 
             // Name row
             var namePanel = new DockPanel();
-            var nameLabel = new TextBlock { Text = "Name:", Width = 80, VerticalAlignment = VerticalAlignment.Center };
+            var nameLabel = new TextBlock { Text = LanguageManager.Instance.GetCodeString("Name_Label"), Width = 80, VerticalAlignment = VerticalAlignment.Center };
             nameLabel.SetResourceReference(TextBlock.ForegroundProperty, SystemColors.ControlTextBrushKey);
             _nameTextBox = new TextBox { Text = existing?.Name ?? "", VerticalContentAlignment = VerticalAlignment.Center, Height = 28 };
             _nameTextBox.SetResourceReference(TextBox.BackgroundProperty, SystemColors.ControlBrushKey);
@@ -1001,7 +1011,7 @@ namespace VPM.Windows
 
             // Path row
             var pathPanel = new DockPanel();
-            var pathLabel = new TextBlock { Text = "Path:", Width = 80, VerticalAlignment = VerticalAlignment.Center };
+            var pathLabel = new TextBlock { Text = LanguageManager.Instance.GetCodeString("Path_Label"), Width = 80, VerticalAlignment = VerticalAlignment.Center };
             pathLabel.SetResourceReference(TextBlock.ForegroundProperty, SystemColors.ControlTextBrushKey);
             var browseButton = new Button { Content = "...", Width = 30, Height = 28, Margin = new Thickness(5, 0, 0, 0) };
             browseButton.Click += BrowseButton_Click;
@@ -1019,7 +1029,7 @@ namespace VPM.Windows
 
             // Description row
             var descPanel = new DockPanel();
-            var descLabel = new TextBlock { Text = "Description:", Width = 80, VerticalAlignment = VerticalAlignment.Center };
+            var descLabel = new TextBlock { Text = LanguageManager.Instance.GetCodeString("Description_Label"), Width = 80, VerticalAlignment = VerticalAlignment.Center };
             descLabel.SetResourceReference(TextBlock.ForegroundProperty, SystemColors.ControlTextBrushKey);
             _descriptionTextBox = new TextBox { Text = existing?.Description ?? "", VerticalContentAlignment = VerticalAlignment.Center, Height = 28 };
             _descriptionTextBox.SetResourceReference(TextBox.BackgroundProperty, SystemColors.ControlBrushKey);
@@ -1033,9 +1043,9 @@ namespace VPM.Windows
 
             // Buttons row
             var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-            var okButton = new Button { Content = "OK", Width = 80, Height = 32, Margin = new Thickness(0, 0, 10, 0) };
+            var okButton = new Button { Content = LanguageManager.Instance.GetCodeString("Btn_Confirm"), Width = 80, Height = 32, Margin = new Thickness(0, 0, 10, 0) };
             okButton.Click += OkButton_Click;
-            var cancelButton = new Button { Content = "Cancel", Width = 80, Height = 32 };
+            var cancelButton = new Button { Content = LanguageManager.Instance.GetCodeString("Cancel"), Width = 80, Height = 32 };
             cancelButton.Click += (s, e) => { DialogResult = false; Close(); };
             buttonPanel.Children.Add(okButton);
             buttonPanel.Children.Add(cancelButton);
@@ -1049,7 +1059,7 @@ namespace VPM.Windows
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog
             {
-                Description = "Select destination folder",
+                Description = LanguageManager.Instance.GetCodeString("Select_Destination_Folder"),
                 ShowNewFolderButton = true
             };
 
@@ -1074,14 +1084,16 @@ namespace VPM.Windows
         {
             if (string.IsNullOrWhiteSpace(_nameTextBox.Text))
             {
-                MessageBox.Show("Please enter a name for this destination.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                string message = LanguageManager.Instance.GetCodeString("Validation_Name_Required");
+                MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Validation_Error_Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 _nameTextBox.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_pathTextBox.Text))
             {
-                MessageBox.Show("Please enter or select a path for this destination.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                string message = LanguageManager.Instance.GetCodeString("Validation_Path_Required");
+                MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Validation_Error_Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 _pathTextBox.Focus();
                 return;
             }

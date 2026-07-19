@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -9,12 +9,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
+using static System.Net.Mime.MediaTypeNames;
 using static VPM.Models.PackageItem;
 
 namespace VPM
 {
+
     /// <summary>
     /// Filtering and search functionality for MainWindow
     /// </summary>
@@ -263,7 +266,7 @@ namespace VPM
                             {
                                 var text = ExtractFilterValue(GetListBoxItemText(item));
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "SceneDate", Label = $"Date: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "SceneDate", Label = string.Format(LanguageManager.Instance.GetCodeString("DateFilter_Date"),text) , Value = text });
                             }
                         }
                         if (SceneFileSizeFilterList?.SelectedItems?.Count > 0)
@@ -272,7 +275,7 @@ namespace VPM
                             {
                                 var text = GetListBoxItemText(item);
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "SceneFileSize", Label = $"Size: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "SceneFileSize", Label = string.Format(LanguageManager.Instance.GetCodeString("SizeFilter_Size"), text), Value = text });
                             }
                         }
 
@@ -311,7 +314,7 @@ namespace VPM
                             {
                                 var text = ExtractFilterValue(GetListBoxItemText(item));
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "PresetDate", Label = $"Date: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "PresetDate", Label = string.Format(LanguageManager.Instance.GetCodeString("DateFilter_Date"), text), Value = text });
                             }
                         }
                         if (PresetFileSizeFilterList?.SelectedItems?.Count > 0)
@@ -320,7 +323,7 @@ namespace VPM
                             {
                                 var text = GetListBoxItemText(item);
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "PresetFileSize", Label = $"Size: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "PresetFileSize", Label = string.Format(LanguageManager.Instance.GetCodeString("SizeFilter_Size"), text), Value = text });
                             }
                         }
                         if (PresetStatusFilterList?.SelectedItems?.Count > 0)
@@ -393,7 +396,7 @@ namespace VPM
                             {
                                 var text = GetListBoxItemText(item);
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "FileSize", Label = $"Size: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "FileSize", Label = string.Format(LanguageManager.Instance.GetCodeString("SizeFilter_Size"), text), Value = text });
                             }
                         }
 
@@ -440,7 +443,7 @@ namespace VPM
                         {
                             var description = _filterManager?.DateFilter != null ? _filterManager.DateFilter.GetDescription() : "Date";
                             if (!string.IsNullOrEmpty(description) && !string.Equals(description, "All Time", StringComparison.OrdinalIgnoreCase))
-                                tokens.Add(new ActiveFilterToken { Kind = "Date", Label = $"Date: {description}", Value = description });
+                                tokens.Add(new ActiveFilterToken { Kind = "Date", Label = string.Format(LanguageManager.Instance.GetCodeString("DateFilter_Date"), description), Value = description });
                         }
 
                         if (IsTextBoxActiveFilter(PackageSearchBox, null))
@@ -1673,9 +1676,26 @@ namespace VPM
 
         private void UpdateFileSizeFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveFileSizeFilter)
         {
-            var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
-            var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-            UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
+            //var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
+            //var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
+            //UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
+            var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
+
+            // 使用 FilterManager.FileSizeCategory 的 nameof 保证项目内键一致
+            var orderedRanges = new[]
+            {
+                nameof(FilterManager.FileSizeCategory.Tiny),
+                nameof(FilterManager.FileSizeCategory.Small),
+                nameof(FilterManager.FileSizeCategory.Medium),
+                nameof(FilterManager.FileSizeCategory.Large)
+            };
+
+            // 将 key -> 本地化显示文本 的转换传入 UpdateFilterListBox
+            UpdateFilterListBox(
+                FileSizeFilterList,
+                fileSizeCounts,
+                displayNameTransform: key => LanguageManager.Instance.GetCodeString(key),
+                orderedKeys: orderedRanges);
         }
 
         private void UpdateSubfoldersFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveSubfoldersFilter)
@@ -1684,6 +1704,112 @@ namespace VPM
             UpdateFilterListBox(SubfoldersFilterList, subfolderCounts);
         }
 
+        //private void UpdateDateFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveDateFilter)
+        //{
+        //    if (DateFilterList == null) return;
+
+        //    // Prevent infinite recursion by suppressing selection events
+        //    _suppressSelectionEvents = true;
+        //    try
+        //    {
+        //        var selectedItems = new List<string>();
+        //        foreach (var item in DateFilterList.SelectedItems)
+        //        {
+        //            string itemText = "";
+        //            if (item is ListBoxItem listBoxItem)
+        //            {
+        //                itemText = listBoxItem.Content?.ToString() ?? "";
+        //            }
+        //            else if (item is string stringItem)
+        //            {
+        //                itemText = stringItem;
+        //            }
+        //            else
+        //            {
+        //                itemText = item?.ToString() ?? "";
+        //            }
+        //            if (!string.IsNullOrEmpty(itemText))
+        //            {
+        //                selectedItems.Add(itemText);
+        //            }
+        //        }
+
+        //        if (hasActiveDateFilter)
+        //        {
+        //            // Hide non-selected items when date filter is active
+        //            var itemsToRemove = new List<string>();
+        //            foreach (string item in DateFilterList.Items)
+        //            {
+        //                if (!selectedItems.Contains(item))
+        //                {
+        //                    itemsToRemove.Add(item);
+        //                }
+        //            }
+
+        //            foreach (var item in itemsToRemove)
+        //            {
+        //                DateFilterList.Items.Remove(item);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Show all date filter options with counts from filtered packages
+        //            DateFilterList.Items.Clear();
+        //            var dateCounts = GetDateFilterCounts(filteredPackages);
+
+        //            // Store current selection tag
+        //            var selectedTag = "";
+        //            foreach (var item in selectedItems)
+        //            {
+        //                // Extract tag from display text or use the item directly
+        //                var parts = item.Split('(');
+        //                var baseText = parts[0].Trim();
+
+        //                selectedTag = baseText switch
+        //                {
+        //                    "All Time" => "AllTime",
+        //                    "Today" => "Today",
+        //                    "Past Week" => "PastWeek",
+        //                    "Past Month" => "PastMonth",
+        //                    "Past 3 Months" => "Past3Months",
+        //                    "Past Year" => "PastYear",
+        //                    "Custom Range..." => "CustomRange",
+        //                    _ => selectedTag
+        //                };
+
+        //                if (!string.IsNullOrEmpty(selectedTag)) break;
+        //            }
+
+        //            // Add all date filter options
+        //            var dateOptions = new[]
+        //            {
+        //                new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
+        //                new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
+        //                new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
+        //                new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
+        //                new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
+        //                new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
+        //                new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
+        //            };
+
+        //            foreach (var option in dateOptions)
+        //            {
+        //                var displayText = option.Tag == "CustomRange" ? option.Text : $"{option.Text} ({option.Count})";
+        //                DateFilterList.Items.Add(displayText);
+
+        //                // Restore selection
+        //                if (option.Tag == selectedTag)
+        //                {
+        //                    DateFilterList.SelectedItem = displayText;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    finally
+        //    {
+        //        _suppressSelectionEvents = false;
+        //    }
+        //}
         private void UpdateDateFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveDateFilter)
         {
             if (DateFilterList == null) return;
@@ -1713,76 +1839,38 @@ namespace VPM
                         selectedItems.Add(itemText);
                     }
                 }
-                
+
                 if (hasActiveDateFilter)
                 {
                     // Hide non-selected items when date filter is active
                     var itemsToRemove = new List<string>();
-                    foreach (string item in DateFilterList.Items)
+                    foreach (var rawItem in DateFilterList.Items)
                     {
-                        if (!selectedItems.Contains(item))
+                        // Normalize both sides to the part before '(' so counts do not affect comparison
+                        var itemStr = rawItem?.ToString() ?? "";
+                        var itemName = itemStr.Split('(')[0].Trim();
+
+                        bool isSelected = selectedItems.Any(si =>
                         {
-                            itemsToRemove.Add(item);
+                            var siName = si.Split('(')[0].Trim();
+                            return string.Equals(siName, itemName, StringComparison.OrdinalIgnoreCase);
+                        });
+
+                        if (!isSelected)
+                        {
+                            itemsToRemove.Add(itemStr);
                         }
                     }
-                    
-                    foreach (var item in itemsToRemove)
+
+                    foreach (string rem in itemsToRemove)
                     {
-                        DateFilterList.Items.Remove(item);
+                        DateFilterList.Items.Remove(rem);
                     }
                 }
                 else
                 {
-                    // Show all date filter options with counts from filtered packages
-                    DateFilterList.Items.Clear();
-                    var dateCounts = GetDateFilterCounts(filteredPackages);
-                    
-                    // Store current selection tag
-                    var selectedTag = "";
-                    foreach (var item in selectedItems)
-                    {
-                        // Extract tag from display text or use the item directly
-                        var parts = item.Split('(');
-                        var baseText = parts[0].Trim();
-                        
-                        selectedTag = baseText switch
-                        {
-                            "All Time" => "AllTime",
-                            "Today" => "Today", 
-                            "Past Week" => "PastWeek",
-                            "Past Month" => "PastMonth",
-                            "Past 3 Months" => "Past3Months",
-                            "Past Year" => "PastYear",
-                            "Custom Range..." => "CustomRange",
-                            _ => selectedTag
-                        };
-                        
-                        if (!string.IsNullOrEmpty(selectedTag)) break;
-                    }
-                    
-                    // Add all date filter options
-                    var dateOptions = new[]
-                    {
-                        new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
-                        new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
-                        new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
-                        new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
-                        new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
-                        new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
-                        new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
-                    };
-                    
-                    foreach (var option in dateOptions)
-                    {
-                        var displayText = option.Tag == "CustomRange" ? option.Text : $"{option.Text} ({option.Count})";
-                        DateFilterList.Items.Add(displayText);
-                        
-                        // Restore selection
-                        if (option.Tag == selectedTag)
-                        {
-                            DateFilterList.SelectedItem = displayText;
-                        }
-                    }
+                    // No active date filter => repopulate to show all options
+                    PopulateDateFilterList();
                 }
             }
             finally
@@ -1998,20 +2086,20 @@ namespace VPM
                     
                     // Add regular status counts
                     var statusCounts = _filterManager.GetStatusCounts(_packageManager.PackageMetadata);
-                    
+
                     foreach (var status in statusCounts.OrderBy(s => s.Key))
                     {
                         var displayName = status.Key.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) ? "Duplicates" : status.Key;
                         var displayText = $"{displayName} ({status.Value})";
                         StatusFilterList.Items.Add(displayText);
-                        
+
                         // Restore selection if this status was previously selected
                         if (selectedStatuses.Contains(status.Key))
                         {
                             StatusFilterList.SelectedItems.Add(displayText);
                         }
                     }
-                    
+
                     // Add version status counts
                     var versionCounts = _filterManager.GetVersionStatusCounts(_packageManager.PackageMetadata);
                     
@@ -2146,9 +2234,26 @@ namespace VPM
 
             try
             {
+                //var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
+                //var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
+                //UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
                 var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
-                var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-                UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
+
+                // 使用 FilterManager.FileSizeCategory 的 nameof 保证项目内键一致
+                var orderedRanges = new[]
+                {
+                    nameof(FilterManager.FileSizeCategory.Tiny),
+                    nameof(FilterManager.FileSizeCategory.Small),
+                    nameof(FilterManager.FileSizeCategory.Medium),
+                    nameof(FilterManager.FileSizeCategory.Large)
+                };
+
+                // 将 key -> 本地化显示文本 的转换传入 UpdateFilterListBox
+                UpdateFilterListBox(
+                    FileSizeFilterList,
+                    fileSizeCounts,
+                    displayNameTransform: key => LanguageManager.Instance.GetCodeString(key),
+                    orderedKeys: orderedRanges);
             }
             catch (Exception ex)
             {
@@ -2521,9 +2626,26 @@ namespace VPM
         /// </summary>
         private void UpdateFileSizeListCounts(Dictionary<string, VarMetadata> filteredPackages)
         {
-            var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
-            var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-            UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
+            //var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
+            //var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
+            //UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
+            var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
+
+            // 使用 FilterManager.FileSizeCategory 的 nameof 保证项目内键一致
+            var orderedRanges = new[]
+            {
+                nameof(FilterManager.FileSizeCategory.Tiny),
+                nameof(FilterManager.FileSizeCategory.Small),
+                nameof(FilterManager.FileSizeCategory.Medium),
+                nameof(FilterManager.FileSizeCategory.Large)
+            };
+
+            // 将 key -> 本地化显示文本 的转换传入 UpdateFilterListBox
+            UpdateFilterListBox(
+                FileSizeFilterList,
+                fileSizeCounts,
+                displayNameTransform: key => LanguageManager.Instance.GetCodeString(key),
+                orderedKeys: orderedRanges);
         }
 
         /// <summary>

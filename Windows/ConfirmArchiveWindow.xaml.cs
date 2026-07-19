@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -20,18 +21,21 @@ namespace VPM
             _selectedCount = selectedCount;
             _totalOldCount = totalOldCount;
             
-            var message = $"Archive {selectedCount} selected old version package(s)?\n\n" +
-                         $"These packages will be moved to:\n" +
-                         $"{destinationPath}\n\n" +
-                         $"Do you want to continue?";
-            
+            var message = LanguageManager.Instance.GetCodeString("ArchiveSelectedOld");
+            message = string.Format(message, selectedCount, destinationPath);
+            message = message.Replace("\\n", "\n");
+
             MessageTextBlock.Text = message;
             
             // Update Archive All button text
             if (totalOldCount > selectedCount)
             {
-                ArchiveAllButton.Content = $"Archive All Old ({totalOldCount})";
-                ArchiveAllButton.ToolTip = $"Archive all {totalOldCount} old version packages";
+                string template = LanguageManager.Instance.GetCodeString("ArchiveAllButton_Content");
+                string template1 = LanguageManager.Instance.GetCodeString("ArchiveAllButton_ToolTip");
+                string message1 = string.Format(template, totalOldCount);
+                string message2 = string.Format(template, totalOldCount);
+                ArchiveAllButton.Content = message1;
+                ArchiveAllButton.ToolTip = message2;
             }
             else
             {

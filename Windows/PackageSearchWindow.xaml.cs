@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,6 +15,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -78,7 +79,7 @@ namespace VPM
             ResultsDataGrid.ItemsSource = _searchResults;
 
             // Set initial title
-            Title = "Package Downloads - Ready";
+            Title = LanguageManager.Instance.GetCodeString("Package_Downloads_Ready");
 
             // Apply dark title bar
             SourceInitialized += (s, e) => ApplyDarkTitleBar();
@@ -130,11 +131,11 @@ namespace VPM
                     
                     if (_updateChecker.IsUsingLocalLinks)
                     {
-                        SetStatus($"Local links.txt loaded");
+                        SetStatus(LanguageManager.Instance.GetCodeString("Local_Links_Loaded"));
                     }
                     else
                     {
-                        SetStatus($"Hub packages loaded");
+                        SetStatus(LanguageManager.Instance.GetCodeString("Hub_Packages_Loaded"));
                     }
                 }
             }
@@ -274,7 +275,9 @@ namespace VPM
         {
             Dispatcher.Invoke(() =>
             {
-                Title = $"Package Downloads - {message}";
+                string template = LanguageManager.Instance.GetCodeString("PackageWindow_SetStatus");
+                string messageFormatted = string.Format(template, message);
+                Title = messageFormatted;
             });
         }
         
@@ -295,15 +298,21 @@ namespace VPM
                 {
                     // Get count from local links cache
                     packageCount = _updateChecker?.GetAllPackageNames()?.Count ?? 0;
-                    sourceName = "Local Links";
-                    tooltipText = $"Using local links.txt file\n{packageCount:N0} packages available";
+                    sourceName = LanguageManager.Instance.GetCodeString("PackageWindow_LocalLinks");
+                    string template = LanguageManager.Instance.GetCodeString("PackageWindow_LocalLinksTooltip");
+                    string message = string.Format(template, packageCount);
+                    message = message.Replace("\\n", "\n");
+                    tooltipText = message;
                 }
                 else
                 {
                     // Get count from Hub service
                     packageCount = _hubService?.GetPackageCount() ?? 0;
-                    sourceName = "Hub Packages";
-                    tooltipText = $"Using VaM Hub resources\n{packageCount:N0} packages available";
+                    sourceName = LanguageManager.Instance.GetCodeString("PackageWindow_HubPackages");
+                    string template = LanguageManager.Instance.GetCodeString("PackageWindow_HubPackagesTooltip");
+                    string message = string.Format(template, packageCount);
+                    message = message.Replace("\\n", "\n");
+                    tooltipText = message;
                 }
                 
                 if (packageCount > 0)
@@ -410,8 +419,10 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error processing dropped content: {ex.Message}", 
-                    "Drop Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string template = LanguageManager.Instance.GetCodeString("Error_Processing_Dropped_Content");
+                string message = string.Format(template, ex.Message);
+                CustomMessageBox.Show(message, 
+                    LanguageManager.Instance.GetCodeString("Drop_Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -440,12 +451,16 @@ namespace VPM
                     }
                     else
                     {
-                        SetStatus($"Unsupported file type: {extension}");
+                        string template = LanguageManager.Instance.GetCodeString("Unsupported_File_Type");
+                        string message = string.Format(template, extension);
+                        SetStatus(message);
                     }
                 }
                 catch (Exception ex)
                 {
-                    SetStatus($"Error reading file {Path.GetFileName(file)}: {ex.Message}");
+                    string template = LanguageManager.Instance.GetCodeString("Error_Reading_File");
+                    string message = string.Format(template, Path.GetFileName(file), ex.Message);
+                    SetStatus(message);
                 }
             }
 
@@ -456,8 +471,9 @@ namespace VPM
                 InputTextBox.Text = string.IsNullOrWhiteSpace(currentText) 
                     ? newText 
                     : currentText + "\n" + newText;
-                
-                SetStatus($"Added {packageNames.Count} package(s) from dropped files");
+                string template = LanguageManager.Instance.GetCodeString("Added_Packages_From_Drop");
+                string message = string.Format(template, packageNames.Count);
+                SetStatus(message);
             }
         }
 
@@ -587,7 +603,7 @@ namespace VPM
         {
             if (_isSearching)
             {
-                CustomMessageBox.Show("Search is already in progress.", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("Search_In_Progress"), LanguageManager.Instance.GetCodeString("Search_1"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             
@@ -599,7 +615,9 @@ namespace VPM
 
             try
             {
-                SetStatus($"Searching for {packageNames.Count} package(s)...");
+                string template = LanguageManager.Instance.GetCodeString("Searching_For_Packages");
+                string message = string.Format(template, packageNames.Count);
+                SetStatus(message);
 
                 // First, search locally
                 await SearchLocally(packageNames);
@@ -618,11 +636,15 @@ namespace VPM
 
                 if (updatesAvailableCount > 0)
                 {
-                    SetStatus($"Found: {foundCount} local ({updatesAvailableCount} updates available), {availableOnlineCount} online, {notFoundCount} not found");
+                    string template1 = LanguageManager.Instance.GetCodeString("Found_Packages_With_Updates");
+                    string message1 = string.Format(template1, foundCount, updatesAvailableCount, availableOnlineCount, notFoundCount);
+                    SetStatus(message1);
                 }
                 else
                 {
-                    SetStatus($"Found: {foundCount} local, {availableOnlineCount} online, {notFoundCount} not found");
+                    string template2 = LanguageManager.Instance.GetCodeString("Found_Packages");
+                    string message2 = string.Format(template2, foundCount, availableOnlineCount, notFoundCount);
+                    SetStatus(message2);
                 }
                 
                 // Apply filter
@@ -633,8 +655,10 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error during search: {ex.Message}", "Search Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                SetStatus("Search failed");
+                string template = LanguageManager.Instance.GetCodeString("Error_During_Search");
+                string message = string.Format(template, ex.Message);
+                CustomMessageBox.Show(message, LanguageManager.Instance.GetCodeString("Search_Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                SetStatus(LanguageManager.Instance.GetCodeString("Search_Failed"));
             }
             finally
             {
@@ -748,14 +772,16 @@ namespace VPM
                                 // Version mismatch - requested a specific version but found a different one
                                 result.IsLocal = false; 
                                 result.IsVersionMismatch = true;
-                                result.Location = "Version mismatch (local: " + ExtractVersionFromPackageName(foundPackageName) + ")";
+                                string template = LanguageManager.Instance.GetCodeString("Version_Mismatch_Local");
+                                string message = string.Format(template, ExtractVersionFromPackageName(foundPackageName));
+                                result.Location = message;
                                 result.LocalPackageName = foundPackageName;
                             }
                         }
                         else
                         {
                             result.IsLocal = false;
-                            result.Location = "Not found locally";
+                            result.Location = LanguageManager.Instance.GetCodeString("Not_found_locally");
                         }
                     }
 
@@ -809,21 +835,23 @@ namespace VPM
                 if (existingCount > 0)
                 {
                     // Source already loaded
-                    string source = usingLocalLinks ? "local links.txt" : "Hub";
-                    SetStatus($"Using {source}: {existingCount:N0} packages");
+                    string source = usingLocalLinks ? LanguageManager.Instance.GetCodeString("Local_Links") : "Hub";
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("Using_Source"), source, existingCount));
                 }
                 else
                 {
                     // Need to load package source
-                    SetStatus("Loading package source...");
+                    SetStatus(LanguageManager.Instance.GetCodeString("Loading_Package_Source"));
                     
                     bool loaded = await _updateChecker.LoadPackageSourceAsync();
 
                     if (!loaded)
                     {
-                        SetStatus("Failed to load package source");
-                        CustomMessageBox.Show("Failed to load package source.\n\nPlease check your internet connection or ensure links.txt exists.",
-                            "Source Load Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        SetStatus(LanguageManager.Instance.GetCodeString("Failed_To_Load_Package_Source"));
+                        string message = LanguageManager.Instance.GetCodeString("Failed_To_Load_Package_Source_Message");
+                        message = message.Replace("\\n", "\n");
+                        CustomMessageBox.Show(message,
+                            LanguageManager.Instance.GetCodeString("Source_Load_Failed"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     
@@ -835,14 +863,14 @@ namespace VPM
                     
                     if (packageCount == 0)
                     {
-                        SetStatus("Package source is empty");
-                        CustomMessageBox.Show("The package source is empty or could not be loaded.",
-                            "Source Empty", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        SetStatus(LanguageManager.Instance.GetCodeString("Package_Source_Empty"));
+                        CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("Package_Source_Empty_Message"),
+                            LanguageManager.Instance.GetCodeString("Source_Empty"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     
-                    string sourceName = usingLocalLinks ? "Local links" : "Hub packages";
-                    SetStatus($"{sourceName} loaded: {packageCount:N0} packages available");
+                    string sourceName = usingLocalLinks ? LanguageManager.Instance.GetCodeString("Local_Links_1") : LanguageManager.Instance.GetCodeString("Hub_Packages");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("Using_Source"), sourceName, packageCount));
                     
                     // Update the database status label
                     UpdateDatabaseStatus();
@@ -937,9 +965,9 @@ namespace VPM
                                 }
                             }
                             
-                            if (string.IsNullOrEmpty(result.Location) || result.Location == "Not found locally")
+                            if (string.IsNullOrEmpty(result.Location) || result.Location == LanguageManager.Instance.GetCodeString("Not_Found_Locally"))
                             {
-                                result.Location = "Available for download";
+                                result.Location = LanguageManager.Instance.GetCodeString("Available_For_Download");
                             }
                         });
                     }
@@ -950,7 +978,7 @@ namespace VPM
                             result.IsAvailableOnline = false;
                             if (!result.IsLocal)
                             {
-                                result.Location = "Not found anywhere";
+                                result.Location = LanguageManager.Instance.GetCodeString("Not_Found_Anywhere");
                             }
                         });
                     }
@@ -958,7 +986,9 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                SetStatus($"Online search error: {ex.Message}");
+                string template = LanguageManager.Instance.GetCodeString("Online_Search_Error");
+                string message = string.Format(template, ex.Message);
+                SetStatus(message);
             }
         }
 
@@ -979,7 +1009,9 @@ namespace VPM
             
             try
             {
-                SetStatus($"Queueing {selectedItems.Count} package(s) for download...");
+                string template = LanguageManager.Instance.GetCodeString("Queueing_Packages_For_Download");
+                string message = string.Format(template, selectedItems.Count);
+                SetStatus(message);
 
                 int queuedCount = 0;
                 for (int i = 0; i < selectedItems.Count; i++)
@@ -1079,32 +1111,34 @@ namespace VPM
                         {
                             queuedCount++;
                             item.IsDownloading = true;
-                            item.StatusText = "Queued";
+                            item.StatusText = LanguageManager.Instance.GetCodeString("Queued");
                             item.StatusColor = "#FFA500"; // Orange
-                            item.ProgressText = "Waiting in queue...";
+                            item.ProgressText = LanguageManager.Instance.GetCodeString("Waiting_In_Queue");
                             item.ProgressVisibility = Visibility.Visible;
                         }
                         else
                         {
-                            item.StatusText = "Already queued";
+                            item.StatusText = LanguageManager.Instance.GetCodeString("Already_Queued");
                             item.StatusColor = "#9E9E9E"; // Gray
                         }
                     }
                     else
                     {
-                        item.StatusText = "✗ Not found";
+                        item.StatusText = LanguageManager.Instance.GetCodeString("Not_Found_Anywhere");
                         item.StatusColor = "#F44336"; // Red
-                        item.ProgressText = "Package not in database";
+                        item.ProgressText = LanguageManager.Instance.GetCodeString("Package_Not_In_Database");
                     }
                 }
                 
-                
-                SetStatus($"Queued {_totalDownloads} package(s) for download");
+                string template1 = LanguageManager.Instance.GetCodeString("Queued_Packages_For_Download");
+                SetStatus(string.Format(template1, _totalDownloads));
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error queueing downloads: {ex.Message}", "Queue Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                SetStatus("Failed to queue downloads");
+                string template = LanguageManager.Instance.GetCodeString("Error_Queueing_Downloads");
+                string message = string.Format(template, ex.Message);
+                CustomMessageBox.Show(message, LanguageManager.Instance.GetCodeString("Queue_Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                SetStatus(LanguageManager.Instance.GetCodeString("Failed_To_Queue_Downloads"));
             }
         }
 
@@ -1123,11 +1157,13 @@ namespace VPM
                     
                 if (result != null && result.IsDownloading)
                 {
-                    result.StatusText = "Downloading";
+                    result.StatusText = LanguageManager.Instance.GetCodeString("Downloading");
                     result.StatusColor = "#03A9F4"; // Light blue
                     var mbDownloaded = e.DownloadedBytes / (1024.0 * 1024.0);
                     var sourceText = !string.IsNullOrEmpty(e.DownloadSource) ? $" ({e.DownloadSource})" : "";
-                    result.ProgressText = $"{mbDownloaded:F1} MB downloaded...{sourceText}";
+                    string progressTemplate = LanguageManager.Instance.GetCodeString("Download_Progress");
+                    string progressMessage = string.Format(progressTemplate, mbDownloaded, e.ProgressPercentage, sourceText);
+                    result.ProgressText = progressMessage;
                 }
                 else
                 {
@@ -1147,9 +1183,9 @@ namespace VPM
                 if (result != null)
                 {
                     result.IsDownloading = false;
-                    result.StatusText = "✓ Completed";
+                    result.StatusText = LanguageManager.Instance.GetCodeString("Completed");
                     result.StatusColor = "#4CAF50"; // Green
-                    result.ProgressText = "Download completed successfully";
+                    result.ProgressText = LanguageManager.Instance.GetCodeString("Download_Completed_Successfully");
                     result.ProgressVisibility = Visibility.Collapsed;
                     result.Location = e.FilePath;
                     result.LocalPackageName = Path.GetFileNameWithoutExtension(e.FilePath);
@@ -1192,18 +1228,19 @@ namespace VPM
                 if (result != null)
                 {
                     result.IsDownloading = false;
-                    result.StatusText = "✗ Failed";
+                    result.StatusText = LanguageManager.Instance.GetCodeString("Failed");
                     result.StatusColor = "#F44336"; // Red
                     result.ProgressText = e.ErrorMessage;
                     result.ProgressVisibility = Visibility.Visible; // Keep visible to show error
-                    result.Location = $"Download failed: {e.ErrorMessage}";
+                    string template = LanguageManager.Instance.GetCodeString("Download_Failed_Message");
+                    result.Location = string.Format(template, e.ErrorMessage);
                     _failedDownloads++;
                 }
                 else
                 {
                 }
-                
-                SetStatus($"Download error: {e.ErrorMessage}");
+                string template1 = LanguageManager.Instance.GetCodeString("Download_Error_Status");
+                SetStatus(string.Format(template1, e.ErrorMessage));
             });
         }
 
@@ -1216,16 +1253,16 @@ namespace VPM
             var input = InputTextBox.Text;
             if (string.IsNullOrWhiteSpace(input))
             {
-                CustomMessageBox.Show("Please enter package names or drag files to search.", 
-                    "No Input", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Input_Message"), 
+                    LanguageManager.Instance.GetCodeString("No_Input_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             var packageNames = ParsePackageNames(input);
             if (!packageNames.Any())
             {
-                CustomMessageBox.Show("No valid package names found in the input.", 
-                    "Parse Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Valid_Package_Names_Message"), 
+                    LanguageManager.Instance.GetCodeString("No_Valid_Package_Names_Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1247,12 +1284,12 @@ namespace VPM
                     if (updateDatabase)
                     {
                         // Update database using the main window's method
-                        SetStatus("Updating package database...");
+                        SetStatus(LanguageManager.Instance.GetCodeString("Updating_Package_Database"));
                         bool success = await _updateDatabaseCallback();
                         
                         if (!success)
                         {
-                            SetStatus("Database update failed");
+                            SetStatus(LanguageManager.Instance.GetCodeString("Database_Update_Failed"));
                             return; // Don't proceed with search
                         }
                         
@@ -1260,12 +1297,13 @@ namespace VPM
                         UpdateDatabaseStatus();
                         
                         int packageCount = _packageDownloader.GetPackageCount();
-                        SetStatus($"Database updated: {packageCount:N0} packages");
+                        string template = LanguageManager.Instance.GetCodeString("Database_Updated_Message");
+                        SetStatus(string.Format(template, packageCount));
                     }
                     else if (_packageDownloader.GetPackageCount() == 0)
                     {
-                        CustomMessageBox.Show("The package database is empty. Please update the database first.",
-                            "Database Empty", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("Database_Empty_Message"),
+                            LanguageManager.Instance.GetCodeString("Database_Empty_Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -1283,7 +1321,7 @@ namespace VPM
             {
                 HideLocalCheckBox.IsChecked = false;
             }
-            SetStatus("Ready");
+            SetStatus(LanguageManager.Instance.GetCodeString("StatusReady"));
             UpdateDownloadButtons();
         }
 
@@ -1293,14 +1331,17 @@ namespace VPM
             {
                 var missingCount = _searchResults.Count(r => r.CanDownload);
                 var selectedCount = ResultsDataGrid.SelectedItems.Cast<PackageSearchResult>().Count(r => r.CanDownload);
+                string template = LanguageManager.Instance.GetCodeString("DownloadButtonTemplate");
+                string message = string.Format(template, missingCount);
 
                 DownloadMissingButton.Content = missingCount > 0 
-                    ? $"Download Missing ({missingCount})" 
-                    : "Download Missing";
-                
+                    ? message
+                    : LanguageManager.Instance.GetCodeString("DownloadButtonMissing");
+                string template1 = LanguageManager.Instance.GetCodeString("DownloadSelectedButtonTemplate");
+                string message1 = string.Format(template1, selectedCount);
                 DownloadSelectedButton.Content = selectedCount > 0 
-                    ? $"Download Selected ({selectedCount})" 
-                    : "Download Selected";
+                    ? message1
+                    : LanguageManager.Instance.GetCodeString("DownloadSelectedButtonMissing");
                     
                 DownloadMissingButton.IsEnabled = missingCount > 0;
                 DownloadSelectedButton.IsEnabled = selectedCount > 0;
@@ -1327,8 +1368,9 @@ namespace VPM
                     }
                     catch (Exception ex)
                     {
-                        CustomMessageBox.Show($"Error opening folder: {ex.Message}",
-                            "Open Folder Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        string template = LanguageManager.Instance.GetCodeString("Open_Folder_Error_Message");
+                        CustomMessageBox.Show(string.Format(template, ex.Message),
+                            LanguageManager.Instance.GetCodeString("Open_Folder_Error_Title"), MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else if (result.CanDownload)
@@ -1341,9 +1383,9 @@ namespace VPM
                         if (queued)
                         {
                             result.IsDownloading = true;
-                            result.StatusText = "Queued";
+                            result.StatusText = LanguageManager.Instance.GetCodeString("Queued");
                             result.StatusColor = "#FFA500"; // Orange
-                            result.ProgressText = "Waiting in queue...";
+                            result.ProgressText = LanguageManager.Instance.GetCodeString("Waiting_In_Queue");
                             result.ProgressVisibility = Visibility.Visible;
                         }
                     }
@@ -1385,8 +1427,8 @@ namespace VPM
             
             if (!missingPackages.Any())
             {
-                CustomMessageBox.Show("No missing packages available for download.",
-                    "Download Missing", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Missing_Packages_Message"),
+                    LanguageManager.Instance.GetCodeString("Download_Missing_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -1401,8 +1443,8 @@ namespace VPM
 
             if (!selectedItems.Any())
             {
-                CustomMessageBox.Show("Please select packages that are available for download.", 
-                    "Download", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Selected_Packages_Message"), 
+                    LanguageManager.Instance.GetCodeString("Download_Selected_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -1423,8 +1465,9 @@ namespace VPM
                     }
                     catch (Exception ex)
                     {
-                        CustomMessageBox.Show($"Error opening folder: {ex.Message}",
-                            "Open Folder Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        string template = LanguageManager.Instance.GetCodeString("Open_Folder_Error_Message");
+                        CustomMessageBox.Show(string.Format(template, ex.Message),
+                            LanguageManager.Instance.GetCodeString("Open_Folder_Error_Title"), MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
@@ -1444,9 +1487,9 @@ namespace VPM
                         if (queued)
                         {
                             result.IsDownloading = true;
-                            result.StatusText = "Queued";
+                            result.StatusText = LanguageManager.Instance.GetCodeString("Queued");
                             result.StatusColor = "#FFA500"; // Orange
-                            result.ProgressText = "Waiting in queue...";
+                            result.ProgressText = LanguageManager.Instance.GetCodeString("Waiting_in_Queue");
                             result.ProgressVisibility = Visibility.Visible;
                         }
                     }
@@ -1475,12 +1518,12 @@ namespace VPM
                 if (cancelledActive || removedFromQueue)
                 {
                     result.IsDownloading = false;
-                    result.StatusText = "Cancelled";
+                    result.StatusText = LanguageManager.Instance.GetCodeString("Cancelled");
                     result.StatusColor = "#9E9E9E"; // Gray
-                    result.ProgressText = "Cancelled by user";
+                    result.ProgressText = LanguageManager.Instance.GetCodeString("Cancelled_by_User");
                     result.ProgressVisibility = Visibility.Collapsed;
                     
-                    string action = cancelledActive ? "Cancelled active download" : "Removed from queue";
+                    string action = cancelledActive ? LanguageManager.Instance.GetCodeString("Cancelled_Active_Download") : LanguageManager.Instance.GetCodeString("Removed_From_Queue");
                     SetStatus($"{action}: {packageToCancel}");
                 }
                 else
@@ -1505,13 +1548,13 @@ namespace VPM
             foreach (var result in _searchResults.Where(r => r.IsDownloading).ToList())
             {
                 result.IsDownloading = false;
-                result.StatusText = "Cancelled";
+                result.StatusText = LanguageManager.Instance.GetCodeString("Cancelled");
                 result.StatusColor = "#9E9E9E"; // Gray
-                result.ProgressText = "Cancelled by user";
+                result.ProgressText = LanguageManager.Instance.GetCodeString("Cancelled_by_User");
                 result.ProgressVisibility = Visibility.Collapsed;
             }
             
-            SetStatus("All downloads cancelled");
+            SetStatus(LanguageManager.Instance.GetCodeString("All_Downloads_Cancelled"));
         }
 
         #endregion

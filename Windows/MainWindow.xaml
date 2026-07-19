@@ -763,6 +763,9 @@
                                             x:Name="DateFilterList"
                                             Height="{Binding DateFilterHeight, Mode=TwoWay}"
                                             MinHeight="60"
+                                            ItemsSource="{Binding DateFilterOptions}"
+                                            DisplayMemberPath="DisplayText"
+                                            SelectedValuePath="FilterType"
                                             SelectionChanged="DateFilterList_SelectionChanged"
                                             SelectionMode="Single"
                                             Style="{StaticResource FilterListBoxStyle}" />
@@ -779,7 +782,7 @@
                                             Visibility="Collapsed">
                                             <Label
                                                 Margin="0,6,0,3"
-                                                Content="From:"
+                                                Content="{Binding [From], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                 FontSize="12" />
                                             <DatePicker
                                                 x:Name="StartDatePicker"
@@ -787,7 +790,7 @@
                                                 SelectedDateChanged="CustomDateRange_Changed" />
                                             <Label
                                                 Margin="0,6,0,3"
-                                                Content="To:"
+                                                Content="{Binding [To], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                 FontSize="12" />
                                             <DatePicker
                                                 x:Name="EndDatePicker"
@@ -4141,7 +4144,7 @@
                                             Grid.Column="1"
                                             Margin="10,6,10,6"
                                             Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Text="Dependents " />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding [Dependents], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                             <TextBlock
                                                 x:Name="DependentsCountText"
                                                 VerticalAlignment="Center"
