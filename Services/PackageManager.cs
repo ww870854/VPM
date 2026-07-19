@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using SharpCompress.Archives;
 using VPM.Models;
+using VPM.Language;
 
 namespace VPM.Services
 {
@@ -2166,30 +2167,39 @@ namespace VPM.Services
                 return null;
             
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine("⚠️ WARNING: The following packages have other packages that depend on them:\n");
+            string message = LanguageManager.Instance.GetCodeString("Warning_DependentPackages");
+            message = message.Replace("\\n", "\n");
+            sb.AppendLine(message);
             
             int shown = 0;
             foreach (var kvp in packagesWithDependents.OrderByDescending(x => x.Value.Count))
             {
                 if (shown >= maxToShow)
                 {
-                    sb.AppendLine($"... and {packagesWithDependents.Count - maxToShow} more packages with dependents");
+                    string moreMessage = LanguageManager.Instance.GetCodeString("Warning_DependentPackages_More");
+                    string message1 = string.Format(moreMessage, packagesWithDependents.Count - maxToShow);
+                    sb.AppendLine(message1);
                     break;
                 }
                 
-                sb.AppendLine($"• {kvp.Key} ({kvp.Value.Count} dependents)");
+                string template = LanguageManager.Instance.GetCodeString("Warning_DependentPackages_Item");
+                string message2 = string.Format(template, kvp.Key, kvp.Value.Count);
+                sb.AppendLine(message2);
                 foreach (var dep in kvp.Value.Take(3))
                 {
                     sb.AppendLine($"    └─ {dep}");
                 }
                 if (kvp.Value.Count > 3)
                 {
-                    sb.AppendLine($"    └─ ... and {kvp.Value.Count - 3} more");
+                    string moreDepsMessage = LanguageManager.Instance.GetCodeString("Warning_DependentPackages_MoreDeps");
+                    string message3 = string.Format(moreDepsMessage, kvp.Value.Count - 3);
+                    sb.AppendLine(message3);
                 }
                 shown++;
             }
             
-            sb.AppendLine("\nArchiving these packages may break the dependent packages.");
+            string finalMessage = LanguageManager.Instance.GetCodeString("Warning_DependentPackages_Final");
+            sb.AppendLine(finalMessage);
             
             return sb.ToString();
         }

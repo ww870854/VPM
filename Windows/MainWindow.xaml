@@ -4141,7 +4141,7 @@
                                             Grid.Column="1"
                                             Margin="10,6,10,6"
                                             Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Text="Dependents " />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding [Dependents], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                             <TextBlock
                                                 x:Name="DependentsCountText"
                                                 VerticalAlignment="Center"

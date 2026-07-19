@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Input;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
+
 
 namespace VPM
 {
@@ -14,8 +17,10 @@ namespace VPM
         {
             InitializeComponent();
             Loaded += (s, e) => DarkTitleBarHelper.Apply(this);
-            
-            MessageTextBlock.Text = $"The following {oldPackages.Count} old version package(s) will be moved to:\n{destinationPath}\n\nDo you want to continue?";
+            string template = LanguageManager.Instance.GetCodeString("MessageTextBlock");
+            string message = string.Format(template, oldPackages.Count, destinationPath);
+            message = message.Replace("\\n", "\n");
+            MessageTextBlock.Text = message;
             
             // Create display items
             var displayItems = oldPackages.Select(p => new

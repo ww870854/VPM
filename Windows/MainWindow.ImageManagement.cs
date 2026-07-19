@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
 using VPM.Windows;
@@ -260,16 +261,22 @@ namespace VPM
                 
                 if (ImageStatsTextBlock != null)
                 {
-                    ImageStatsTextBlock.Text = stats.TotalItems == 1 
-                        ? "1 image" 
-                        : $"{stats.TotalItems} images";
+                    string resourceKey = stats.TotalItems == 1 ? "Stat_Image_Singular" : "Stat_Image_Plural";
+                    string template = LanguageManager.Instance.GetCodeString(resourceKey);
+                    ImageStatsTextBlock.Text = string.Format(template, stats.TotalItems);
+                    //ImageStatsTextBlock.Text = stats.TotalItems == 1 
+                    //    ? "1 image" 
+                    //    : $"{stats.TotalItems} images";
                 }
                 
                 if (ImageExtractedStatsTextBlock != null)
                 {
-                    ImageExtractedStatsTextBlock.Text = stats.ExtractedItems == 1
-                        ? "1 extracted item"
-                        : $"{stats.ExtractedItems} extracted items";
+                    string resourceKey = stats.ExtractedItems == 1 ? "Stat_Extracted_Singular" : "Stat_Extracted_Plural";
+                    string template = LanguageManager.Instance.GetCodeString(resourceKey);
+                    ImageExtractedStatsTextBlock.Text = string.Format(template, stats.ExtractedItems);
+                    //ImageExtractedStatsTextBlock.Text = stats.ExtractedItems == 1
+                    //    ? "1 extracted item"
+                    //    : $"{stats.ExtractedItems} extracted items";
                 }
                 
                 // Log loading metrics for performance monitoring

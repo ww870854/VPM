@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
 
@@ -1937,13 +1938,13 @@ namespace VPM
                                 selectedContentTypes.Add(contentTypeName);
                             }
                         }
-                        
+
                         ContentTypesList.Items.Clear();
                         foreach (var category in categoryCounts.OrderBy(c => c.Key))
                         {
                             var displayText = $"{category.Key} ({category.Value:N0})";
                             ContentTypesList.Items.Add(displayText);
-                            
+
                             if (selectedContentTypes.Contains(category.Key))
                             {
                                 ContentTypesList.SelectedItems.Add(displayText);

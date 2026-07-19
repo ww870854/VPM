@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +13,7 @@ using System.Windows.Media;
 using SharpCompress.Archives;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 using static VPM.Models.PackageItem;
 
 namespace VPM
@@ -159,17 +160,31 @@ namespace VPM
 
             if (packageMetadata != null)
             {
+                string template = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Package");
+                string template1 = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Creator");
+                string template2 = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Status");
+                string template3 = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_FileSize");
+                string template4 = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Modified");
+                string template5 = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Version");
+                string template6 = LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Description");
+                string message = string.Format(template,packageItem.Name);
+                string message1 = string.Format(template1,packageMetadata.CreatorName);
+                string message2 = string.Format(template2,packageItem.Status);
+                string message3 = string.Format(template3,packageItem.FileSizeFormatted);
+                string message4 = string.Format(template4,packageItem.DateFormatted);
+                string message5 = string.Format(template5,packageMetadata.Version);
+                string message6 = string.Format(template6,packageMetadata.Description);
                 var info = new StringBuilder();
-                info.AppendLine($"Package: {packageItem.Name}");
-                info.AppendLine($"Creator: {packageMetadata.CreatorName}");
-                info.AppendLine($"Status: {packageItem.Status}");
-                info.AppendLine($"File Size: {packageItem.FileSizeFormatted}");
-                info.AppendLine($"Modified: {packageItem.DateFormatted}");
-                info.AppendLine($"Version: {packageMetadata.Version}");
+                info.AppendLine(message);
+                info.AppendLine(message1);
+                info.AppendLine(message2);
+                info.AppendLine(message3);
+                info.AppendLine(message4);
+                info.AppendLine(message5);
                 
                 if (!string.IsNullOrEmpty(packageMetadata.Description))
                 {
-                    info.AppendLine($"Description: {packageMetadata.Description}");
+                    info.AppendLine(message6);
                 }
 
                 PackageInfoTextBlock.Text = info.ToString();
@@ -178,25 +193,69 @@ namespace VPM
             }
             else
             {
-                PackageInfoTextBlock.Text = $"Package: {packageItem.Name}\nStatus: {packageItem.Status}\nNo additional metadata available.";
+                string template = LanguageManager.Instance.GetCodeString("PackageInfo_TextBlock_Text");
+                string message = string.Format(template,packageItem.Name,packageItem.Status);
+                PackageInfoTextBlock.Text = message;
                 ClearCategoryTabs();
             }
         }
-        
+
+        //private void PopulatePackageCategoryTabs(PackageItem packageItem, VarMetadata packageMetadata)
+        //{
+        //    ClearCategoryTabs();
+
+        //    var categoryFiles = new Dictionary<string, List<string>>();
+
+        //    var filesToProcess = LoadPackageFilesForDisplay(packageItem, packageMetadata);
+
+        //    if (filesToProcess != null && filesToProcess.Count > 0)
+        //    {
+        //        foreach (var file in filesToProcess)
+        //        {
+        //            var category = GetFileCategory(file);
+        //            if (!string.IsNullOrEmpty(category))
+        //            {
+        //                if (!categoryFiles.ContainsKey(category))
+        //                {
+        //                    categoryFiles[category] = new List<string>();
+        //                }
+        //                categoryFiles[category].Add(file);
+        //            }
+        //        }
+        //    }
+
+        //    var orderedCategories = new[] { "Morphs", "Hair", "Clothing", "Looks", "Scenes", "Poses", "Assets", "Textures", "Scripts", "Plugins", "Skins" };
+        //    // Convert to HashSet for O(1) lookups instead of O(n) Array.Contains()
+        //    var orderedCategoriesSet = new HashSet<string>(orderedCategories, StringComparer.OrdinalIgnoreCase);
+
+        //    foreach (var category in orderedCategories)
+        //    {
+        //        if (categoryFiles.ContainsKey(category) && categoryFiles[category].Count > 0)
+        //        {
+        //            CreateCategoryTab(category, categoryFiles[category], packageItem, packageMetadata);
+        //        }
+        //    }
+
+        //    foreach (var kvp in categoryFiles.Where(c => !orderedCategoriesSet.Contains(c.Key)).OrderBy(c => c.Key))
+        //    {
+        //        CreateCategoryTab(kvp.Key, kvp.Value, packageItem, packageMetadata);
+        //    }
+        //}
+
         private void PopulatePackageCategoryTabs(PackageItem packageItem, VarMetadata packageMetadata)
         {
             ClearCategoryTabs();
-            
-            var categoryFiles = new Dictionary<string, List<string>>();
-            
+
+            var categoryFiles = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase); // 忽略键的大小写
+
             var filesToProcess = LoadPackageFilesForDisplay(packageItem, packageMetadata);
-            
+
             if (filesToProcess != null && filesToProcess.Count > 0)
             {
                 foreach (var file in filesToProcess)
                 {
                     var category = GetFileCategory(file);
-                    if (!string.IsNullOrEmpty(category))
+                    if (!string.IsNullOrWhiteSpace(category)) // 更严格的空值检查
                     {
                         if (!categoryFiles.ContainsKey(category))
                         {
@@ -206,25 +265,40 @@ namespace VPM
                     }
                 }
             }
-            
-            var orderedCategories = new[] { "Morphs", "Hair", "Clothing", "Looks", "Scenes", "Poses", "Assets", "Textures", "Scripts", "Plugins", "Skins" };
-            // Convert to HashSet for O(1) lookups instead of O(n) Array.Contains()
-            var orderedCategoriesSet = new HashSet<string>(orderedCategories, StringComparer.OrdinalIgnoreCase);
-            
-            foreach (var category in orderedCategories)
+
+            // 定义资源Key数组（优先级顺序）
+            var orderedCategoryKeys = new[]
             {
-                if (categoryFiles.ContainsKey(category) && categoryFiles[category].Count > 0)
+               "Category_Morphs", "Category_Hair", "Category_Clothing", "Category_Looks",
+               "Category_Scenes", "Category_Poses", "Category_Assets", "Category_Textures",
+               "Category_Scripts", "Category_Plugins", "Category_Skins", "Category_Morph_Pack",
+               "Category_SubScene"
+            };
+
+            // 优先按照资源Key数组的顺序创建标签页
+            foreach (var key in orderedCategoryKeys)
+            {
+                if (categoryFiles.TryGetValue(key, out var files)) // 更简洁的 TryGetValue 用法
                 {
-                    CreateCategoryTab(category, categoryFiles[category], packageItem, packageMetadata);
+                    string localizedName = LanguageManager.Instance.GetCodeString(key);
+                    CreateCategoryTab(localizedName, files, packageItem, packageMetadata);
                 }
             }
-            
-            foreach (var kvp in categoryFiles.Where(c => !orderedCategoriesSet.Contains(c.Key)).OrderBy(c => c.Key))
+
+            // 处理不在资源Key数组中的分类
+            var orderedCategoriesSet = new HashSet<string>(orderedCategoryKeys, StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in categoryFiles.Where(c => !orderedCategoriesSet.Contains(c.Key))
+                                             .OrderBy(c => c.Key, StringComparer.OrdinalIgnoreCase)) // 按字母顺序排序
             {
-                CreateCategoryTab(kvp.Key, kvp.Value, packageItem, packageMetadata);
+                string localizedName = LanguageManager.Instance.GetCodeString(kvp.Key);
+                // 如果本地化文本为空，使用原始键名作为回退
+                localizedName = string.IsNullOrWhiteSpace(localizedName) ? kvp.Key : localizedName;
+
+                CreateCategoryTab(localizedName, kvp.Value, packageItem, packageMetadata);
             }
         }
-        
+
+
         private string GetFileCategory(string filePath)
         {
             var lowerPath = filePath.ToLowerInvariant();
@@ -256,11 +330,152 @@ namespace VPM
             
             return null;
         }
-        
-        private void CreateCategoryTab(string category, List<string> files, PackageItem packageItem, VarMetadata packageMetadata)
+
+        //private void CreateCategoryTab(string category, List<string> files, PackageItem packageItem, VarMetadata packageMetadata)
+        //{
+        //    // Use actual count from metadata for categories that have been counted
+        //    int displayCount = files.Count;
+        //    if (category == "Clothing" && packageMetadata?.ClothingCount > 0)
+        //        displayCount = packageMetadata.ClothingCount;
+        //    else if (category == "Hair" && packageMetadata?.HairCount > 0)
+        //        displayCount = packageMetadata.HairCount;
+        //    else if (category == "Morphs" && packageMetadata?.MorphCount > 0)
+        //        displayCount = packageMetadata.MorphCount;
+        //    else if (category == "Scenes" && packageMetadata?.SceneCount > 0)
+        //        displayCount = packageMetadata.SceneCount;
+        //    else if (category == "Looks" && packageMetadata?.LooksCount > 0)
+        //        displayCount = packageMetadata.LooksCount;
+        //    else if (category == "Poses" && packageMetadata?.PosesCount > 0)
+        //        displayCount = packageMetadata.PosesCount;
+
+        //    var tabItem = new TabItem
+        //    {
+        //        Header = $"{category} ({displayCount})",
+        //        Style = PackageInfoTabControl.FindResource(typeof(TabItem)) as Style
+        //    };
+
+        //    var dataGrid = new DataGrid
+        //    {
+        //        AutoGenerateColumns = false,
+        //        HeadersVisibility = DataGridHeadersVisibility.None,
+        //        GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
+        //        RowHeaderWidth = 0,
+        //        IsReadOnly = true,
+        //        SelectionMode = DataGridSelectionMode.Extended,
+        //        CanUserResizeRows = false,
+        //        CanUserResizeColumns = true,
+        //        CanUserSortColumns = false,
+        //        BorderThickness = new Thickness(0),
+        //        VerticalGridLinesBrush = Brushes.Transparent,
+        //        RowHeight = double.NaN,
+        //        EnableRowVirtualization = true,
+        //        EnableColumnVirtualization = true
+        //    };
+
+        //    var cellStyle = new Style(typeof(DataGridCell));
+        //    cellStyle.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(8, 6, 8, 6)));
+        //    cellStyle.Setters.Add(new Setter(Control.VerticalAlignmentProperty, VerticalAlignment.Stretch));
+        //    cellStyle.Setters.Add(new Setter(Control.BackgroundProperty, FindResource(SystemColors.WindowBrushKey)));
+        //    cellStyle.Setters.Add(new Setter(Control.ForegroundProperty, FindResource(SystemColors.ControlTextBrushKey)));
+
+        //    // Add trigger for selected cells
+        //    var selectedTrigger = new Trigger { Property = DataGridCell.IsSelectedProperty, Value = true };
+        //    selectedTrigger.Setters.Add(new Setter(Control.BackgroundProperty, FindResource(SystemColors.HighlightBrushKey)));
+        //    selectedTrigger.Setters.Add(new Setter(Control.ForegroundProperty, FindResource(SystemColors.HighlightTextBrushKey)));
+        //    cellStyle.Triggers.Add(selectedTrigger);
+
+        //    // Add trigger for mouse over cells
+        //    var mouseOverTrigger = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
+        //    mouseOverTrigger.Setters.Add(new Setter(Control.BackgroundProperty, FindResource("ListBoxHoverBrush")));
+        //    cellStyle.Triggers.Add(mouseOverTrigger);
+
+        //    var templateColumn = new DataGridTemplateColumn
+        //    {
+        //        Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+        //        CellStyle = cellStyle
+        //    };
+
+        //    var cellTemplate = new DataTemplate();
+        //    var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
+        //    textBlockFactory.SetValue(TextBlock.TextProperty, new Binding("FilePath"));
+        //    textBlockFactory.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
+        //    textBlockFactory.SetValue(TextBlock.FontFamilyProperty, new FontFamily("Consolas"));
+        //    textBlockFactory.SetValue(TextBlock.FontSizeProperty, 13.0);
+        //    textBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4, 2, 4, 2));
+        //    textBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+        //    cellTemplate.VisualTree = textBlockFactory;
+        //    templateColumn.CellTemplate = cellTemplate;
+
+        //    dataGrid.Columns.Add(templateColumn);
+
+        //    var rowStyle = new Style(typeof(DataGridRow));
+        //    rowStyle.Setters.Add(new Setter(Control.BackgroundProperty, FindResource(SystemColors.WindowBrushKey)));
+        //    rowStyle.Setters.Add(new Setter(Control.ForegroundProperty, FindResource(SystemColors.ControlTextBrushKey)));
+        //    dataGrid.RowStyle = rowStyle;
+
+        //    var fileItems = new List<PackageFileItem>();
+
+        //    // For clothing/hair categories, expand directory paths to show individual items
+        //    var expandedFiles = new List<string>();
+        //    foreach (var file in files)
+        //    {
+        //        // Check if this is a directory path (no file extension)
+        //        var ext = Path.GetExtension(file);
+        //        if (string.IsNullOrEmpty(ext) || (!ext.StartsWith(".") && file.Contains("/")))
+        //        {
+        //            // This looks like a directory path - show it as a group header
+        //            // The actual items will be shown based on the category count
+        //            expandedFiles.Add(file);
+        //        }
+        //        else
+        //        {
+        //            expandedFiles.Add(file);
+        //        }
+        //    }
+
+        //    foreach (var file in expandedFiles.OrderBy(f => f))
+        //    {
+        //        // Check if this is a directory path
+        //        var ext = Path.GetExtension(file);
+        //        var isDirectory = string.IsNullOrEmpty(ext) || (!ext.StartsWith(".") && file.Contains("/"));
+
+        //        var fileItem = new PackageFileItem
+        //        {
+        //            FilePath = file,
+        //            FileName = isDirectory ? $"[Directory] {Path.GetFileName(file)}" : Path.GetFileName(file),
+        //            FileExtension = ext?.ToUpperInvariant() ?? ""
+        //        };
+        //        fileItems.Add(fileItem);
+        //    }
+
+        //    dataGrid.ItemsSource = fileItems;
+        //    dataGrid.MouseDoubleClick += (s, e) => DataGrid_FileDoubleClick(s, e, packageItem);
+        //    dataGrid.SelectionChanged += (s, e) => DataGrid_FileSelectionChanged(s, e, packageItem);
+
+        //    var contextMenu = new ContextMenu();
+
+        //    var openItem = new MenuItem { Header = "Open File" };
+        //    openItem.Click += (s, e) => DataGrid_OpenFile(dataGrid);
+        //    contextMenu.Items.Add(openItem);
+
+        //    contextMenu.Items.Add(new Separator());
+
+        //    var copyItem = new MenuItem { Header = "Copy Path" };
+        //    copyItem.Click += (s, e) => DataGrid_CopyPath(dataGrid);
+        //    contextMenu.Items.Add(copyItem);
+
+        //    ApplyContextMenuStyling(contextMenu);
+        //    dataGrid.ContextMenu = contextMenu;
+
+        //    tabItem.Content = dataGrid;
+        //    PackageInfoTabControl.Items.Add(tabItem);
+        //}
+        private void CreateCategoryTab(string category, List<string> files, PackageItem packageItem, VarMetadata packageMetadata, string localizedCategoryName = null)
         {
             // Use actual count from metadata for categories that have been counted
             int displayCount = files.Count;
+            // 所有硬编码对比逻辑继续使用不变的英文分类标识，完全不受国际化影响
             if (category == "Clothing" && packageMetadata?.ClothingCount > 0)
                 displayCount = packageMetadata.ClothingCount;
             else if (category == "Hair" && packageMetadata?.HairCount > 0)
@@ -273,13 +488,15 @@ namespace VPM
                 displayCount = packageMetadata.LooksCount;
             else if (category == "Poses" && packageMetadata?.PosesCount > 0)
                 displayCount = packageMetadata.PosesCount;
-            
+
+            // 优先使用传入的国际化文本显示Tab头，兜底兼容旧调用逻辑，无传入值时自动从LanguageManager拉取对应翻译
+            string displayName = localizedCategoryName ?? LanguageManager.Instance.GetCodeString($"Category_{category}");
             var tabItem = new TabItem
             {
-                Header = $"{category} ({displayCount})",
+                Header = $"{displayName} ({displayCount})",
                 Style = PackageInfoTabControl.FindResource(typeof(TabItem)) as Style
             };
-            
+
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = false,
@@ -297,30 +514,30 @@ namespace VPM
                 EnableRowVirtualization = true,
                 EnableColumnVirtualization = true
             };
-            
+
             var cellStyle = new Style(typeof(DataGridCell));
             cellStyle.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(8, 6, 8, 6)));
             cellStyle.Setters.Add(new Setter(Control.VerticalAlignmentProperty, VerticalAlignment.Stretch));
             cellStyle.Setters.Add(new Setter(Control.BackgroundProperty, FindResource(SystemColors.WindowBrushKey)));
             cellStyle.Setters.Add(new Setter(Control.ForegroundProperty, FindResource(SystemColors.ControlTextBrushKey)));
-            
+
             // Add trigger for selected cells
             var selectedTrigger = new Trigger { Property = DataGridCell.IsSelectedProperty, Value = true };
             selectedTrigger.Setters.Add(new Setter(Control.BackgroundProperty, FindResource(SystemColors.HighlightBrushKey)));
             selectedTrigger.Setters.Add(new Setter(Control.ForegroundProperty, FindResource(SystemColors.HighlightTextBrushKey)));
             cellStyle.Triggers.Add(selectedTrigger);
-            
+
             // Add trigger for mouse over cells
             var mouseOverTrigger = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
             mouseOverTrigger.Setters.Add(new Setter(Control.BackgroundProperty, FindResource("ListBoxHoverBrush")));
             cellStyle.Triggers.Add(mouseOverTrigger);
-            
+
             var templateColumn = new DataGridTemplateColumn
             {
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star),
                 CellStyle = cellStyle
             };
-            
+
             var cellTemplate = new DataTemplate();
             var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
             textBlockFactory.SetValue(TextBlock.TextProperty, new Binding("FilePath"));
@@ -329,19 +546,19 @@ namespace VPM
             textBlockFactory.SetValue(TextBlock.FontSizeProperty, 13.0);
             textBlockFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4, 2, 4, 2));
             textBlockFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-            
+
             cellTemplate.VisualTree = textBlockFactory;
             templateColumn.CellTemplate = cellTemplate;
-            
+
             dataGrid.Columns.Add(templateColumn);
-            
+
             var rowStyle = new Style(typeof(DataGridRow));
             rowStyle.Setters.Add(new Setter(Control.BackgroundProperty, FindResource(SystemColors.WindowBrushKey)));
             rowStyle.Setters.Add(new Setter(Control.ForegroundProperty, FindResource(SystemColors.ControlTextBrushKey)));
             dataGrid.RowStyle = rowStyle;
-            
+
             var fileItems = new List<PackageFileItem>();
-            
+
             // For clothing/hair categories, expand directory paths to show individual items
             var expandedFiles = new List<string>();
             foreach (var file in files)
@@ -359,13 +576,13 @@ namespace VPM
                     expandedFiles.Add(file);
                 }
             }
-            
+
             foreach (var file in expandedFiles.OrderBy(f => f))
             {
                 // Check if this is a directory path
                 var ext = Path.GetExtension(file);
                 var isDirectory = string.IsNullOrEmpty(ext) || (!ext.StartsWith(".") && file.Contains("/"));
-                
+
                 var fileItem = new PackageFileItem
                 {
                     FilePath = file,
@@ -374,30 +591,30 @@ namespace VPM
                 };
                 fileItems.Add(fileItem);
             }
-            
+
             dataGrid.ItemsSource = fileItems;
             dataGrid.MouseDoubleClick += (s, e) => DataGrid_FileDoubleClick(s, e, packageItem);
             dataGrid.SelectionChanged += (s, e) => DataGrid_FileSelectionChanged(s, e, packageItem);
-            
+
             var contextMenu = new ContextMenu();
-            
-            var openItem = new MenuItem { Header = "Open File" };
+
+            var openItem = new MenuItem { Header = LanguageManager.Instance.GetCodeString("Menu_OpenFile") };
             openItem.Click += (s, e) => DataGrid_OpenFile(dataGrid);
             contextMenu.Items.Add(openItem);
-            
+
             contextMenu.Items.Add(new Separator());
-            
-            var copyItem = new MenuItem { Header = "Copy Path" };
+
+            var copyItem = new MenuItem { Header = LanguageManager.Instance.GetCodeString("Menu_CopyPath") };
             copyItem.Click += (s, e) => DataGrid_CopyPath(dataGrid);
             contextMenu.Items.Add(copyItem);
-            
+
             ApplyContextMenuStyling(contextMenu);
             dataGrid.ContextMenu = contextMenu;
-            
+
             tabItem.Content = dataGrid;
             PackageInfoTabControl.Items.Add(tabItem);
         }
-        
+
         private void DataGrid_FileDoubleClick(object sender, MouseButtonEventArgs e, PackageItem packageItem)
         {
             if (sender is DataGrid dataGrid && dataGrid.SelectedItem is PackageFileItem fileItem)

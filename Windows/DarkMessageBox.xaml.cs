@@ -16,7 +16,7 @@ namespace VPM
         }
 
         public static MessageBoxResult Show(string message, string title = "Message", 
-            MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Information)
+            MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Information, string customBtn1Text = null, string customBtn2Text = null)
         {
             var messageBox = new DarkMessageBox();
             messageBox.TitleText.Text = title;
@@ -47,20 +47,20 @@ namespace VPM
             switch (button)
             {
                 case MessageBoxButton.OK:
-                    messageBox.Button1.Content = "OK";
+                    messageBox.Button1.Content = customBtn1Text ?? "OK";
                     messageBox.Button1.IsDefault = true;
                     messageBox.Button2.Visibility = Visibility.Collapsed;
                     break;
                 case MessageBoxButton.YesNo:
-                    messageBox.Button1.Content = "Yes";
+                    messageBox.Button1.Content = customBtn1Text ?? "Yes";
                     messageBox.Button1.IsDefault = true;
-                    messageBox.Button2.Content = "No";
+                    messageBox.Button2.Content = customBtn2Text ?? "No";
                     messageBox.Button2.Visibility = Visibility.Visible;
                     break;
                 case MessageBoxButton.YesNoCancel:
-                    messageBox.Button1.Content = "Yes";
+                    messageBox.Button1.Content = customBtn1Text ?? "Yes";
                     messageBox.Button1.IsDefault = true;
-                    messageBox.Button2.Content = "No";
+                    messageBox.Button2.Content = customBtn2Text ??  "No";
                     messageBox.Button2.Visibility = Visibility.Visible;
                     // For simplicity, we'll treat this as YesNo for now
                     break;

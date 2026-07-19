@@ -30,6 +30,7 @@ namespace VPM
 
         private void ApplyPaneVisibility(AppSettings settings)
         {
+            LanguageManager.Instance.InitLanguageAtAppStart();
             if (settings == null)
                 return;
 
@@ -48,7 +49,7 @@ namespace VPM
                 LeftPaneSplitter.Visibility = Visibility.Visible;
             if (ShowFiltersPaneMenuItem != null)
             {
-                ShowFiltersPaneMenuItem.Header = showFilters ? "Hide _Filters" : "Show _Filters";
+                ShowFiltersPaneMenuItem.Header = showFilters ? LanguageManager.Instance.GetCodeString("Hide_Filters") : LanguageManager.Instance.GetCodeString("Show_Filters");
             }
 
             // Dependencies (right)
@@ -66,7 +67,7 @@ namespace VPM
                 DepsPaneSplitter.Visibility = Visibility.Visible;
             if (ShowDependenciesPaneMenuItem != null)
             {
-                ShowDependenciesPaneMenuItem.Header = showDeps ? "Hide _Dependencies" : "Show _Dependencies";
+                ShowDependenciesPaneMenuItem.Header = showDeps ? LanguageManager.Instance.GetCodeString("Hide_Dependencies") : LanguageManager.Instance.GetCodeString("Show_Dependencies");
             }
 
             // Images (far right)
@@ -85,7 +86,7 @@ namespace VPM
 
             if (ShowImagesPaneMenuItem != null)
             {
-                ShowImagesPaneMenuItem.Header = showImages ? "Hide _Images" : "Show _Images";
+                ShowImagesPaneMenuItem.Header = showImages ? LanguageManager.Instance.GetCodeString("Hide_Images") : LanguageManager.Instance.GetCodeString("Show_Images");
             }
         }
 
@@ -282,7 +283,7 @@ namespace VPM
                 DependentsCountText.Text = "(0)";
                 ClearCategoryTabs();
                 ClearImageGrid();
-                SetStatus("No packages selected");
+                SetStatus(LanguageManager.Instance.GetCodeString("NoPackagesSelected"));
                 return;
             }
 
@@ -1161,8 +1162,10 @@ namespace VPM
                 
                 if (oldVersions.Count == 0)
                 {
-                    DarkMessageBox.Show("All packages are at their latest versions.", "No old versions found", 
-                                      MessageBoxButton.OK, MessageBoxImage.Information);
+                    string message1 = LanguageManager.Instance.GetCodeString("NoOldVersionsFound");
+                    string message2 = LanguageManager.Instance.GetCodeString("NoOldVersionsFoundMessage");
+                    DarkMessageBox.Show(message1, message2, 
+                                      MessageBoxButton.OK, MessageBoxImage.Information, customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Confirm"));
                     return;
                 }
                 
@@ -1170,19 +1173,18 @@ namespace VPM
                 var packagesWithDependents = _packageManager.CheckPackagesForDependents(oldVersions);
                 var warningMessage = _packageManager.GetDependentsWarningMessage(packagesWithDependents);
                 
-                var message = $"Found {oldVersions.Count} old version package(s).\n\n" +
-                             $"These packages will be moved to:\n" +
-                             $"{Path.Combine(_selectedFolder, "ArchivedPackages", "OldPackages")}\n\n";
-                
+                string template = LanguageManager.Instance.GetCodeString("FoundOldVersions");                
+                var message = string.Format(template, oldVersions.Count, Path.Combine(_selectedFolder, "ArchivedPackages", "OldPackages"));
+                message = message.Replace("\\n", "\n");
                 if (!string.IsNullOrEmpty(warningMessage))
                 {
                     message += warningMessage + "\n";
                 }
                 
-                message += "Do you want to continue?";
+                message += LanguageManager.Instance.GetCodeString("DoYouWantToContinue");
                 
-                var result = DarkMessageBox.Show(message, "Archive Old Versions", 
-                                                MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = DarkMessageBox.Show(message, LanguageManager.Instance.GetCodeString("ArchiveOldVersions1"), 
+                                                MessageBoxButton.YesNo, MessageBoxImage.Question, customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Yes"), customBtn2Text: LanguageManager.Instance.GetCodeString("Btn_No"));
                 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -1191,8 +1193,10 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Failed to archive old versions: {ex.Message}", "Error", 
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                string template = LanguageManager.Instance.GetCodeString("FailedToArchiveOldVersions");
+                string errorMessage = string.Format(template, ex.Message);
+                DarkMessageBox.Show(errorMessage, LanguageManager.Instance.GetCodeString("Error"), 
+                                  MessageBoxButton.OK, MessageBoxImage.Error, customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Confirm"));
             }
         }
 
@@ -3484,7 +3488,8 @@ namespace VPM
                 
                 if (selectedPackages.Count == 0)
                 {
-                    PackageInfoTextBlock.Text = "No packages selected";
+                    LanguageManager.Instance.InitLanguageAtAppStart();
+                    PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
                     
                     // Clear images when no packages are selected
                     PreviewImages.Clear();
@@ -3559,9 +3564,10 @@ namespace VPM
                 
                 if (selectedPackages.Count == 0)
                 {
+                    LanguageManager.Instance.InitLanguageAtAppStart();
                     // Clear images when no selection
                     PreviewImages.Clear();
-                    PackageInfoTextBlock.Text = "No packages selected";
+                    PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
                     ClearDependenciesDisplay();
                     ClearCategoryTabs();
                     
@@ -7541,7 +7547,7 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show("No packages selected.", "Add to Playlist",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), "Add to Playlist",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -7670,7 +7676,7 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show("No packages selected.", "Move To",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), "Move To",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }

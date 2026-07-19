@@ -86,7 +86,6 @@ namespace VPM.Language
 
         public void ForceAllBindingsRefresh()
         {
-            // 优化：调度到应用完全空闲的优先级，等所有控件、模板、嵌套元素100%实例化后再刷新
             // 这个优先级比你之前用的Input更低，能保证所有UI初始化任务全部执行完才触发刷新
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {

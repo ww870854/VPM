@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
+using VPM.Language;
 
 namespace VPM
 {
@@ -154,7 +155,9 @@ namespace VPM
 
         private void UpdateStatusText()
         {
-            StatusText.Text = $"{_packageGroups.Count} package(s) need a copy selected. Newest copy pre-selected for each.";
+            string template = LanguageManager.Instance.GetCodeString("UpdateStatusText");
+            string message = string.Format(template, _packageGroups.Count);
+            StatusText.Text = message;
         }
 
         private void KeepSelected_Click(object sender, RoutedEventArgs e)
@@ -173,14 +176,65 @@ namespace VPM
                 SelectedFilesToKeep[group.PackageName] = group.SelectedInstance.FullPath;
             }
 
+            //if (missingSelections.Count > 0)
+            //{
+            //    DarkMessageBox.Show(
+            //        $"Select a copy to keep for:\n{string.Join("\n", missingSelections.Take(10))}" +
+            //        (missingSelections.Count > 10 ? $"\n... and {missingSelections.Count - 10} more" : string.Empty),
+            //        "Selection Required",
+            //        MessageBoxButton.OK,
+            //        MessageBoxImage.Warning);
+            //    return;
+            //}
             if (missingSelections.Count > 0)
             {
+                // 1. 获取标题
+                string title = LanguageManager.Instance.GetCodeString("SelectionRequiredTitle");
+
+                // 2. 构建主要消息内容
+                // 注意：这里我们不再依赖单一的 template 格式化所有复杂逻辑，而是分步构建以确保换行和列表格式正确
+
+                // 获取前10项用于显示
+                var displayItems = missingSelections.Take(10);
+                string itemsList = string.Join("\n", displayItems);
+
+                // 构建基础提示信息 (可选：如果你想在弹窗正文中显示完整列表摘要)
+                // 如果列表很长，通常建议在弹窗内只显示部分，或者使用之前的 DarkMessageBox 支持长文本滚动的特性
+                string mainMessage = string.Format(
+                    LanguageManager.Instance.GetCodeString("SelectionRequiredMessage"),
+                    missingSelections.Count,
+                    string.Join(", ", missingSelections) // 这里用逗号分隔作为简要摘要，或者根据UI需求调整
+                );
+
+                // 3. 构建弹窗显示的详细列表字符串 (带换行)
+                string detailedList = itemsList;
+
+                // 处理超过10项的情况
+                if (missingSelections.Count > 10)
+                {
+                    int remainingCount = missingSelections.Count - 10;
+                    // 获取 "... and X more" 的国际化文本
+                    string moreTextTemplate = LanguageManager.Instance.GetCodeString("AndMoreItems");
+                    string moreText = string.Format(moreTextTemplate, remainingCount);
+
+                    detailedList += $"\n{moreText}";
+                }
+
+                // 4. 组合最终弹窗内容
+                // 建议：将 "Select a copy to keep for:" 也提取为资源 Key，例如 "SelectCopyPrompt"
+                string promptTitle = LanguageManager.Instance.GetCodeString("SelectCopyPrompt"); // 需新增此Key: "Select a copy to keep for:"
+
+                string finalMessage = $"{promptTitle}\n{detailedList}";
+
+                // 5. 调用弹窗
                 DarkMessageBox.Show(
-                    $"Select a copy to keep for:\n{string.Join("\n", missingSelections.Take(10))}" +
-                    (missingSelections.Count > 10 ? $"\n... and {missingSelections.Count - 10} more" : string.Empty),
-                    "Selection Required",
+                    finalMessage,
+                    title,
                     MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    MessageBoxImage.Warning,
+                    customBtn1Text: LanguageManager.Instance.GetCodeString("Btn_Confirm") // 确保按钮也国际化
+                );
+
                 return;
             }
 

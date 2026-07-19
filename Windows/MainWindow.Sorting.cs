@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -641,7 +642,7 @@ namespace VPM
                 // Add clear sorting option at the top
                 var clearItem = new MenuItem
                 {
-                    Header = "Clear Sorting",
+                    Header = LanguageManager.Instance.GetCodeString("Clear_Sorting"),
                     Tag = new { FilterType = filterType, ListBox = listBox, SortButton = sortButton, Option = "Clear" }
                 };
                 clearItem.Click += FilterSortMenuItem_Click;
@@ -874,7 +875,7 @@ namespace VPM
                 contextMenu.StaysOpen = false;
 
                 // Add clear sorting option
-                var clearItem = new MenuItem { Header = "Clear Sorting", Tag = "Clear" };
+                var clearItem = new MenuItem { Header = LanguageManager.Instance.GetCodeString("Clear_Sorting"), Tag = "Clear" };
                 clearItem.Click += menuClickHandler;
                 contextMenu.Items.Add(clearItem);
                 contextMenu.Items.Add(new Separator());

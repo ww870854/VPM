@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM.Windows
 {
@@ -227,7 +228,7 @@ namespace VPM.Windows
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Margin = new Thickness(0, 0, 12, 12),
                 Visibility = Visibility.Collapsed, // Start hidden, will be shown by SetExtractionState
-                ToolTip = "Extract files from archive",
+                ToolTip = LanguageManager.Instance.GetCodeString("ExtractFilesFromArchive"),
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Colors.Transparent),
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -256,7 +257,7 @@ namespace VPM.Windows
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(12, 0, 0, 12),
                 Visibility = Visibility.Collapsed,
-                ToolTip = "Remove extracted files",
+                ToolTip = LanguageManager.Instance.GetCodeString("RemoveExtractedFiles"),
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Colors.Transparent),
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -629,35 +630,73 @@ namespace VPM.Windows
                         _extractButton.Content = stackPanel;
                         // Neutral green for extracted state (not too bright)
                         _extractButton.Background = new SolidColorBrush(Color.FromArgb(140, 60, 120, 70)); 
-                        _extractButton.ToolTip = $"Click to open extracted {category} files in Explorer";
+                        string template = LanguageManager.Instance.GetCodeString("ExtractedButtonTooltip");
+                        string BtnTooltipText = string.Format(template, category);
+                        _extractButton.ToolTip = BtnTooltipText;
                         _extractButton.IsEnabled = true; // Enable button to allow opening in Explorer
 
                         // Show remove button
                         _removeButton.Visibility = Visibility.Visible;
                     }
+                    //else
+                    //{
+                    //    // Determine icon based on category
+                    //    string iconText = "📥"; // Default
+                    //    if (string.Equals(category, "Hair", StringComparison.OrdinalIgnoreCase)) iconText = "✂️";
+                    //    else if (string.Equals(category, "Clothing", StringComparison.OrdinalIgnoreCase)) iconText = "👕";
+                    //    else if (string.Equals(category, "Skin", StringComparison.OrdinalIgnoreCase)) iconText = "🎨";
+                    //    else if (string.Equals(category, "Appearance", StringComparison.OrdinalIgnoreCase)) iconText = "👤";
+                    //    else if (string.Equals(category, "Scene", StringComparison.OrdinalIgnoreCase)) iconText = "🎬";
+                    //    else if (string.Equals(category, "Pose", StringComparison.OrdinalIgnoreCase)) iconText = "🧍";
+
+                    //    // Show extract button with icon and label
+                    //    iconBlock.Text = iconText; 
+                    //    _extractButton.Content = stackPanel;
+                    //    // Transparent gray for available state
+                    //    _extractButton.Background = new SolidColorBrush(Color.FromArgb(100, 80, 80, 80)); 
+                    //    string template = LanguageManager.Instance.GetCodeString("ExtractButtonTooltip");
+                    //    string tooltipText = string.Format(template, category);
+                    //    _extractButton.ToolTip = tooltipText;
+                    //    _extractButton.IsEnabled = true;
+
+                    //    // Hide remove button
+                    //    _removeButton.Visibility = Visibility.Collapsed;
+                    //}
                     else
                     {
-                        // Determine icon based on category
-                        string iconText = "📥"; // Default
+                        // 1. 根据分类名确定图标
+                        string iconText = "📥"; // 默认图标
                         if (string.Equals(category, "Hair", StringComparison.OrdinalIgnoreCase)) iconText = "✂️";
                         else if (string.Equals(category, "Clothing", StringComparison.OrdinalIgnoreCase)) iconText = "👕";
                         else if (string.Equals(category, "Skin", StringComparison.OrdinalIgnoreCase)) iconText = "🎨";
                         else if (string.Equals(category, "Appearance", StringComparison.OrdinalIgnoreCase)) iconText = "👤";
                         else if (string.Equals(category, "Scene", StringComparison.OrdinalIgnoreCase)) iconText = "🎬";
                         else if (string.Equals(category, "Pose", StringComparison.OrdinalIgnoreCase)) iconText = "🧍";
-                        
-                        // Show extract button with icon and label
-                        iconBlock.Text = iconText; 
+
+                        // 2. 获取本地化标签（仅翻译后的文本）
+                        string localizedLabel = LanguageManager.Instance.GetCodeString($"Category_{category}");
+                        if (string.IsNullOrEmpty(localizedLabel))
+                        {
+                            localizedLabel = LanguageManager.Instance.GetCodeString("Category_Unknown") ?? "Unknown Category";
+                        }
+
+                        // 3. 组合显示：图标 + 本地化文本
+                        string displayText = $"{iconText} {localizedLabel}";
+
+                        // 4. 更新 UI
+                        iconBlock.Text = displayText;
                         _extractButton.Content = stackPanel;
-                        // Transparent gray for available state
-                        _extractButton.Background = new SolidColorBrush(Color.FromArgb(100, 80, 80, 80)); 
-                        _extractButton.ToolTip = $"Extract {category} files";
+                        _extractButton.Background = new SolidColorBrush(Color.FromArgb(100, 80, 80, 80));
+                        string template = LanguageManager.Instance.GetCodeString("ExtractButtonTooltip");
+                        string tooltipText = string.Format(template, category);
+                        _extractButton.ToolTip = tooltipText;
                         _extractButton.IsEnabled = true;
 
-                        // Hide remove button
+                        // 隐藏删除按钮
                         _removeButton.Visibility = Visibility.Collapsed;
                     }
-                    
+
+
                     // Update padding for a more stylish look
                     _extractButton.Padding = new Thickness(12, 6, 12, 6);
                     _extractButton.Visibility = Visibility.Visible;
@@ -765,7 +804,8 @@ namespace VPM.Windows
             {
                 if (string.IsNullOrWhiteSpace(InternalImagePath) || string.IsNullOrWhiteSpace(VarFilePath))
                 {
-                    MessageBox.Show("Cannot determine image location.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_Error");
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -793,7 +833,8 @@ namespace VPM.Windows
                     }
                     catch (Exception dirEx)
                     {
-                        MessageBox.Show($"Cannot create temporary directory: {dirEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_TempDirError");
+                        MessageBox.Show($"{message}: {dirEx.Message}", LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -814,7 +855,9 @@ namespace VPM.Windows
                     }
                     catch (Exception saveEx)
                     {
-                        MessageBox.Show($"Failed to save image to temporary location: {saveEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_SaveError");
+                        string message = string.Format(template, saveEx.Message);
+                        MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
@@ -828,7 +871,8 @@ namespace VPM.Windows
                     }
                     catch (OperationCanceledException)
                     {
-                        MessageBox.Show("Image loading timed out.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_LoadTimeout");
+                        MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     
@@ -846,26 +890,32 @@ namespace VPM.Windows
                         }
                         catch (Exception saveEx)
                         {
-                            MessageBox.Show($"Failed to save image to temporary location: {saveEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_SaveError");
+                            string message = string.Format(template, saveEx.Message);
+                            MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Failed to load image.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_LoadFailed");
+                        MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Cannot load image.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string message = LanguageManager.Instance.GetCodeString("OpenImageInViewer_NoImage");
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 // Verify the file was created before trying to open it
                 if (!File.Exists(tempFilePath))
                 {
-                    MessageBox.Show($"Failed to create temporary image file at: {tempFilePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_TempFileCreationFailed");
+                    string message = string.Format(template, tempFilePath);
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -880,12 +930,16 @@ namespace VPM.Windows
                 }
                 catch (Exception processEx)
                 {
-                    MessageBox.Show($"Failed to open image viewer: {processEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_ProcessStartFailed");
+                    string message = string.Format(template, processEx.Message);
+                    MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to open image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string template = LanguageManager.Instance.GetCodeString("OpenImageInViewer_UnexpectedError");
+                string message = string.Format(template, ex.Message);
+                MessageBox.Show(message, LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
