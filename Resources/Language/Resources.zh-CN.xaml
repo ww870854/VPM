@@ -147,8 +147,8 @@
     <system:String x:Key="LoadAllDependencies">📥 加载所有依赖项</system:String>
     <system:String x:Key="LoadAllDependencies_Tip">加载选定场景/预设的所有依赖项</system:String>
     <system:String x:Key="DepsPaneSplitter_Tip">拖动以调整大小。双击以折叠/展开。</system:String>
-    <system:String x:Key="Dependencies">依赖项 </system:String>
-    <system:String x:Key="Dependents">被依赖项 </system:String>
+    <system:String x:Key="Dependencies">依赖项</system:String>
+    <system:String x:Key="Dependents">被依赖项</system:String>
     <system:String x:Key="DepsSearchBox_Placeholder">🔍 筛选依赖项...</system:String>
     <system:String x:Key="DependenciesSortButton_ToolTip">排序依赖项（滚动以导航）</system:String>
     <system:String x:Key="DownloadMissingButton_ToolTip">下载选定的缺失依赖项</system:String>
@@ -323,8 +323,8 @@
     <system:String x:Key="Sort_Category">类别</system:String>
     <system:String x:Key="Sort_Subfolder">子文件夹</system:String>
     <system:String x:Key="Sort_Count">数量</system:String>
-    <system:String x:Key="Sort_Ascending_Arrow"> ↑</system:String>
-    <system:String x:Key="Sort_Descending_Arrow"> ↓</system:String>
+    <system:String x:Key="Sort_Ascending_Arrow">↑</system:String>
+    <system:String x:Key="Sort_Descending_Arrow">↓</system:String>
     <system:String x:Key="Configure_Move_To_Destinations_Title">配置移动到目标</system:String>
     <system:String x:Key="Configure_Move_To_Destinations_Text">📁 移动到目标</system:String>
     <system:String x:Key="Configure_Move_To_Destinations_Description">配置快速移动软件包的目标文件夹。这些将出现在右键上下文菜单的“移动到”下。</system:String>
@@ -337,7 +337,7 @@
     <system:String x:Key="Description_Header">描述</system:String>
     <system:String x:Key="Disable_Move_Confirmation_Checkbox">禁用移动确认对话框</system:String>
     <system:String x:Key="Add_Button">➕ 添加</system:String>
-    <system:String x:Key="Edit_Button"> ✏️ 编辑</system:String>
+    <system:String x:Key="Edit_Button">✏️ 编辑</system:String>
     <system:String x:Key="Remove_Button">🗑️ 删除</system:String>
     <system:String x:Key="MoveUp_Button">⬆️ 上移</system:String>
     <system:String x:Key="MoveDown_Button">⬇️ 下移</system:String>
@@ -350,12 +350,12 @@
     <system:String x:Key="DuplicateNames_Dialog">发现重复的目标名称: {0}。请使用唯一的名称。</system:String>
     <system:String x:Key="SettingsManagerUnavailable_Dialog">错误: 设置管理器不可用。</system:String>
     <system:String x:Key="Select_Color_Title">选择颜色</system:String>
-    <system:String x:Key="Selected_Text">已选择: </system:String>
+    <system:String x:Key="Selected_Text">已选择:</system:String>
     <system:String x:Key="Add_Destination_Title">添加目标</system:String>
     <system:String x:Key="Edit_Destination_Title">编辑目标</system:String>
-    <system:String x:Key="Name_Label">名称: </system:String>
-    <system:String x:Key="Path_Label">路径: </system:String>
-    <system:String x:Key="Description_Label">描述: </system:String>
+    <system:String x:Key="Name_Label">名称:</system:String>
+    <system:String x:Key="Path_Label">路径:</system:String>
+    <system:String x:Key="Description_Label">描述:</system:String>
     <system:String x:Key="Select_Destination_Folder">选择目标文件夹</system:String>
     <system:String x:Key="Validation_Name_Required">请输入此目标的名称。</system:String>
     <system:String x:Key="Validation_Path_Required">请输入或选择此目标的路径。</system:String>
