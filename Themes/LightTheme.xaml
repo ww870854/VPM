@@ -191,7 +191,7 @@
     </Style>
     
     <!-- MenuItem Style -->
-    <Style x:Key="DarkThemeMenuItemStyle" TargetType="MenuItem">
+    <Style x:Key="LightThemeMenuItemStyle" TargetType="MenuItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="Padding" Value="9,3"/>
@@ -268,7 +268,7 @@
                                    PopupAnimation="None">
                                 <Border Name="SubmenuBorder" 
                                         SnapsToDevicePixels="True" 
-                                        Background="#FFFFFFFF" 
+                                        Background="{StaticResource MenuBackgroundBrush}" 
                                         BorderBrush="#FFCCCCCC" 
                                         BorderThickness="1"
                                         Padding="3"
@@ -319,10 +319,18 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    <!-- Apply DarkThemeMenuItemStyle as default MenuItem style -->
-    <Style BasedOn="{StaticResource DarkThemeMenuItemStyle}" TargetType="MenuItem"/>
-    
+    <Style x:Key="ThemeMenuItemStyle" TargetType="MenuItem" BasedOn="{StaticResource LightThemeMenuItemStyle}" />
+    <!-- Apply LightThemeMenuItemStyle as default MenuItem style -->
+    <!--<Style BasedOn="{StaticResource LightThemeMenuItemStyle}" TargetType="MenuItem"/>-->
+    <!-- Alias 用于统一引用当前主题的 MenuItem 基样式 -->
+    <!-- 隐式样式：当主题字典被合并到 Application.Resources 时，会自动应用到所有 MenuItem -->
+    <Style TargetType="MenuItem" BasedOn="{StaticResource ThemeMenuItemStyle}" />
+    <!-- Light 主题中添加顶栏 MenuButtonStyle -->
+    <Style x:Key="MenuButtonStyle" TargetType="MenuItem" BasedOn="{StaticResource ThemeMenuItemStyle}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Height" Value="32" />
+    </Style>
     <!-- StatusBar Style -->
     <Style TargetType="StatusBar">
         <Setter Property="Background" Value="{StaticResource StatusBarBackgroundBrush}"/>
@@ -685,5 +693,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
 </ResourceDictionary>

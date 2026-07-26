@@ -10,11 +10,14 @@ namespace VPM
 {
     public partial class App : Application
     {
-
+        // 1. 添加这个公共静态属性，暴露给其他类使用
+        public static ISettingsManager SettingsManager { get; private set; }
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
+            var settingsManager = new SettingsManager();
+            SettingsManager = settingsManager; // 【关键】赋值给静态属性
 
             Dispatcher.BeginInvoke(new Action(() =>
             {

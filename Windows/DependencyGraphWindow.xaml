@@ -1,10 +1,11 @@
-<Window
+﻿<Window
     x:Class="VPM.Windows.DependencyGraphWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
     xmlns:graphshape="clr-namespace:GraphShape.Controls;assembly=GraphShape.Controls"
     xmlns:local="clr-namespace:VPM.Windows"
-    Title="Dependency Graph"
+    Title="{Binding [Dependency_Graph], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="1300"
     Height="850"
     MinWidth="800"
@@ -256,7 +257,7 @@
                             VerticalAlignment="Center"
                             FontSize="13"
                             Foreground="#A0A0A0"
-                            Text="Dependency Graph - " />
+                            Text="{Binding [Dependency_Graph1], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <TextBlock
                             x:Name="PackageNameText"
                             VerticalAlignment="Center"
@@ -272,18 +273,18 @@
                             Click="MinimizeWindow_Click"
                             Content="─"
                             Style="{StaticResource TitleBarButton}"
-                            ToolTip="Minimize" />
+                            ToolTip="{Binding [Minimize_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <Button
                             x:Name="MaximizeRestoreButton"
                             Click="MaximizeRestoreWindow_Click"
                             Content="□"
                             Style="{StaticResource TitleBarButton}"
-                            ToolTip="Maximize" />
+                            ToolTip="{Binding [Maximize_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <Button
                             Click="CloseWindow_Click"
                             Content="✕"
                             Style="{StaticResource TitleBarCloseButton}"
-                            ToolTip="Close" />
+                            ToolTip="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
 
@@ -296,27 +297,28 @@
                         Margin="0,0,8,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="Layout:" />
+                        Text="{Binding [Layout], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <ComboBox
                         x:Name="LayoutComboBox"
                         Width="120"
                         ItemContainerStyle="{StaticResource DarkComboBoxItem}"
                         SelectedIndex="0"
                         SelectionChanged="LayoutComboBox_SelectionChanged"
-                        Style="{StaticResource DarkComboBox}">
-                        <ComboBoxItem Content="Grid" />
-                        <ComboBoxItem Content="Sugiyama" />
-                        <ComboBoxItem Content="Tree" />
-                        <ComboBoxItem Content="Circular" />
-                        <ComboBoxItem Content="FR" />
-                        <ComboBoxItem Content="CompoundFDP" />
+                        Style="{StaticResource DarkComboBox}"
+                        SelectedValuePath="Tag">
+                        <ComboBoxItem Tag="Grid" Content="{Binding [Grid], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="Sugiyama" Content="{Binding [Sugiyama], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="Tree" Content="{Binding [Tree], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="Circular" Content="{Binding [Circular], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="FR" Content="{Binding [FR], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="CompoundFDP" Content="{Binding [CompoundFDP], Source={x:Static Language:LanguageManager.Instance}}" />
                     </ComboBox>
 
                     <TextBlock
                         Margin="16,0,8,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="Depth:" />
+                        Text="{Binding [Depth], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <ComboBox
                         x:Name="DepthComboBox"
                         Width="50"
@@ -333,17 +335,18 @@
                         Margin="16,0,8,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="View:" />
+                        Text="{Binding [View], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <ComboBox
                         x:Name="ViewModeComboBox"
                         Width="140"
                         ItemContainerStyle="{StaticResource DarkComboBoxItem}"
                         SelectedIndex="0"
                         SelectionChanged="ViewModeComboBox_SelectionChanged"
-                        Style="{StaticResource DarkComboBox}">
-                        <ComboBoxItem Content="Dependencies" />
-                        <ComboBoxItem Content="Dependents" />
-                        <ComboBoxItem Content="Both" />
+                        Style="{StaticResource DarkComboBox}"
+                        SelectedValuePath="Tag">
+                        <ComboBoxItem Tag="Dependencies" Content="{Binding [Dependencies], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="Dependents" Content="{Binding [Dependents], Source={x:Static Language:LanguageManager.Instance}}" />
+                        <ComboBoxItem Tag="Both" Content="{Binding [Both], Source={x:Static Language:LanguageManager.Instance}}" />
                     </ComboBox>
 
                     <Button
@@ -351,7 +354,7 @@
                         Margin="12,0,0,0"
                         Padding="10,4"
                         Click="Relayout_Click"
-                        Content="🔄 Relayout"
+                        Content="{Binding [Relayout], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                         Style="{StaticResource DarkButton}" />
                     <Button
                         Width="36"
@@ -360,7 +363,7 @@
                         Click="ZoomIn_Click"
                         Content="➕"
                         Style="{StaticResource DarkButton}"
-                        ToolTip="Zoom In" />
+                        ToolTip="{Binding [Zoom_In], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <Button
                         Width="36"
                         Height="36"
@@ -368,14 +371,14 @@
                         Click="ZoomOut_Click"
                         Content="➖"
                         Style="{StaticResource DarkButton}"
-                        ToolTip="Zoom Out" />
+                        ToolTip="{Binding [Zoom_Out], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <Button
                         Width="36"
                         Height="36"
                         Click="ResetView_Click"
                         Content="⟲"
                         Style="{StaticResource DarkButton}"
-                        ToolTip="Reset View" />
+                        ToolTip="{Binding [Reset_View], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -654,7 +657,7 @@
                         Margin="0,0,20,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="Root" />
+                        Text="{Binding [Root], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                     <Border
                         Width="12"
@@ -666,7 +669,7 @@
                         Margin="0,0,20,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="Dependency" />
+                        Text="{Binding [Dependency], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                     <Border
                         Width="12"
@@ -678,7 +681,7 @@
                         Margin="0,0,20,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="Dependent" />
+                        Text="{Binding [Dependent], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                     <Border
                         Width="12"
@@ -690,7 +693,7 @@
                         Margin="0,0,20,0"
                         VerticalAlignment="Center"
                         Foreground="#A0A0A0"
-                        Text="Missing" />
+                        Text="{Binding [Missing], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                     <TextBlock
                         Margin="0,0,10,0"
@@ -701,7 +704,7 @@
                         VerticalAlignment="Center"
                         FontSize="11"
                         Foreground="#606060"
-                        Text="💡 Scroll to zoom • Drag to pan • Drag nodes to reposition" />
+                        Text="{Binding [Drag_tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                 </StackPanel>
 
                 <TextBlock

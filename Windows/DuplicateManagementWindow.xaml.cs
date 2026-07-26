@@ -523,7 +523,7 @@ namespace VPM
                 deleteCount += CountFilesToDelete(item);
             }
 
-            FixDuplicatesButton.Content = $"Fix Duplicates ({deleteCount})";
+            FixDuplicatesButton.Content = string.Format(LanguageManager.Instance.GetCodeString("Fix_Duplicates_S"),deleteCount);
             FixDuplicatesButton.IsEnabled = hasSelection && deleteCount > 0;
         }
 
@@ -556,7 +556,7 @@ namespace VPM
 
         private void UpdateStatusText()
         {
-            StatusText.Text = $"Found {_duplicatePackages.Count} duplicate package(s)";
+            StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("Found_Count_duplicate_packages"), _duplicatePackages.Count);
         }
 
         private void DuplicatesDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -823,7 +823,7 @@ namespace VPM
 
             if (packagesToDelete.Count == 0)
             {
-                DarkMessageBox.Show("No packages selected for deletion or moving.", "Fix Duplicates", 
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("Fix_Duplicates_message"), LanguageManager.Instance.GetCodeString("Fix_Duplicates"), 
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }

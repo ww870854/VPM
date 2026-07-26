@@ -1,7 +1,9 @@
 ﻿<Window x:Class="VPM.SubfolderSelectionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Select Package Version to Keep" 
+        xmlns:local="clr-namespace:VPM"
+        xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+        Title="{Binding [msg_119], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
         Width="700" Height="450"
         WindowStartupLocation="CenterOwner"
         Background="#1E1E1E"
@@ -102,11 +104,11 @@
         
         <!-- Header -->
         <StackPanel Grid.Row="0">
-            <TextBlock x:Name="TitleText" Text="Multiple Package Versions Found" 
+            <TextBlock x:Name="TitleText" Text="{Binding [msg_120], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                        FontSize="18" FontWeight="Bold" 
                        Foreground="#4CAF50" Margin="0,0,0,10"/>
             <TextBlock x:Name="DescriptionText" 
-                       Text="Multiple versions of this package exist in different subfolders. Please select which version to keep - all others will be deleted." 
+                       Text="{Binding [msg_121], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                        FontSize="13" Foreground="#B0B0B0" TextWrapping="Wrap"/>
         </StackPanel>
         
@@ -114,7 +116,7 @@
         <DataGrid x:Name="VersionsDataGrid" Grid.Row="2">
             <DataGrid.Columns>
                 <!-- Location Column -->
-                <DataGridTextColumn Header="Location" Width="*" Binding="{Binding RelativeLocation}" IsReadOnly="True">
+                <DataGridTextColumn Header="{Binding [msg_122], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" Width="*" Binding="{Binding RelativeLocation}" IsReadOnly="True">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Padding" Value="12,0"/>
@@ -125,7 +127,7 @@
                 </DataGridTextColumn>
                 
                 <!-- File Size Column -->
-                <DataGridTextColumn Header="Size" Width="100" Binding="{Binding FileSizeFormatted}" IsReadOnly="True">
+                <DataGridTextColumn Header="{Binding [Sort_Size], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" Width="100" Binding="{Binding FileSizeFormatted}" IsReadOnly="True">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Padding" Value="12,0"/>
@@ -136,7 +138,7 @@
                 </DataGridTextColumn>
                 
                 <!-- Modified Date Column -->
-                <DataGridTextColumn Header="Modified" Width="140" Binding="{Binding ModifiedDateFormatted}" IsReadOnly="True">
+                <DataGridTextColumn Header="{Binding [msg_123], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" Width="140" Binding="{Binding ModifiedDateFormatted}" IsReadOnly="True">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Padding" Value="12,0"/>
@@ -160,11 +162,11 @@
             
             <!-- Buttons -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="KeepSelectedButton" Content="Keep Selected Version" 
+                <Button x:Name="KeepSelectedButton" Content="{Binding [msg_124], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                         MinWidth="180" Height="40" FontWeight="SemiBold"
                         Background="#4CAF50" Foreground="White"
                         Click="KeepSelected_Click" Margin="0,0,15,0"/>
-                <Button Content="Cancel" MinWidth="100" Height="40" 
+                <Button Content="{Binding [Cancel_1], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" MinWidth="100" Height="40" 
                         Click="Cancel_Click"/>
             </StackPanel>
         </Grid>

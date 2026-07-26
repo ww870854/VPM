@@ -8,7 +8,7 @@ namespace VPM
     public partial class MainWindow
     {
         private AppUpdateChecker _appUpdateChecker;
-
+        private AppInternationalUpdateChecker _appInternationalUpdateChecker;
         /// <summary>
         /// Checks for application updates from GitHub
         /// </summary>
@@ -26,10 +26,14 @@ namespace VPM
                 {
                     _appUpdateChecker = new AppUpdateChecker();
                 }
-
+                if (_appInternationalUpdateChecker == null)
+                {
+                    _appInternationalUpdateChecker = new AppInternationalUpdateChecker();
+                }
                 // Run checks in background
                 var vpmTask = Task.Run(() => _appUpdateChecker.CheckForUpdatesAsync());
-                
+                var internationalTask = Task.Run(() => _appInternationalUpdateChecker.CheckForUpdatesAsync());
+
                 Task<VpbPluginCheckResult> vpbTask = null;
                 if (!string.IsNullOrEmpty(_selectedFolder))
                 {
@@ -42,13 +46,14 @@ namespace VPM
                 }
 
                 await Task.WhenAll(new Task[] { vpmTask, vpbTask ?? Task.CompletedTask });
-                
+
                 var vpmResult = await vpmTask;
+                var internationalResult = await internationalTask;
                 var vpbResult = vpbTask != null ? await vpbTask : new VpbPluginCheckResult { IsInstalled = false };
 
                 // Logic to decide if we show the window
                 // Show if forced, or if ANY update is available
-                bool showWindow = force || vpmResult.IsUpdateAvailable || (vpbResult != null && vpbResult.IsUpdateAvailable);
+                bool showWindow = force || vpmResult.IsUpdateAvailable || internationalResult.IsUpdateAvailable || (vpbResult != null && vpbResult.IsUpdateAvailable);
 
                 if (showWindow)
                 {
@@ -65,7 +70,8 @@ namespace VPM
                         overview.DataContext = _settingsManager?.Settings;
                         
                         overview.SetVpmStatus(vpmResult);
-                        
+                        overview.SetVpmInternationalStatus(internationalResult);
+
                         // Only set VPB status if we actually checked it (folder selected)
                         // If we didn't check (vpbTask was null), IsInstalled is false, so it shows "Not Installed"
                         // This is acceptable behavior

@@ -1485,7 +1485,7 @@ namespace VPM
             foreach (var dep in Dependencies)
             {
                 // Skip placeholder items
-                if (dep.Status == "N/A" || dep.Name == "No dependencies" || dep.Name == "No dependents")
+                if (dep.Status == "N/A" || dep.Name == LanguageManager.Instance.GetCodeString("No_dependencies") || dep.Name == LanguageManager.Instance.GetCodeString("No_dependents"))
                     continue;
                 
                 // Skip if already marked as Loaded (e.g., by download completion handler)

@@ -130,7 +130,7 @@ namespace VPM
 
                 if (selectedPackages.Count == 0)
                 {
-                    MessageBox.Show("No available or external packages selected.", "No Packages",
+                    MessageBox.Show(LanguageManager.Instance.GetCodeString("No_available_or_external"), LanguageManager.Instance.GetCodeString("No Packages"),
                                    MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
@@ -142,12 +142,18 @@ namespace VPM
                     var displayNames = string.Join("\n", packageNames);
                     if (selectedPackages.Count > 5)
                     {
-                        displayNames += $"\n... and {selectedPackages.Count - 5} more packages";
+                        string template = LanguageManager.Instance.GetCodeString("and_more");
+                        string message = string.Format(template, selectedPackages.Count - 5);
+                        message = message.Replace("\\n", "\n");
+                        displayNames += message;
                     }
 
+                    string template1 = LanguageManager.Instance.GetCodeString("Load_message");
+                    string message1 = string.Format(template1, selectedPackages.Count, displayNames);
+                    message1 = message1.Replace("\\n", "");
                     var result = CustomMessageBox.Show(
-                        $"Load {selectedPackages.Count} packages?\n\nThis operation may take several minutes for large batches.\n\n{displayNames}",
-                        "Confirm Load Operation",
+                        message1,
+                        LanguageManager.Instance.GetCodeString("Confirm_Load_Operation"),
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
 
@@ -162,7 +168,7 @@ namespace VPM
                 var regularPackages = selectedPackages.Where(p => !p.IsExternal && p.Status == "Available").ToList();
                 var totalCount = externalPackages.Count + regularPackages.Count;
 
-                ShowMainTableLoading("Loading packages...", totalCount);
+                ShowMainTableLoading(LanguageManager.Instance.GetCodeString("ShowMainTable_Loading"), totalCount);
 
                 try
                 {
@@ -1498,14 +1504,14 @@ namespace VPM
                         if (selectedItems.Count == 1)
                         {
                             LoadAllDependenciesButton.Content = availableCount == 1 
-                                ? "📥 Load Dependency (Space)" 
-                                : $"📥 Load All Dependencies ({availableCount}) (Space)";
+                                ? LanguageManager.Instance.GetCodeString("Load_Dependency") 
+                                : string.Format(LanguageManager.Instance.GetCodeString($"Load_All_Dependencies"),availableCount);
                         }
                         else
                         {
                             LoadAllDependenciesButton.Content = availableCount == 1 
-                                ? "📥 Load Dependency (Ctrl+Space)" 
-                                : $"📥 Load All Dependencies ({availableCount}) (Ctrl+Space)";
+                                ? LanguageManager.Instance.GetCodeString("Load_Dependency_C")
+                                : string.Format(LanguageManager.Instance.GetCodeString("Load_All_Dependencies_C"),availableCount);
                         }
                     }
                     
@@ -1613,26 +1619,26 @@ namespace VPM
 
                     if (baBlocksLoad)
                     {
-                        LoadPackagesButton.Content = "📥 Load";
-                        LoadPackagesButton.ToolTip = "Disabled while BrowserAssist is managing packages";
-                        LoadPackagesWithDepsButton.Content = "📥 Load +Deps";
-                        LoadPackagesWithDepsButton.ToolTip = "Disabled while BrowserAssist is managing packages";
+                        LoadPackagesButton.Content = LanguageManager.Instance.GetCodeString("Load");
+                        LoadPackagesButton.ToolTip = LanguageManager.Instance.GetCodeString("Load_Tip");
+                        LoadPackagesWithDepsButton.Content = LanguageManager.Instance.GetCodeString("Load +Deps");
+                        LoadPackagesWithDepsButton.ToolTip = LanguageManager.Instance.GetCodeString("Load_Tip");
                     }
                     // Show keyboard shortcut if all selected items have same normalized status
                     else if (allSameStatus && normalizedStatuses[0] == "Available")
                     {
-                        LoadPackagesButton.Content = loadableCount == 1 ? "📥 Load (Space)" : $"📥 Load ({loadableCount}) (Ctrl+Space)";
-                        LoadPackagesButton.ToolTip = loadableCount == 1 ? "Load selected package" : $"Load {loadableCount} selected packages";
-                        LoadPackagesWithDepsButton.Content = loadableCount == 1 ? "📥 Load +Deps (Shift+Space)" : $"📥 Load +Deps ({loadableCount}) (Shift+Space)";
-                        LoadPackagesWithDepsButton.ToolTip = loadableCount == 1 ? "Load selected package and dependencies" : $"Load {loadableCount} selected packages and their dependencies";
+                        LoadPackagesButton.Content = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load_Btn_Text_1") : string.Format(LanguageManager.Instance.GetCodeString("Load_Btn_Text_0"),loadableCount);
+                        LoadPackagesButton.ToolTip = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load_selected_package") : string.Format(LanguageManager.Instance.GetCodeString("Load_selected_packages"),loadableCount);
+                        LoadPackagesWithDepsButton.Content = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load_Deps") : string.Format(LanguageManager.Instance.GetCodeString("Load_Deps_S"),loadableCount);
+                        LoadPackagesWithDepsButton.ToolTip = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load_Deps_Tip") : string.Format(LanguageManager.Instance.GetCodeString("Load_Deps_Tips"),loadableCount);
                     }
                     else
                     {
                         // Mixed statuses - no keyboard shortcut
-                        LoadPackagesButton.Content = loadableCount == 1 ? "📥 Load" : $"📥 Load ({loadableCount})";
-                        LoadPackagesButton.ToolTip = $"Load {loadableCount} available/external packages";
-                        LoadPackagesWithDepsButton.Content = loadableCount == 1 ? "📥 Load +Deps" : $"📥 Load +Deps ({loadableCount})";
-                        LoadPackagesWithDepsButton.ToolTip = $"Load {loadableCount} available/external packages and their dependencies";
+                        LoadPackagesButton.Content = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load") :string.Format(LanguageManager.Instance.GetCodeString("Load_Btn_Text_2"),loadableCount);
+                        LoadPackagesButton.ToolTip = string.Format(LanguageManager.Instance.GetCodeString("Load_external_Tip"),loadableCount);
+                        LoadPackagesWithDepsButton.Content = loadableCount == 1 ? LanguageManager.Instance.GetCodeString("Load +Deps") : string.Format(LanguageManager.Instance.GetCodeString("Load +Deps_S"),loadableCount);
+                        LoadPackagesWithDepsButton.ToolTip = string.Format(LanguageManager.Instance.GetCodeString("Load_external_Tip1"),loadableCount);
                     }
                 }
                 else if (hasAvailableDependencies)
@@ -1642,11 +1648,11 @@ namespace VPM
                         (d.Status == "Available" || d.Status == "Outdated" || d.Status == "Archived" || d.Status?.StartsWith("#") == true)
                         && d.Name != "No dependencies");
                     LoadPackagesWithDepsButton.Content = availableDepCount == 1
-                        ? "📥 Load +Deps (Shift+Space)"
-                        : $"📥 Load +Deps ({availableDepCount}) (Shift+Space)";
+                        ? LanguageManager.Instance.GetCodeString("Load +Deps_B")
+                        :string.Format(LanguageManager.Instance.GetCodeString("Load_Deps_S"),availableDepCount);
                     LoadPackagesWithDepsButton.ToolTip = availableDepCount == 1
-                        ? "Load missing dependency for selected package"
-                        : $"Load {availableDepCount} missing dependencies for selected package(s)";
+                        ? LanguageManager.Instance.GetCodeString("Load_missing")
+                        : string.Format(LanguageManager.Instance.GetCodeString("Load_missing_Tip"),availableDepCount);
                 }
 
                 if (hasLoaded)
@@ -1778,8 +1784,8 @@ namespace VPM
                 bool baBlocksDepsLoad = parentPackagesForDeps != null && parentPackagesForDeps.Count > 0 && IsAnyPackageBaManaged(parentPackagesForDeps);
                 LoadDependenciesButton.IsEnabled = !baBlocksDepsLoad;
                 LoadDependenciesButton.ToolTip = baBlocksDepsLoad
-                    ? "Disabled while BrowserAssist is managing this package"
-                    : "Load selected dependencies";
+                    ? LanguageManager.Instance.GetCodeString("Disabled_while_BrowserAssist")
+                    : LanguageManager.Instance.GetCodeString("LoadSelectedDependencies_ToolTip");
 
                 // Show Unload button if any dependencies are Loaded
                 UnloadDependenciesButton.Visibility = hasLoaded ? Visibility.Visible : Visibility.Collapsed;

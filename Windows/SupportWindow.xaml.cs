@@ -4,7 +4,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using VPM.Language;
 using VPM.Services;
+using VPM.Windows;
 
 namespace VPM
 {
@@ -18,6 +20,7 @@ namespace VPM
         private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 
         private SupportInfo _supportInfo;
+        private SupportInfo _supportInfo1;
 
         public SupportWindow()
         {
@@ -96,7 +99,7 @@ namespace VPM
             catch (System.Exception ex)
             {
                 LoadingOverlay.Visibility = Visibility.Collapsed;
-                MessageBox.Show($"Failed to load support data: {ex.Message}");
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_106"), ex.Message));
             }
         }
 
@@ -105,6 +108,25 @@ namespace VPM
             // Use loaded link or fallback
             string url = _supportInfo?.PatreonLink ?? "https://www.patreon.com/gicstin";
             OpenUrl(url);
+        }
+        private void InternationalButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. 定义图片链接（可以是硬编码，也可以从配置/输入框获取）
+            string imageUrl = "https://hovv.cn/usr/uploads/2026/07/3792200568.jpg";
+
+            // 2. 创建子窗口实例
+            // 假设你的子窗口类名为 ImageWindow，构造函数接收图片URL
+            var childWindow = new SupportImage(imageUrl);
+
+            // 3. 【关键步骤】设置所有者为当前主窗口
+            // 这建立了父子关系，让子窗口知道“中心”是相对于谁而言的
+            childWindow.Owner = this;
+
+            // 4. 【关键步骤】设置启动位置为“相对于所有者居中”
+            childWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            // 5. 显示窗口
+            childWindow.ShowDialog();
         }
 
         private void SupporterItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -128,7 +150,7 @@ namespace VPM
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Could not open link: {ex.Message}");
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_107"), ex.Message));
             }
         }
 

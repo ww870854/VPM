@@ -248,7 +248,7 @@ namespace VPM
                             {
                                 var text = ExtractFilterValue(GetListBoxItemText(item));
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "SceneStatus", Label = $"Status: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "SceneStatus", Label = string.Format(LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Status"), text), Value = text });
                             }
                         }
                         if (SceneSourceFilterList?.SelectedItems?.Count > 0)
@@ -332,7 +332,7 @@ namespace VPM
                             {
                                 var text = ExtractFilterValue(GetListBoxItemText(item));
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "PresetStatus", Label = $"Status: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "PresetStatus", Label = string.Format(LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Status"), text), Value = text });
                             }
                         }
 
@@ -352,11 +352,11 @@ namespace VPM
                             foreach (var item in StatusFilterList.SelectedItems)
                             {
                                 var text = ExtractFilterValue(GetListBoxItemText(item));
-                                if (string.Equals(text, "Duplicates", StringComparison.OrdinalIgnoreCase))
-                                    text = "Duplicate";
+                                if (string.Equals(text, LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
+                                    text = LanguageManager.Instance.GetCodeString("Duplicate");
 
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "Status", Label = $"Status: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "Status", Label = string.Format(LanguageManager.Instance.GetCodeString("PackageInfoTemplate_Status"), text), Value = text });
                             }
                         }
 
@@ -435,7 +435,7 @@ namespace VPM
                             {
                                 var text = ExtractFilterValue(GetListBoxItemText(item));
                                 if (!string.IsNullOrEmpty(text))
-                                    tokens.Add(new ActiveFilterToken { Kind = "Playlist", Label = $"Playlist: {text}", Value = text });
+                                    tokens.Add(new ActiveFilterToken { Kind = "Playlist", Label = string.Format(LanguageManager.Instance.GetCodeString("list_7"), text), Value = text });
                             }
                         }
 
@@ -835,32 +835,32 @@ namespace VPM
                         }
 
                         // Route status to appropriate collection based on type
-                        if (status.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) || 
-                            status.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
+                        if (status.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) || 
+                            status.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
                         {
                             _filterManager.FilterDuplicates = true;
                         }
-                        else if (status == "Favorites" || status == "Non-Favorites")
+                        else if (status == LanguageManager.Instance.GetCodeString("Favorites") || status == "Non-Favorites")
                         {
                             _filterManager.SelectedFavoriteStatuses.Add(status);
                         }
-                        else if (status == "AutoInstall")
+                        else if (status == LanguageManager.Instance.GetCodeString("AutoInstall"))
                         {
                             _filterManager.SelectedAutoInstallStatuses.Add(status);
                         }
-                        else if (status == "Latest" || status == "Old")
+                        else if (status == LanguageManager.Instance.GetCodeString("Latest") || status == LanguageManager.Instance.GetCodeString("Old"))
                         {
                             _filterManager.SelectedVersionStatuses.Add(status);
                         }
-                        else if (status == "No Dependents")
+                        else if (status == LanguageManager.Instance.GetCodeString("No_dependents"))
                         {
                             _filterManager.FilterNoDependents = true;
                         }
-                        else if (status == "No Dependencies")
+                        else if (status == LanguageManager.Instance.GetCodeString("No_Dependencies"))
                         {
                             _filterManager.FilterNoDependencies = true;
                         }
-                        else if (status == "Dependents (Custom)")
+                        else if (status == LanguageManager.Instance.GetCodeString("list_5"))
                         {
                             _filterManager.FilterCustomDependents = true;
                         }
@@ -942,7 +942,7 @@ namespace VPM
                         {
                             // Extract status from "Status (count)" format - no emojis to handle
                             var status = itemText.Split('(')[0].Trim();
-                            if (status.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) || status.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
+                            if (status.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) || status.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
                             {
                                 duplicatesSelected = true;
                             }
@@ -960,7 +960,7 @@ namespace VPM
 
                     if (duplicatesSelected)
                     {
-                        filters["Duplicate"] = true;
+                        filters[LanguageManager.Instance.GetCodeString("Duplicate")] = true;
                     }
                 }
 
@@ -1491,9 +1491,9 @@ namespace VPM
                     {
                         // Extract status name without count and normalize
                         var statusName = itemText.Split('(')[0].Trim();
-                        if (statusName.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
+                        if (statusName.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
                         {
-                            statusName = "Duplicate";
+                            statusName = LanguageManager.Instance.GetCodeString("Duplicate");
                         }
                         selectedStatuses.Add(statusName);
                     }
@@ -1504,7 +1504,7 @@ namespace VPM
 
                 foreach (var status in statusCounts.Where(s => s.Value > 0).OrderBy(s => s.Key))
                 {
-                    var displayName = status.Key.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) ? "Duplicates" : status.Key;
+                    var displayName = status.Key.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) ? LanguageManager.Instance.GetCodeString("Duplicates") : status.Key;
                     var displayText = $"{displayName} ({status.Value})";
                     StatusFilterList.Items.Add(displayText);
 
@@ -1556,10 +1556,10 @@ namespace VPM
                 }
                 
                 {
-                    var displayText = $"Dependents (Custom) ({customDependentCount:N0})";
+                    var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_6"), customDependentCount);
                     StatusFilterList.Items.Add(displayText);
                     
-                    if (selectedStatuses.Contains("Dependents (Custom)"))
+                    if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("list_5")))
                     {
                         StatusFilterList.SelectedItems.Add(displayText);
                     }
@@ -1579,10 +1579,10 @@ namespace VPM
                             favoriteCount++;
                     }
                     
-                    var favText = $"Favorites ({favoriteCount:N0})";
+                    var favText = string.Format(LanguageManager.Instance.GetCodeString("msg_105"), favoriteCount);
                     StatusFilterList.Items.Add(favText);
                     
-                    if (selectedStatuses.Contains("Favorites"))
+                    if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Favorites")))
                     {
                         StatusFilterList.SelectedItems.Add(favText);
                     }
@@ -1602,10 +1602,10 @@ namespace VPM
                             autoInstallCount++;
                     }
                     
-                    var autoInstallText = $"AutoInstall ({autoInstallCount:N0})";
+                    var autoInstallText = string.Format(LanguageManager.Instance.GetCodeString("list_1"),autoInstallCount);
                     StatusFilterList.Items.Add(autoInstallText);
                     
-                    if (selectedStatuses.Contains("AutoInstall"))
+                    if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("AutoInstall")))
                     {
                         StatusFilterList.SelectedItems.Add(autoInstallText);
                     }
@@ -1632,9 +1632,9 @@ namespace VPM
                 
                 if (externalCount > 0)
                 {
-                    var displayText = $"External ({externalCount:N0})";
+                    var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_8"), externalCount);
                     StatusFilterList.Items.Add(displayText);
-                    if (selectedStatuses.Contains("External"))
+                    if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External")))
                     {
                         StatusFilterList.SelectedItems.Add(displayText);
                     }
@@ -1642,9 +1642,9 @@ namespace VPM
                 
                 if (localCount > 0)
                 {
-                    var displayText = $"Local ({localCount:N0})";
+                    var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_2"), localCount);
                     StatusFilterList.Items.Add(displayText);
-                    if (selectedStatuses.Contains("Local"))
+                    if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local")))
                     {
                         StatusFilterList.SelectedItems.Add(displayText);
                     }
@@ -1676,26 +1676,9 @@ namespace VPM
 
         private void UpdateFileSizeFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveFileSizeFilter)
         {
-            //var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
-            //var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-            //UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
-            var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
-
-            // 使用 FilterManager.FileSizeCategory 的 nameof 保证项目内键一致
-            var orderedRanges = new[]
-            {
-                nameof(FilterManager.FileSizeCategory.Tiny),
-                nameof(FilterManager.FileSizeCategory.Small),
-                nameof(FilterManager.FileSizeCategory.Medium),
-                nameof(FilterManager.FileSizeCategory.Large)
-            };
-
-            // 将 key -> 本地化显示文本 的转换传入 UpdateFilterListBox
-            UpdateFilterListBox(
-                FileSizeFilterList,
-                fileSizeCounts,
-                displayNameTransform: key => LanguageManager.Instance.GetCodeString(key),
-                orderedKeys: orderedRanges);
+            var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
+            var orderedRanges = new[] { LanguageManager.Instance.GetCodeString("Tiny"), LanguageManager.Instance.GetCodeString("Small"), LanguageManager.Instance.GetCodeString("Medium"), LanguageManager.Instance.GetCodeString("Large") };
+            UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
         }
 
         private void UpdateSubfoldersFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveSubfoldersFilter)
@@ -1704,112 +1687,6 @@ namespace VPM
             UpdateFilterListBox(SubfoldersFilterList, subfolderCounts);
         }
 
-        //private void UpdateDateFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveDateFilter)
-        //{
-        //    if (DateFilterList == null) return;
-
-        //    // Prevent infinite recursion by suppressing selection events
-        //    _suppressSelectionEvents = true;
-        //    try
-        //    {
-        //        var selectedItems = new List<string>();
-        //        foreach (var item in DateFilterList.SelectedItems)
-        //        {
-        //            string itemText = "";
-        //            if (item is ListBoxItem listBoxItem)
-        //            {
-        //                itemText = listBoxItem.Content?.ToString() ?? "";
-        //            }
-        //            else if (item is string stringItem)
-        //            {
-        //                itemText = stringItem;
-        //            }
-        //            else
-        //            {
-        //                itemText = item?.ToString() ?? "";
-        //            }
-        //            if (!string.IsNullOrEmpty(itemText))
-        //            {
-        //                selectedItems.Add(itemText);
-        //            }
-        //        }
-
-        //        if (hasActiveDateFilter)
-        //        {
-        //            // Hide non-selected items when date filter is active
-        //            var itemsToRemove = new List<string>();
-        //            foreach (string item in DateFilterList.Items)
-        //            {
-        //                if (!selectedItems.Contains(item))
-        //                {
-        //                    itemsToRemove.Add(item);
-        //                }
-        //            }
-
-        //            foreach (var item in itemsToRemove)
-        //            {
-        //                DateFilterList.Items.Remove(item);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            // Show all date filter options with counts from filtered packages
-        //            DateFilterList.Items.Clear();
-        //            var dateCounts = GetDateFilterCounts(filteredPackages);
-
-        //            // Store current selection tag
-        //            var selectedTag = "";
-        //            foreach (var item in selectedItems)
-        //            {
-        //                // Extract tag from display text or use the item directly
-        //                var parts = item.Split('(');
-        //                var baseText = parts[0].Trim();
-
-        //                selectedTag = baseText switch
-        //                {
-        //                    "All Time" => "AllTime",
-        //                    "Today" => "Today",
-        //                    "Past Week" => "PastWeek",
-        //                    "Past Month" => "PastMonth",
-        //                    "Past 3 Months" => "Past3Months",
-        //                    "Past Year" => "PastYear",
-        //                    "Custom Range..." => "CustomRange",
-        //                    _ => selectedTag
-        //                };
-
-        //                if (!string.IsNullOrEmpty(selectedTag)) break;
-        //            }
-
-        //            // Add all date filter options
-        //            var dateOptions = new[]
-        //            {
-        //                new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
-        //                new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
-        //                new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
-        //                new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
-        //                new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
-        //                new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
-        //                new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
-        //            };
-
-        //            foreach (var option in dateOptions)
-        //            {
-        //                var displayText = option.Tag == "CustomRange" ? option.Text : $"{option.Text} ({option.Count})";
-        //                DateFilterList.Items.Add(displayText);
-
-        //                // Restore selection
-        //                if (option.Tag == selectedTag)
-        //                {
-        //                    DateFilterList.SelectedItem = displayText;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        _suppressSelectionEvents = false;
-        //    }
-        //}
         private void UpdateDateFilterListWithCascade(Dictionary<string, VarMetadata> filteredPackages, bool hasActiveDateFilter)
         {
             if (DateFilterList == null) return;
@@ -1844,33 +1721,71 @@ namespace VPM
                 {
                     // Hide non-selected items when date filter is active
                     var itemsToRemove = new List<string>();
-                    foreach (var rawItem in DateFilterList.Items)
+                    foreach (string item in DateFilterList.Items)
                     {
-                        // Normalize both sides to the part before '(' so counts do not affect comparison
-                        var itemStr = rawItem?.ToString() ?? "";
-                        var itemName = itemStr.Split('(')[0].Trim();
-
-                        bool isSelected = selectedItems.Any(si =>
+                        if (!selectedItems.Contains(item))
                         {
-                            var siName = si.Split('(')[0].Trim();
-                            return string.Equals(siName, itemName, StringComparison.OrdinalIgnoreCase);
-                        });
-
-                        if (!isSelected)
-                        {
-                            itemsToRemove.Add(itemStr);
+                            itemsToRemove.Add(item);
                         }
                     }
 
-                    foreach (string rem in itemsToRemove)
+                    foreach (var item in itemsToRemove)
                     {
-                        DateFilterList.Items.Remove(rem);
+                        DateFilterList.Items.Remove(item);
                     }
                 }
                 else
                 {
-                    // No active date filter => repopulate to show all options
-                    PopulateDateFilterList();
+                    // Show all date filter options with counts from filtered packages
+                    DateFilterList.Items.Clear();
+                    var dateCounts = GetDateFilterCounts(filteredPackages);
+
+                    // Store current selection tag
+                    var selectedTag = "";
+                    foreach (var item in selectedItems)
+                    {
+                        // Extract tag from display text or use the item directly
+                        var parts = item.Split('(');
+                        var baseText = parts[0].Trim();
+
+                        selectedTag = baseText switch
+                        {
+                            "All Time" => "AllTime",
+                            "Today" => "Today",
+                            "Past Week" => "PastWeek",
+                            "Past Month" => "PastMonth",
+                            "Past 3 Months" => "Past3Months",
+                            "Past Year" => "PastYear",
+                            "Custom Range..." => "CustomRange",
+                            _ => selectedTag
+                        };
+
+                        if (!string.IsNullOrEmpty(selectedTag)) break;
+                    }
+
+                    // Add all date filter options
+                    var dateOptions = new[]
+                    {
+                        new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
+                        new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
+                        new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
+                        new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
+                        new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
+                        new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
+                        new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
+                    };
+
+                    foreach (var option in dateOptions)
+                    {
+                        var displayText = option.Tag == "CustomRange" ? option.Text : $"{option.Text} ({option.Count})";
+                        DateFilterList.Items.Add(displayText);
+
+                        // Restore selection
+                        if (option.Tag == selectedTag)
+                        {
+                            DateFilterList.SelectedItem = displayText;
+                        }
+                    }
                 }
             }
             finally
@@ -2070,9 +1985,9 @@ namespace VPM
                     {
                         // Extract status name without count and normalize
                         var statusName = itemText.Split('(')[0].Trim();
-                        if (statusName.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
+                        if (statusName.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
                         {
-                            statusName = "Duplicate";
+                            statusName = LanguageManager.Instance.GetCodeString("Duplicate");
                         }
                         selectedStatuses.Add(statusName);
                     }
@@ -2089,7 +2004,7 @@ namespace VPM
 
                     foreach (var status in statusCounts.OrderBy(s => s.Key))
                     {
-                        var displayName = status.Key.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) ? "Duplicates" : status.Key;
+                        var displayName = status.Key.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) ? LanguageManager.Instance.GetCodeString("Duplicates") : status.Key;
                         var displayText = $"{displayName} ({status.Value})";
                         StatusFilterList.Items.Add(displayText);
 
@@ -2141,10 +2056,10 @@ namespace VPM
                     }
                     
                     {
-                        var displayText = $"Dependents (Custom) ({customDependentCount:N0})";
+                        var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_6"), customDependentCount);
                         StatusFilterList.Items.Add(displayText);
                         
-                        if (selectedStatuses.Contains("Dependents (Custom)"))
+                        if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("list_5")))
                         {
                             StatusFilterList.SelectedItems.Add(displayText);
                         }
@@ -2156,9 +2071,9 @@ namespace VPM
                     
                     if (externalCount > 0)
                     {
-                        var displayText = $"External ({externalCount:N0})";
+                        var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_8"), externalCount);
                         StatusFilterList.Items.Add(displayText);
-                        if (selectedStatuses.Contains("External"))
+                        if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External")))
                         {
                             StatusFilterList.SelectedItems.Add(displayText);
                         }
@@ -2166,9 +2081,9 @@ namespace VPM
                     
                     if (localCount > 0)
                     {
-                        var displayText = $"Local ({localCount:N0})";
+                        var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_2"), localCount);
                         StatusFilterList.Items.Add(displayText);
-                        if (selectedStatuses.Contains("Local"))
+                        if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local")))
                         {
                             StatusFilterList.SelectedItems.Add(displayText);
                         }
@@ -2227,33 +2142,15 @@ namespace VPM
             {
             }
         }
-
         private void PopulateFileSizeFilterList()
         {
             if (FileSizeFilterList == null || _filterManager == null || _packageManager?.PackageMetadata == null) return;
 
             try
             {
-                //var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
-                //var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-                //UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
                 var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
-
-                // 使用 FilterManager.FileSizeCategory 的 nameof 保证项目内键一致
-                var orderedRanges = new[]
-                {
-                    nameof(FilterManager.FileSizeCategory.Tiny),
-                    nameof(FilterManager.FileSizeCategory.Small),
-                    nameof(FilterManager.FileSizeCategory.Medium),
-                    nameof(FilterManager.FileSizeCategory.Large)
-                };
-
-                // 将 key -> 本地化显示文本 的转换传入 UpdateFilterListBox
-                UpdateFilterListBox(
-                    FileSizeFilterList,
-                    fileSizeCounts,
-                    displayNameTransform: key => LanguageManager.Instance.GetCodeString(key),
-                    orderedKeys: orderedRanges);
+                var orderedRanges = new[] { LanguageManager.Instance.GetCodeString("Tiny"), LanguageManager.Instance.GetCodeString("Small"), LanguageManager.Instance.GetCodeString("Medium"), LanguageManager.Instance.GetCodeString("Large") };
+                UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
             }
             catch (Exception ex)
             {
@@ -2462,7 +2359,7 @@ namespace VPM
             // Add status items with updated counts
             foreach (var status in statusCounts.OrderBy(s => s.Key))
             {
-                var displayName = status.Key.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) ? "Duplicates" : status.Key;
+                var displayName = status.Key.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) ? LanguageManager.Instance.GetCodeString("Duplicates") : status.Key;
                 var statusDisplayText = $"{displayName} ({status.Value:N0})";
                 StatusFilterList.Items.Add(statusDisplayText);
 
@@ -2507,10 +2404,10 @@ namespace VPM
                     customDependentCount++;
             }
 
-            var customDisplayText = $"Dependents (Custom) ({customDependentCount:N0})";
+            var customDisplayText = string.Format(LanguageManager.Instance.GetCodeString("list_6"), customDependentCount);
             StatusFilterList.Items.Add(customDisplayText);
 
-            if (selectedStatuses.Contains("Dependents (Custom)"))
+            if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("list_5")))
             {
                 StatusFilterList.SelectedItems.Add(customDisplayText);
             }
@@ -2521,9 +2418,9 @@ namespace VPM
 
             if (externalCount > 0)
             {
-                var externalDisplayText = $"External ({externalCount:N0})";
+                var externalDisplayText = string.Format(LanguageManager.Instance.GetCodeString("list_8"), externalCount);
                 StatusFilterList.Items.Add(externalDisplayText);
-                if (selectedStatuses.Contains("External"))
+                if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External")))
                 {
                     StatusFilterList.SelectedItems.Add(externalDisplayText);
                 }
@@ -2531,9 +2428,9 @@ namespace VPM
 
             if (localCount > 0)
             {
-                var localDisplayText = $"Local ({localCount:N0})";
+                var localDisplayText = string.Format(LanguageManager.Instance.GetCodeString("list_2"), localCount);
                 StatusFilterList.Items.Add(localDisplayText);
-                if (selectedStatuses.Contains("Local"))
+                if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local")))
                 {
                     StatusFilterList.SelectedItems.Add(localDisplayText);
                 }
@@ -2557,10 +2454,10 @@ namespace VPM
                         favoriteCount++;
                 }
                 
-                var favText = $"Favorites ({favoriteCount:N0})";
+                var favText = string.Format(LanguageManager.Instance.GetCodeString("msg_105"), favoriteCount);
                 StatusFilterList.Items.Add(favText);
                 
-                if (selectedStatuses.Contains("Favorites"))
+                if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Favorites")))
                 {
                     StatusFilterList.SelectedItems.Add(favText);
                 }
@@ -2584,10 +2481,10 @@ namespace VPM
                         autoInstallCount++;
                 }
                 
-                var autoInstallText = $"AutoInstall ({autoInstallCount:N0})";
+                var autoInstallText = string.Format(LanguageManager.Instance.GetCodeString("list_1"),autoInstallCount);
                 StatusFilterList.Items.Add(autoInstallText);
                 
-                if (selectedStatuses.Contains("AutoInstall"))
+                if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("AutoInstall")))
                 {
                     StatusFilterList.SelectedItems.Add(autoInstallText);
                 }
@@ -2626,26 +2523,9 @@ namespace VPM
         /// </summary>
         private void UpdateFileSizeListCounts(Dictionary<string, VarMetadata> filteredPackages)
         {
-            //var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
-            //var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-            //UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
-            var fileSizeCounts = _filterManager.GetFileSizeCounts(_packageManager.PackageMetadata);
-
-            // 使用 FilterManager.FileSizeCategory 的 nameof 保证项目内键一致
-            var orderedRanges = new[]
-            {
-                nameof(FilterManager.FileSizeCategory.Tiny),
-                nameof(FilterManager.FileSizeCategory.Small),
-                nameof(FilterManager.FileSizeCategory.Medium),
-                nameof(FilterManager.FileSizeCategory.Large)
-            };
-
-            // 将 key -> 本地化显示文本 的转换传入 UpdateFilterListBox
-            UpdateFilterListBox(
-                FileSizeFilterList,
-                fileSizeCounts,
-                displayNameTransform: key => LanguageManager.Instance.GetCodeString(key),
-                orderedKeys: orderedRanges);
+            var fileSizeCounts = _filterManager.GetFileSizeCounts(filteredPackages);
+            var orderedRanges = new[] { LanguageManager.Instance.GetCodeString("Tiny"), LanguageManager.Instance.GetCodeString("Small"), LanguageManager.Instance.GetCodeString("Medium"), LanguageManager.Instance.GetCodeString("Large") };
+            UpdateFilterListBox(FileSizeFilterList, fileSizeCounts, orderedKeys: orderedRanges);
         }
 
         /// <summary>
@@ -2660,8 +2540,8 @@ namespace VPM
                 if (!string.IsNullOrEmpty(name))
                 {
                     // Normalize "Duplicates" to "Duplicate"
-                    if (name.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
-                        name = "Duplicate";
+                    if (name.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
+                        name = LanguageManager.Instance.GetCodeString("Duplicate");
                     selectedNames.Add(name);
                 }
             }

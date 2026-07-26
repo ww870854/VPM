@@ -81,24 +81,24 @@ namespace VPM
                         return;
                     }
                     
-                    SetStatus("Checking for package updates...");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_110"));
                 
                 // Load package source (local links.txt or Hub resources)
                 var sourceLoaded = await _updateChecker.LoadPackageSourceAsync();
                 if (!sourceLoaded)
                 {
-                    SetStatus("Failed to load package source for update checking");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_111"));
                     return;
                 }
                 
                 // Show which source is being used
                 if (_updateChecker.IsUsingLocalLinks)
                 {
-                    SetStatus("Checking for updates using local links.txt...");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_112"));
                 }
                 else
                 {
-                    SetStatus("Checking for updates using Hub resources...");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_113"));
                 }
                 
                 // CRITICAL FIX: Use the UNFILTERED package metadata, not the filtered UI collection!
@@ -157,7 +157,7 @@ namespace VPM
                 
                 if (onDiskPackages.Count == 0)
                 {
-                    SetStatus("No packages to check for updates");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_114"));
                     return;
                 }
                 
@@ -184,8 +184,8 @@ namespace VPM
                     // Only show status if updates found - otherwise keep "Ready" status
                     if (_updateCount > 0)
                     {
-                        var sourceInfo = _updateChecker.IsUsingLocalLinks ? " (from links.txt)" : " (from Hub)";
-                        SetStatus($"Found {_updateCount} package update(s) available{sourceInfo}");
+                        var sourceInfo = _updateChecker.IsUsingLocalLinks ? LanguageManager.Instance.GetCodeString("msg_117") : LanguageManager.Instance.GetCodeString("msg_118");
+                        SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_115"), _updateCount, sourceInfo));
                     }
                 }
                 finally
@@ -196,7 +196,7 @@ namespace VPM
             }
             catch (Exception)
             {
-                SetStatus("Error checking for updates");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_116"));
             }
         }
         

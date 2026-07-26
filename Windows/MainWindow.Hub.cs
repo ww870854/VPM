@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows;
+using VPM.Language;
 using VPM.Windows;
 
 namespace VPM

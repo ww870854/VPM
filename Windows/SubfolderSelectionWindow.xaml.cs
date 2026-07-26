@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using VPM.Language;
 
 namespace VPM
 {
@@ -46,7 +46,7 @@ namespace VPM
         {
             _packageVersions = new ObservableCollection<PackageVersionItem>();
             
-            TitleText.Text = $"Multiple Versions of '{packageName}' Found";
+            TitleText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_125"), packageName);
             
             foreach (var filePath in filePaths.OrderBy(f => f))
             {
@@ -136,7 +136,7 @@ namespace VPM
         
         private void UpdateStatusText()
         {
-            StatusText.Text = $"Found {_packageVersions.Count} version(s). Select one to keep - others will be deleted.";
+            StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_126"), _packageVersions.Count);
         }
         
         private void KeepSelected_Click(object sender, RoutedEventArgs e)
@@ -149,7 +149,7 @@ namespace VPM
             }
             else
             {
-                DarkMessageBox.Show("Please select a version to keep.", "No Selection", 
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_127"), LanguageManager.Instance.GetCodeString("msg_128"), 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }

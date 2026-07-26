@@ -315,8 +315,8 @@ namespace VPM.Services
             {
                 // Check if any non-External/Local status filter is active
                 bool hasNonExternalStatusFilter = state.SelectedStatuses.Count > 0 && 
-                    !(state.SelectedStatuses.Count == 1 && (state.SelectedStatuses.Contains("External") || state.SelectedStatuses.Contains("Local"))) &&
-                    !(state.SelectedStatuses.Count == 2 && state.SelectedStatuses.Contains("External") && state.SelectedStatuses.Contains("Local"));
+                    !(state.SelectedStatuses.Count == 1 && (state.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External")) || state.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local")))) &&
+                    !(state.SelectedStatuses.Count == 2 && state.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External")) && state.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local")));
                 
                 // Check if any other filter types are active
                 bool hasOtherFiltersActive = state.SelectedFavoriteStatuses.Count > 0 ||
@@ -379,8 +379,8 @@ namespace VPM.Services
             if (state.SelectedStatuses.Count > 0)
             {
                 // Check if "External" or "Local" filters are selected
-                bool hasExternalFilter = state.SelectedStatuses.Contains("External");
-                bool hasLocalFilter = state.SelectedStatuses.Contains("Local");
+                bool hasExternalFilter = state.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External"));
+                bool hasLocalFilter = state.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local"));
                 
                 if (hasExternalFilter || hasLocalFilter)
                 {
@@ -396,8 +396,8 @@ namespace VPM.Services
                     
                     // Remove External/Local from the status set for further processing
                     var otherStatuses = new HashSet<string>(state.SelectedStatuses, StringComparer.OrdinalIgnoreCase);
-                    otherStatuses.Remove("External");
-                    otherStatuses.Remove("Local");
+                    otherStatuses.Remove(LanguageManager.Instance.GetCodeString("External"));
+                    otherStatuses.Remove(LanguageManager.Instance.GetCodeString("Local"));
                     
                     // If there are other statuses besides External/Local, check them for non-external packages
                     if (otherStatuses.Count > 0 && !isExternalPackage)
@@ -424,12 +424,12 @@ namespace VPM.Services
                 bool matchesVersion = false;
                 foreach (var verStatus in state.SelectedVersionStatuses)
                 {
-                    if (verStatus.StartsWith("Latest") && !metadata.IsOldVersion)
+                    if (verStatus.StartsWith(LanguageManager.Instance.GetCodeString("Latest")) && !metadata.IsOldVersion)
                     {
                         matchesVersion = true;
                         break;
                     }
-                    else if (verStatus.StartsWith("Old") && metadata.IsOldVersion)
+                    else if (verStatus.StartsWith(LanguageManager.Instance.GetCodeString("Old")) && metadata.IsOldVersion)
                     {
                         matchesVersion = true;
                         break;
@@ -634,67 +634,27 @@ namespace VPM.Services
             }
         }
 
-        //private bool MatchesFileSizeFilter(long fileSizeBytes, FilterState state)
-        //{
-        //    if (state.SelectedFileSizeRanges.Count == 0)
-        //        return true;
-
-        //    // Convert bytes to MB for comparison
-        //    double fileSizeMB = fileSizeBytes / (1024.0 * 1024.0);
-
-        //    foreach (var range in state.SelectedFileSizeRanges)
-        //    {
-        //        // Extract the range name without the count (e.g., "Tiny (5)" -> "Tiny")
-        //        var rangeName = range.Split('(')[0].Trim();
-
-        //        if (rangeName == LanguageManager.Instance.GetCodeString("Tiny") && fileSizeMB < state.FileSizeTinyMax)
-        //            return true;
-        //        if (rangeName == LanguageManager.Instance.GetCodeString("Small") && fileSizeMB >= state.FileSizeTinyMax && fileSizeMB < state.FileSizeSmallMax)
-        //            return true;
-        //        if (rangeName == LanguageManager.Instance.GetCodeString("Medium") && fileSizeMB >= state.FileSizeSmallMax && fileSizeMB < state.FileSizeMediumMax)
-        //            return true;
-        //        if (rangeName == LanguageManager.Instance.GetCodeString("Large") && fileSizeMB >= state.FileSizeMediumMax)
-        //            return true;
-        //    }
-
-        //    return false;
-        //}
         private bool MatchesFileSizeFilter(long fileSizeBytes, FilterState state)
         {
             if (state.SelectedFileSizeRanges.Count == 0)
                 return true;
 
-            // 预加载当前语言下所有分类的标准显示文本，避免循环内重复调用资源
-            string locTiny = LanguageManager.Instance.GetCodeString("Tiny");
-            string locSmall = LanguageManager.Instance.GetCodeString("Small");
-            string locMedium = LanguageManager.Instance.GetCodeString("Medium");
-            string locLarge = LanguageManager.Instance.GetCodeString("Large");
-
-            // 把所有显示文本和对应的数值范围绑定成映射关系
-            var categoryMap = new Dictionary<string, (double MinThreshold, double MaxThreshold)>()
-    {
-        { locTiny, (double.MinValue, state.FileSizeTinyMax) },
-        { locSmall, (state.FileSizeTinyMax, state.FileSizeSmallMax) },
-        { locMedium, (state.FileSizeSmallMax, state.FileSizeMediumMax) },
-        { locLarge, (state.FileSizeMediumMax, double.MaxValue) }
-    };
-
+            // Convert bytes to MB for comparison
             double fileSizeMB = fileSizeBytes / (1024.0 * 1024.0);
 
             foreach (var range in state.SelectedFileSizeRanges)
             {
-                // 清洗输入字符串：移除括号内的计数、多余空格，拿到纯分类名
-                var cleanRangeName = range.Split('(')[0].Trim();
+                // Extract the range name without the count (e.g., "Tiny (5)" -> "Tiny")
+                var rangeName = range.Split('(')[0].Trim();
 
-                // 检查该分类是否在当前语言的映射表中
-                if (categoryMap.TryGetValue(cleanRangeName, out var rangeRule))
-                {
-                    // 直接用数值范围判断，完全脱离对显示文本的逻辑依赖
-                    if (fileSizeMB >= rangeRule.MinThreshold && fileSizeMB < rangeRule.MaxThreshold)
-                    {
-                        return true;
-                    }
-                }
+                if (rangeName == LanguageManager.Instance.GetCodeString("Tiny") && fileSizeMB < state.FileSizeTinyMax)
+                    return true;
+                if (rangeName == LanguageManager.Instance.GetCodeString("Small") && fileSizeMB >= state.FileSizeTinyMax && fileSizeMB < state.FileSizeSmallMax)
+                    return true;
+                if (rangeName == LanguageManager.Instance.GetCodeString("Medium") && fileSizeMB >= state.FileSizeSmallMax && fileSizeMB < state.FileSizeMediumMax)
+                    return true;
+                if (rangeName == LanguageManager.Instance.GetCodeString("Large") && fileSizeMB >= state.FileSizeMediumMax)
+                    return true;
             }
 
             return false;
@@ -848,7 +808,7 @@ namespace VPM.Services
             int duplicateCount = GetDuplicateCount(packages);
             if (duplicateCount > 0)
             {
-                counts["Duplicate"] = duplicateCount;
+                counts[LanguageManager.Instance.GetCodeString("Duplicate")] = duplicateCount;
             }
             
             return counts;
@@ -858,18 +818,18 @@ namespace VPM.Services
         {
             var counts = new Dictionary<string, int>
             {
-                ["Latest"] = 0,
-                ["Old"] = 0
+                [LanguageManager.Instance.GetCodeString("Latest")] = 0,
+                [LanguageManager.Instance.GetCodeString("Old")] = 0
             };
             
             // MEMORY FIX: Iterate directly instead of creating a copy with ToList()
             foreach (var package in packages.Values)
             {
                 if (package.IsOldVersion)
-                    counts["Old"]++;
+                    counts[LanguageManager.Instance.GetCodeString("Old")]++;
                 else
-                    counts["Latest"]++;
-            }
+                    counts[LanguageManager.Instance.GetCodeString("Latest")]++;
+            }   
             
             return counts;
         }
@@ -881,17 +841,17 @@ namespace VPM.Services
         {
             var counts = new Dictionary<string, int>
             {
-                ["No Dependents"] = 0,
-                ["No Dependencies"] = 0
+                [LanguageManager.Instance.GetCodeString("No_Dependents")] = 0,
+                [LanguageManager.Instance.GetCodeString("No_Dependencies")] = 0
             };
             
             // MEMORY FIX: Iterate directly instead of creating a copy with ToList()
             foreach (var package in packages.Values)
             {
                 if (package.DependentsCount == 0)
-                    counts["No Dependents"]++;
+                    counts[LanguageManager.Instance.GetCodeString("No_Dependents")]++;
                 if (package.DependencyCount == 0)
-                    counts["No Dependencies"]++;
+                    counts[LanguageManager.Instance.GetCodeString("No_Dependencies")]++;
             }
             
             return counts;
@@ -937,57 +897,29 @@ namespace VPM.Services
         /// <summary>
         /// Get file size range counts from packages
         /// </summary>
-        //public Dictionary<string, int> GetFileSizeCounts(Dictionary<string, VarMetadata> packages)
-        //{
-        //    var counts = new Dictionary<string, int>
-        //    {
-        //        ["Tiny"] = 0,
-        //        ["Small"] = 0,
-        //        ["Medium"] = 0,
-        //        ["Large"] = 0
-        //    };
-
-        //    // MEMORY FIX: Iterate directly instead of creating a copy with ToList()
-        //    foreach (var package in packages.Values)
-        //    {
-        //        double fileSizeMB = package.FileSize / (1024.0 * 1024.0);
-
-        //        if (fileSizeMB < FileSizeTinyMax)
-        //            counts["Tiny"]++;
-        //        else if (fileSizeMB < FileSizeSmallMax)
-        //            counts["Small"]++;
-        //        else if (fileSizeMB < FileSizeMediumMax)
-        //            counts["Medium"]++;
-        //        else
-        //            counts["Large"]++;
-        //    }
-
-        //    return counts;
-        //}
         public Dictionary<string, int> GetFileSizeCounts(Dictionary<string, VarMetadata> packages)
         {
-            // 用枚举名生成字典Key，保证全项目统一，避免人工拼写错误
             var counts = new Dictionary<string, int>
             {
-                [nameof(FileSizeCategory.Tiny)] = 0,
-                [nameof(FileSizeCategory.Small)] = 0,
-                [nameof(FileSizeCategory.Medium)] = 0,
-                [nameof(FileSizeCategory.Large)] = 0
+                [LanguageManager.Instance.GetCodeString("Tiny")] = 0,
+                [LanguageManager.Instance.GetCodeString("Small")] = 0,
+                [LanguageManager.Instance.GetCodeString("Medium")] = 0,
+                [LanguageManager.Instance.GetCodeString("Large")] = 0
             };
 
-            // 完全保留你原有的无ToList内存优化逻辑，避免大集合时额外内存占用
+            // MEMORY FIX: Iterate directly instead of creating a copy with ToList()
             foreach (var package in packages.Values)
             {
                 double fileSizeMB = package.FileSize / (1024.0 * 1024.0);
 
                 if (fileSizeMB < FileSizeTinyMax)
-                    counts[nameof(FileSizeCategory.Tiny)]++;
+                    counts[LanguageManager.Instance.GetCodeString("Tiny")]++;
                 else if (fileSizeMB < FileSizeSmallMax)
-                    counts[nameof(FileSizeCategory.Small)]++;
+                    counts[LanguageManager.Instance.GetCodeString("Small")]++;
                 else if (fileSizeMB < FileSizeMediumMax)
-                    counts[nameof(FileSizeCategory.Medium)]++;
+                    counts[LanguageManager.Instance.GetCodeString("Medium")]++;
                 else
-                    counts[nameof(FileSizeCategory.Large)]++;
+                    counts[LanguageManager.Instance.GetCodeString("Large")]++;
             }
 
             return counts;
@@ -1166,7 +1098,7 @@ namespace VPM.Services
                 }
             }
 
-            if (filters.TryGetValue("Duplicate", out var duplicatesFilter) && duplicatesFilter is bool filterDuplicates && filterDuplicates)
+            if (filters.TryGetValue(LanguageManager.Instance.GetCodeString("Duplicate"), out var duplicatesFilter) && duplicatesFilter is bool filterDuplicates && filterDuplicates)
             {
                 if (!package.IsDuplicate)
                 {
@@ -1237,7 +1169,7 @@ namespace VPM.Services
                 }
             }
 
-            if (filters.TryGetValue("Duplicate", out var duplicatesFilter) && duplicatesFilter is bool filterDuplicates && filterDuplicates)
+            if (filters.TryGetValue(LanguageManager.Instance.GetCodeString("Duplicate"), out var duplicatesFilter) && duplicatesFilter is bool filterDuplicates && filterDuplicates)
             {
                 if (!metadata.IsDuplicate)
                 {

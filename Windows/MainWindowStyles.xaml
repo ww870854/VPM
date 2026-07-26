@@ -493,14 +493,14 @@
     </Style>
 
     <!--  MenuButton Style - Top level menu button  -->
-    <Style
+    <!--<Style
         x:Key="MenuButtonStyle"
-        BasedOn="{StaticResource DarkThemeMenuItemStyle}"
+        BasedOn="{StaticResource ThemeMenuItemStyle}"
         TargetType="MenuItem">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Height" Value="32" />
-    </Style>
+    </Style>-->
 
     <!--  DataGrid Column Header Style  -->
     <Style x:Key="MainWindowDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">

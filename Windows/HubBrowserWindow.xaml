@@ -4,9 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:VPM.Windows"
+    xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-    Title="VPM - Hub Browser"
+    Title="{Binding [title_27], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="1400"
     Height="900"
     Background="#FF202020"
@@ -350,7 +351,7 @@
                 Click="ToggleOverviewPanel_Click"
                 Content="◀"
                 FontSize="10"
-                ToolTip="Hide overview panel">
+                ToolTip="{Binding [btn_4], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="0,4,4,0" />
@@ -376,20 +377,20 @@
                         <RadioButton
                             x:Name="TabOverview"
                             Click="OverviewTab_Click"
-                            Content="📄 Overview"
+                            Content="{Binding [text_1], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}"
                             GroupName="OverviewTabs"
                             IsChecked="True"
                             Style="{StaticResource DetailTabStyle}" />
                         <RadioButton
                             x:Name="TabUpdates"
                             Click="OverviewTab_Click"
-                            Content="🔄 Updates"
+                            Content="{Binding [CheckForUpdates], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             GroupName="OverviewTabs"
                             Style="{StaticResource DetailTabStyle}" />
                         <RadioButton
                             x:Name="TabReviews"
                             Click="OverviewTab_Click"
-                            Content="⭐ Reviews"
+                            Content="{Binding [text_2], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             GroupName="OverviewTabs"
                             Style="{StaticResource DetailTabStyle}" />
                         <RadioButton

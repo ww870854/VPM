@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -12,7 +12,8 @@ namespace VPM.Models
     {
         // First Launch Settings
         private bool _isFirstLaunch = true;
-        
+        public string _SelectedLanguage = "";
+
         // UI Settings
         private string _theme = "System";
         private int _imageColumns = 3;
@@ -22,8 +23,8 @@ namespace VPM.Models
         private bool _cascadeFiltering = true;
         
         // Window Settings
-        private double _windowWidth = 1200;
-        private double _windowHeight = 800;
+        private double _windowWidth = 1360;
+        private double _windowHeight = 860;
         private double _windowLeft = 100;
         private double _windowTop = 100;
         private bool _windowMaximized = false;
@@ -159,7 +160,11 @@ namespace VPM.Models
             get => _isFirstLaunch;
             set => SetProperty(ref _isFirstLaunch, value);
         }
-
+        public string SelectedLanguage
+        {
+            get => _SelectedLanguage;
+            set => SetProperty(ref _SelectedLanguage, value ?? "");
+        }
         // UI Settings Properties
         public string Theme
         {
@@ -783,14 +788,15 @@ namespace VPM.Models
             return new AppSettings
             {
                 IsFirstLaunch = true,
+                SelectedLanguage = "",
                 Theme = "Dark",
                 ImageColumns = 3,
                 ImageMatchWidth = false,
                 SelectedFolder = "",
                 CacheFolder = System.IO.Path.Combine(Environment.CurrentDirectory, "cache"),
                 CascadeFiltering = false,
-                WindowWidth = 1200,
-                WindowHeight = 800,
+                WindowWidth = 1360,
+                WindowHeight = 860,
                 WindowLeft = 100,
                 WindowTop = 100,
                 WindowMaximized = false,

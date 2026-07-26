@@ -346,8 +346,17 @@
     </Style>
 
     <!--  Apply DarkThemeMenuItemStyle as default MenuItem style  -->
-    <Style BasedOn="{StaticResource DarkThemeMenuItemStyle}" TargetType="MenuItem" />
-
+    <!--<Style BasedOn="{StaticResource DarkThemeMenuItemStyle}" TargetType="MenuItem" />-->
+    <!-- Alias 用于统一引用当前主题的 MenuItem 基样式 -->
+    <Style x:Key="ThemeMenuItemStyle" TargetType="MenuItem" BasedOn="{StaticResource DarkThemeMenuItemStyle}" />
+    <!-- 隐式样式：当主题字典被合并到 Application.Resources 时，会自动应用到所有 MenuItem -->
+    <Style TargetType="MenuItem" BasedOn="{StaticResource ThemeMenuItemStyle}" />
+    <!-- Dark 主题中添加顶栏 MenuButtonStyle -->
+    <Style x:Key="MenuButtonStyle" TargetType="MenuItem" BasedOn="{StaticResource ThemeMenuItemStyle}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Height" Value="32" />
+    </Style>
     <!--  StatusBar Style  -->
     <Style TargetType="StatusBar">
         <Setter Property="Background" Value="{StaticResource StatusBarBackgroundBrush}" />

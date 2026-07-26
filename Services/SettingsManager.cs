@@ -37,6 +37,9 @@ namespace VPM.Services
     /// </summary>
     public class SettingsManager : ISettingsManager
     {
+        // 在类的开头第一行补充静态单例懒加载
+        private static readonly Lazy<SettingsManager> _instance = new Lazy<SettingsManager>(() => new SettingsManager());
+        public static SettingsManager Instance => _instance.Value;
         private readonly string _settingsFilePath;
         private readonly string _cacheFolder;
         private readonly DispatcherTimer _saveTimer;
@@ -537,6 +540,11 @@ namespace VPM.Services
             {
                 Settings.PropertyChanged -= Settings_PropertyChanged;
             }
+        }
+        // 你可以选择在类末尾追加方法，直接对外获取单例
+        public static SettingsManager GetSettingsManager()
+        {
+            return Instance;
         }
     }
 }

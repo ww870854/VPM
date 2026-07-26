@@ -259,6 +259,10 @@ namespace VPM.Services
             public const string Loaded = "Loaded";
             public const string Available = "Available";
             public const string Archived = "Archived";
+            // 新增多语言展示属性，直接复用你项目已有的LanguageManager
+            public static string LoadedDisplay => LanguageManager.Instance.GetCodeString("Loaded");
+            //public static string AvailableDisplay => LanguageManager.Instance.GetCodeString("package_role_available"); // 备用
+            //public static string ArchivedDisplay => LanguageManager.Instance.GetCodeString("package_role_archived"); // 备用
         }
 
         private readonly struct PackageVariantDescriptor
@@ -1694,7 +1698,7 @@ namespace VPM.Services
                                     }
                                     dupMetadata.IsDuplicate = true;
                                     dupMetadata.DuplicateLocationCount = existingMeta.DuplicateLocationCount;
-                                    dupMetadata.VariantRole = "External";
+                                    dupMetadata.VariantRole = LanguageManager.Instance.GetCodeString("External");
                                     dupMetadata.FilePath = filePath;
                                     dupMetadata.FileSize = fileInfo.Length;
                                     dupMetadata.ExternalDestinationColorHex = StringPool.Intern(destination.StatusColor ?? "#808080");
@@ -1734,7 +1738,7 @@ namespace VPM.Services
                                 IsCorrupted = true
                             };
                         }
-                        metadata.VariantRole = "External";
+                        metadata.VariantRole = LanguageManager.Instance.GetCodeString("External");
                         metadata.FilePath = filePath;
                         metadata.FileSize = fileInfo.Length;
                         metadata.ExternalDestinationColorHex = StringPool.Intern(destination.StatusColor ?? "#808080");
@@ -1766,11 +1770,11 @@ namespace VPM.Services
 
                 foreach (var metadata in PackageMetadata.Values)
                 {
-                    if (string.Equals(metadata.VariantRole, "External", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(metadata.VariantRole, LanguageManager.Instance.GetCodeString("External"), StringComparison.OrdinalIgnoreCase))
                     {
                         var creatorName = metadata.CreatorName ?? "";
                         var packageName = metadata.PackageName ?? "";
-                        var status = metadata.ExternalDestinationName ?? "External";
+                        var status = metadata.ExternalDestinationName ?? LanguageManager.Instance.GetCodeString("External");
 
                         if (!string.IsNullOrWhiteSpace(creatorName) && !string.IsNullOrWhiteSpace(packageName))
                         {

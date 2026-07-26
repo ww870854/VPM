@@ -12,7 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Xml.Serialization;
 using VPM.Language;
 using VPM.Models;
 using VPM.Services;
@@ -27,7 +26,7 @@ namespace VPM
     {
         private const double PaneGrabHandleWidth = 12;
         private const double PaneSplitterVisibleWidth = 8;
-
+        
         private void ApplyPaneVisibility(AppSettings settings)
         {
             LanguageManager.Instance.InitLanguageAtAppStart();
@@ -321,8 +320,7 @@ namespace VPM
                     // Safeguard: if selection is too large, avoid heavy work
                     if (PackageDataGrid?.SelectedItems?.Count > _settingsManager.Settings.MaxSafeSelection)
                     {
-                        PackageInfoTextBlock.Text = $"{PackageDataGrid.SelectedItems.Count} packages selected – selection too large to preview\n\n" +
-                            $"Preview limit: {_settingsManager.Settings.MaxSafeSelection} packages (configurable via Config ' Preview Selection Limit)";
+                        PackageInfoTextBlock.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_1"), PackageDataGrid.SelectedItems.Count, _settingsManager.Settings.MaxSafeSelection);
                         PreviewImages.Clear();
                         Dependencies.Clear();
                         ClearCategoryTabs();
@@ -734,7 +732,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                SetStatus($"Error: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("err_1"),ex.Message));
             }
         }
 
@@ -766,7 +764,7 @@ namespace VPM
             {
                 if (_packageFileManager == null)
                 {
-                    SetStatus("Package file manager not initialized");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_2"));
                     return;
                 }
 
@@ -777,16 +775,16 @@ namespace VPM
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     OpenFolderAndSelectFile(filePath);
-                    SetStatus($"Opened folder for: {package.Name}");
+                    SetStatus(string.Format( LanguageManager.Instance.GetCodeString("msg_3"), package.Name));
                 }
                 else
                 {
-                    SetStatus($"File not found: {package.Name}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_4"), package.Name));
                 }
             }
             catch (Exception ex)
             {
-                SetStatus($"Failed to open folder: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_5"),ex.Message));
             }
         }
 
@@ -795,11 +793,11 @@ namespace VPM
             try
             {
                 System.Windows.Clipboard.SetText(package.Name);
-                SetStatus($"Copied to clipboard: {package.Name}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_6"), package.Name));
             }
             catch (Exception ex)
             {
-                SetStatus($"Failed to copy to clipboard: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_7"), ex.Message));
             }
         }
 
@@ -931,7 +929,7 @@ namespace VPM
             // Use Windows Forms FolderBrowserDialog as fallback
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "Select VAM Root Folder";
+                dialog.Description = LanguageManager.Instance.GetCodeString("title_1");
                 dialog.ShowNewFolderButton = false;
                 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -944,7 +942,7 @@ namespace VPM
                     InitializePackageFileManager();
                     
                     UpdateUI();
-                    SetStatus($"Selected folder: {System.IO.Path.GetFileName(_selectedFolder)}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_8"), System.IO.Path.GetFileName(_selectedFolder)));
                     
                     RefreshPackages();
                 }
@@ -956,7 +954,7 @@ namespace VPM
             // Hold Shift for full refresh, otherwise use incremental
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
-                SetStatus("Full refresh requested...");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_9"));
                 RefreshPackages();
             }
             else
@@ -986,71 +984,36 @@ namespace VPM
         }
         public class LanguageOption
         {
-            public string DisplayName { get; set; } // 界面上显示的文字，如 "日本語"
+            //public string DisplayName { get; set; } // 界面上显示的文字，如 "日本語"
+            public string ResourceKey { get; set; } // 例如: "Lang_Chinese", "Lang_English"
+
+            // 辅助属性，用于其他地方非动态绑定的场景
+            public string DisplayName
+            {
+                get
+                {
+                    // 假设你的 LanguageManager 有这个静态方法或实例方法
+                    return LanguageManager.Instance.GetCodeString(ResourceKey);
+                }
+            }
             public string CultureCode { get; set; } // 文化代码，如 "ja-JP"
         }
 
         // 在 LanguageManager 或主窗口类中定义支持的语言列表
         private static readonly List<LanguageOption> SupportedLanguages = new List<LanguageOption>
         {
-            new LanguageOption { DisplayName = "简体中文", CultureCode = "zh-CN" },
-            new LanguageOption { DisplayName = "English", CultureCode = "en-US" },
-            new LanguageOption { DisplayName = "日本語", CultureCode = "ja-JP" }, // 新增日语
-            new LanguageOption { DisplayName = "Français", CultureCode = "fr-FR" }, // 新增法语
-            new LanguageOption { DisplayName = "Deutsch", CultureCode = "de-DE" }  // 新增德语
+            new LanguageOption { ResourceKey = "Chinese", CultureCode = "zh-CN" },
+            new LanguageOption { ResourceKey = "English", CultureCode = "en-US" },
+            new LanguageOption { ResourceKey = "Japanese", CultureCode = "ja-JP" }, // 新增日语
+            new LanguageOption { ResourceKey = "French", CultureCode = "fr-FR" }, // 新增法语
+            new LanguageOption { ResourceKey = "German", CultureCode = "de-DE" },  // 新增德语
+            new LanguageOption { ResourceKey = "Spanish", CultureCode = "es-ES" },  // 新增西班牙语
+            new LanguageOption { ResourceKey = "Italian", CultureCode = "it-IT" },  // 新增意大利语
+            new LanguageOption { ResourceKey = "Korean", CultureCode = "ko-KR" },  // 新增韩语
+            new LanguageOption { ResourceKey = "Dutch", CultureCode = "nl-NL" },  // 新增荷兰语
+            new LanguageOption { ResourceKey = "Polish", CultureCode = "pl-PL" },  // 新增波兰语
+            new LanguageOption { ResourceKey = "Portuguese", CultureCode = "pt-PT" },  // 新增葡萄牙语
         };
-
-        // 把异步方法调整为同步执行，避免UI线程上下文错位
-        //private void Language_ClickFromMenu()
-        //{
-        //    var selectWindow = new Window
-        //    {
-        //        Title = LanguageManager.Instance.GetCodeString("LanguageSettings"),
-        //        Width = 300,
-        //        Height = 180,
-        //        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        //        Owner = Application.Current.MainWindow,
-        //        ResizeMode = ResizeMode.NoResize,
-        //        Topmost = true // 避免弹窗被主窗口遮挡，丢失交互焦点
-        //    };
-
-        //    var stackPanel = new StackPanel { Margin = new Thickness(20) };
-
-        //    var btnChinese = new Button
-        //    {
-        //        Content = LanguageManager.Instance.GetCodeString("SwitchToChinese"),
-        //        Margin = new Thickness(0, 0, 0, 10),
-        //        Height = 35,
-        //        IsEnabled = true
-        //    };
-        //    // 切换语言后自动关闭弹窗
-        //    btnChinese.Click += (s, e) =>
-        //    {
-        //        SwitchAppLanguage("zh-CN");
-        //        PerformRefresh(isFullRefresh: true);
-        //        selectWindow.Close();
-        //    };
-
-        //    var btnEnglish = new Button
-        //    {
-        //        Content = LanguageManager.Instance.GetCodeString("SwitchToEnglish"),
-        //        Height = 35,
-        //        IsEnabled = true
-        //    };
-        //    btnEnglish.Click += (s, e) =>
-        //    {
-        //        SwitchAppLanguage("en-US");
-        //        PerformRefresh(isFullRefresh: true);
-        //        selectWindow.Close();
-        //    };
-
-        //    stackPanel.Children.Add(btnChinese);
-        //    stackPanel.Children.Add(btnEnglish);
-        //    selectWindow.Content = stackPanel;
-
-        //    // 直接同步弹出模态窗口，保证事件路由完全正常
-        //    selectWindow.ShowDialog();
-        //}
         private void Language_ClickFromMenu()
         {
             var selectWindow = new Window
@@ -1072,26 +1035,34 @@ namespace VPM
             {
                 var btn = new Button
                 {
-                    Content = lang.DisplayName, // 直接显示语言名称，无需翻译键（或者你也可以用 GetCodeString 获取翻译后的名称）
                     Margin = new Thickness(0, 0, 0, 10),
                     Height = 35,
-                    Tag = lang.CultureCode // 使用 Tag 属性存储文化代码
+                    Tag = lang.CultureCode
+                    // 注意：这里不要设置 Content
                 };
 
-                // 统一绑定点击事件
+                // 【关键步骤】建立动态资源引用
+                // 这相当于在 XAML 中写: Content="{DynamicResource Lang_Chinese}"
+                btn.SetResourceReference(Button.ContentProperty, lang.ResourceKey);
+
                 btn.Click += (s, e) =>
                 {
                     var button = s as Button;
                     if (button != null && button.Tag is string cultureCode)
                     {
                         SwitchAppLanguage(cultureCode);
-                        PerformRefresh(isFullRefresh: true);
+                        _settingsManager.SaveSettingsImmediate();
+
                         selectWindow.Close();
+
+                        // 你的主界面刷新机制
+                        PerformRefresh(isFullRefresh: true);
                     }
                 };
 
                 stackPanel.Children.Add(btn);
             }
+
 
             selectWindow.Content = stackPanel;
             selectWindow.ShowDialog();
@@ -1104,7 +1075,7 @@ namespace VPM
             CultureInfo.DefaultThreadCurrentUICulture = newCulture;
             Thread.CurrentThread.CurrentCulture = newCulture;
             Thread.CurrentThread.CurrentUICulture = newCulture;
-
+            
             // 修复单条匹配漏删问题，全量清理所有旧语言资源字典，避免残留冲突
             var oldLangDicts = Application.Current.Resources.MergedDictionaries
                 .Where(d => d.Source?.OriginalString.Contains("Resources/Language/Resources.") == true)
@@ -1140,7 +1111,8 @@ namespace VPM
                 UpdateAllDependencyObjects(Application.Current.MainWindow);
             }
 
-            AppConfig.SelectedLanguage = cultureCode;
+            //AppConfig.SelectedLanguage = cultureCode;
+            this._settingsManager.Settings.SelectedLanguage = cultureCode;
         }
 
 
@@ -1179,52 +1151,6 @@ namespace VPM
                 UpdateAllDependencyObjects(fe);
             }
         }
-        // 把序列化用的数据类移到命名空间下，设为公开类型
-        [Serializable]
-        public class AppConfigData
-        {
-            public string SelectedLanguage { get; set; }
-        }
-
-        public static class AppConfig
-        {
-            private static readonly string ConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_user_config.xml");
-
-            public static string SelectedLanguage
-            {
-                get
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
-                    if (!File.Exists(ConfigPath)) return "zh-CN";
-                    try
-                    {
-                        var serializer = new XmlSerializer(typeof(AppConfigData));
-                        using var reader = new StreamReader(ConfigPath);
-                        var data = (AppConfigData)serializer.Deserialize(reader);
-                        return data.SelectedLanguage;
-                    }
-                    catch
-                    {
-                        return "zh-CN";
-                    }
-                }
-                set
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
-                    try
-                    {
-                        var serializer = new XmlSerializer(typeof(AppConfigData));
-                        using var writer = new StreamWriter(ConfigPath);
-                        serializer.Serialize(writer, new AppConfigData { SelectedLanguage = value });
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"配置写入失败：{ex.Message}");
-                    }
-                }
-            }
-        }
-
         private async Task ArchiveOldVersionsFromMenu()
         {
             try
@@ -1288,7 +1214,7 @@ namespace VPM
                 
                 if (oldVersionPackages.Count == 0)
                 {
-                    DarkMessageBox.Show("No old version packages selected.", "Archive Old Versions", 
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_10"), LanguageManager.Instance.GetCodeString("ArchiveOldVersions1"), 
                                       MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
@@ -1329,7 +1255,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Failed to archive old versions: {ex.Message}", "Error", 
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("FailedToArchiveOldVersions"),ex.Message), LanguageManager.Instance.GetCodeString("Error"), 
                                   MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1339,7 +1265,7 @@ namespace VPM
             if (sender is MenuItem menuItem && int.TryParse(menuItem.Tag?.ToString(), out int value))
             {
                 _settingsManager.Settings.MaxSafeSelection = value;
-                SetStatus($"Preview selection limit set to {value} packages");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_11"),value));
                 
                 // Refresh current selection display if needed
                 if (PackageDataGrid?.SelectedItems?.Count > 0)
@@ -1539,8 +1465,8 @@ namespace VPM
                             continue;
 
                         var status = itemText.Split('(')[0].Trim();
-                        if (status.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) ||
-                            status.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
+                        if (status.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) ||
+                            status.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
                         {
                             StatusFilterList.SelectedItems.Remove(item);
                         }
@@ -1564,145 +1490,11 @@ namespace VPM
 
         private async Task HandleDuplicatesFixedAsync()
         {
-            SetStatus("Refreshing package list after fixing duplicates...");
+            SetStatus(LanguageManager.Instance.GetCodeString("msg_12"));
             RefreshPackages();
             ClearDuplicatesFilterAndSelection();
             await RefreshCurrentlyDisplayedImagesAsync();
         }
-
-        //private void ConfigureFileSizeRanges_Click(object sender, RoutedEventArgs e)
-        //{
-        //    var dialog = new Window
-        //    {
-        //        Title = "Configure File Size Filter Ranges",
-        //        Width = 450,
-        //        Height = 300,
-        //        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        //        Owner = this,
-        //        ResizeMode = ResizeMode.NoResize,
-        //        Background = this.Background
-        //    };
-
-        //    var grid = new Grid { Margin = new Thickness(20) };
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        //    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-        //    // Tiny range
-        //    var tinyPanel = new StackPanel { Orientation = Orientation.Horizontal };
-        //    tinyPanel.Children.Add(new TextBlock { Text = "Tiny (0 - ", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
-        //    var tinyBox = new TextBox { Width = 80, Text = _filterManager.FileSizeTinyMax.ToString("F1") };
-        //    tinyPanel.Children.Add(tinyBox);
-        //    tinyPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
-        //    Grid.SetRow(tinyPanel, 0);
-        //    grid.Children.Add(tinyPanel);
-
-        //    // Small range
-        //    var smallPanel = new StackPanel { Orientation = Orientation.Horizontal };
-        //    smallPanel.Children.Add(new TextBlock { Text = "Small (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
-        //    var smallMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-        //    smallPanel.Children.Add(smallMinLabel);
-        //    smallPanel.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
-        //    var smallBox = new TextBox { Width = 80, Text = _filterManager.FileSizeSmallMax.ToString("F1") };
-        //    smallPanel.Children.Add(smallBox);
-        //    smallPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
-        //    Grid.SetRow(smallPanel, 2);
-        //    grid.Children.Add(smallPanel);
-
-        //    // Medium range
-        //    var mediumPanel = new StackPanel { Orientation = Orientation.Horizontal };
-        //    mediumPanel.Children.Add(new TextBlock { Text = "Medium (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
-        //    var mediumMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-        //    mediumPanel.Children.Add(mediumMinLabel);
-        //    mediumPanel.Children.Add(new TextBlock { Text = " - ", VerticalAlignment = VerticalAlignment.Center });
-        //    var mediumBox = new TextBox { Width = 80, Text = _filterManager.FileSizeMediumMax.ToString("F1") };
-        //    mediumPanel.Children.Add(mediumBox);
-        //    mediumPanel.Children.Add(new TextBlock { Text = " MB)", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) });
-        //    Grid.SetRow(mediumPanel, 4);
-        //    grid.Children.Add(mediumPanel);
-
-        //    // Large range
-        //    var largePanel = new StackPanel { Orientation = Orientation.Horizontal };
-        //    largePanel.Children.Add(new TextBlock { Text = "Large (", VerticalAlignment = VerticalAlignment.Center, Width = 80 });
-        //    var largeMinLabel = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-        //    largePanel.Children.Add(largeMinLabel);
-        //    largePanel.Children.Add(new TextBlock { Text = " MB+)", VerticalAlignment = VerticalAlignment.Center });
-        //    Grid.SetRow(largePanel, 6);
-        //    grid.Children.Add(largePanel);
-
-        //    // Update labels when values change
-        //    Action updateLabels = () =>
-        //    {
-        //        if (double.TryParse(tinyBox.Text, out double tiny))
-        //        {
-        //            smallMinLabel.Text = tiny.ToString("F1");
-        //        }
-        //        if (double.TryParse(smallBox.Text, out double small))
-        //        {
-        //            mediumMinLabel.Text = small.ToString("F1");
-        //        }
-        //        if (double.TryParse(mediumBox.Text, out double medium))
-        //        {
-        //            largeMinLabel.Text = medium.ToString("F1");
-        //        }
-        //    };
-
-        //    tinyBox.TextChanged += (s, args) => updateLabels();
-        //    smallBox.TextChanged += (s, args) => updateLabels();
-        //    mediumBox.TextChanged += (s, args) => updateLabels();
-        //    updateLabels();
-
-        //    // Buttons
-        //    var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-        //    var okButton = new Button { Content = "OK", Width = 80, Height = 30, Margin = new Thickness(0, 0, 10, 0), IsDefault = true };
-        //    var cancelButton = new Button { Content = "Cancel", Width = 80, Height = 30, IsCancel = true };
-
-        //    okButton.Click += (s, args) =>
-        //    {
-        //        if (double.TryParse(tinyBox.Text, out double tiny) &&
-        //            double.TryParse(smallBox.Text, out double small) &&
-        //            double.TryParse(mediumBox.Text, out double medium) &&
-        //            tiny > 0 && small > tiny && medium > small)
-        //        {
-        //            _settingsManager.Settings.FileSizeTinyMax = tiny;
-        //            _settingsManager.Settings.FileSizeSmallMax = small;
-        //            _settingsManager.Settings.FileSizeMediumMax = medium;
-
-        //            // Update FilterManager
-        //            _filterManager.FileSizeTinyMax = tiny;
-        //            _filterManager.FileSizeSmallMax = small;
-        //            _filterManager.FileSizeMediumMax = medium;
-
-        //            // Refresh filters
-        //            RefreshFilterLists();
-        //            ApplyFilters();
-
-        //            dialog.DialogResult = true;
-        //            dialog.Close();
-        //            SetStatus($"File size ranges updated: Tiny<{tiny}MB, Small<{small}MB, Medium<{medium}MB");
-        //        }
-        //        else
-        //        {
-        //            CustomMessageBox.Show("Please enter valid numbers where each range is larger than the previous.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        }
-        //    };
-
-        //    cancelButton.Click += (s, args) => dialog.Close();
-
-        //    buttonPanel.Children.Add(okButton);
-        //    buttonPanel.Children.Add(cancelButton);
-        //    Grid.SetRow(buttonPanel, 8);
-        //    grid.Children.Add(buttonPanel);
-
-        //    dialog.Content = grid;
-        //    dialog.ShowDialog();
-        //}
         private void ConfigureFileSizeRanges_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Window
@@ -1845,7 +1637,9 @@ namespace VPM
         }
         private void KeyboardShortcuts_Click(object sender, RoutedEventArgs e)
         {
-            CustomMessageBox.Show("Keyboard shortcuts:\n\nF5 - Refresh packages\nCtrl+F - Focus search\nCtrl+B - Build cache\nCtrl+, - Settings\nCtrl+/- - Image columns", "Keyboard Shortcuts", MessageBoxButton.OK, MessageBoxImage.Information);
+            string message = LanguageManager.Instance.GetCodeString("msg_13");
+            message = message.Replace("\\n","\n");
+            CustomMessageBox.Show(message, LanguageManager.Instance.GetCodeString("title_2"), MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void UpdatePackageDatabase_Click(object sender, RoutedEventArgs e)
@@ -1855,13 +1649,13 @@ namespace VPM
                 // Check if package downloader is initialized
                 if (_packageDownloader == null)
                 {
-                    CustomMessageBox.Show("Package downloader is not initialized. Please select a VAM folder first.",
-                        "Update Database", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_14"),
+                        LanguageManager.Instance.GetCodeString("title_3"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 // Show progress message
-                SetStatus("Updating package database...");
+                SetStatus(LanguageManager.Instance.GetCodeString("Updating_Package_Database"));
                 
                 // Get count before loading
                 int countBefore = _packageDownloader.GetPackageCount();
@@ -1872,36 +1666,40 @@ namespace VPM
                 if (!success)
                 {
                     // Database load failed
-                    SetStatus("Database update failed");
-                    CustomMessageBox.Show("Failed to load package database.\n\nPlease check:\n• Network connection\n• Firewall settings",
-                        "Update Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SetStatus(LanguageManager.Instance.GetCodeString("Database_Update_Failed"));
+                    string message = LanguageManager.Instance.GetCodeString("msg_15");
+                    message = message.Replace("\\n", "\n");
+                    CustomMessageBox.Show(message,
+                        LanguageManager.Instance.GetCodeString("title_4"), MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 
                 // Get count after loading
                 int countAfter = _packageDownloader.GetPackageCount();
                 bool fromGitHub = _packageDownloader.WasLastLoadFromGitHub();
-                
+
                 // Only show success if packages were actually loaded
                 if (countAfter > 0)
                 {
                     string source = fromGitHub ? "GitHub" : "local cache";
-                    
-                    SetStatus($"Database updated: {countAfter:N0} packages from {source}");
+
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_16"), countAfter,source));
                     
                     // Database status is now shown in PackageSearchWindow, no need to update button
                 }
                 else
                 {
-                    SetStatus("Database update failed - no packages loaded");
-                    CustomMessageBox.Show("No packages were loaded. The database may be empty or corrupted.",
-                        "Update Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_17"));
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_18"),
+                        LanguageManager.Instance.GetCodeString("title_5"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Failed to update package database:\n\n{ex.Message}",
-                    "Update Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string message = string.Format(LanguageManager.Instance.GetCodeString("msg_19"),ex.Message);
+                message = message.Replace("\\n","\\n");
+                CustomMessageBox.Show(message,
+                    LanguageManager.Instance.GetCodeString("title_6"), MessageBoxButton.OK, MessageBoxImage.Error);
                 SetStatus("Database update failed");
             }
         }
@@ -2641,7 +2439,7 @@ namespace VPM
                 // Refresh filter lists to apply change
                 RefreshFilterLists();
                 
-                SetStatus(settings.CascadeFiltering ? "Linked filters enabled" : "Linked filters disabled");
+                SetStatus(settings.CascadeFiltering ? LanguageManager.Instance.GetCodeString("btn_on") : LanguageManager.Instance.GetCodeString("btn_off"));
             }
         }
 
@@ -3209,9 +3007,11 @@ namespace VPM
                 }
 
                 var count = CustomAtomDataGrid.SelectedItems.Count;
+                string message = string.Format( LanguageManager.Instance.GetCodeString("msg_20"),count);
+                message = message.Replace("\\n", "\n");
                 var confirm = DarkMessageBox.Show(
-                    $"Discard {count} selected custom item(s)?\n\nFiles move to DiscardedPackages.",
-                    "Confirm Discard",
+                    message,
+                    LanguageManager.Instance.GetCodeString("title_7"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
@@ -3297,7 +3097,7 @@ namespace VPM
                 
                 if (_packageFileManager == null)
                 {
-                    SetStatus("Package file manager not initialized");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_21"));
                     return;
                 }
 
@@ -3308,7 +3108,7 @@ namespace VPM
                 {
                     // Open folder and select the external file
                     OpenFolderAndSelectFile(externalFilePath);
-                    SetStatus($"Opened folder for: {dependency.Name}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_3"),dependency.Name));
                     return;
                 }
 
@@ -3340,16 +3140,16 @@ namespace VPM
                 {
                     // Open folder and select the file - Explorer will reuse existing window if same folder
                     OpenFolderAndSelectFile(filePath);
-                    SetStatus($"Opened folder for: {dependency.Name}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_3"), dependency.Name));
                 }
                 else
                 {
-                    SetStatus($"File not found: {dependency.Name}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_4"),dependency.Name));
                 }
             }
             catch (Exception ex)
             {
-                SetStatus($"Failed to open folder: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_4"), ex.Message));
             }
         }
         
@@ -3393,11 +3193,11 @@ namespace VPM
             try
             {
                 System.Windows.Clipboard.SetText(dependency.Name);
-                SetStatus($"Copied to clipboard: {dependency.Name}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_6"), dependency.Name));
             }
             catch (Exception ex)
             {
-                SetStatus($"Failed to copy to clipboard: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_7"), ex.Message));
             }
         }
 
@@ -3700,9 +3500,12 @@ namespace VPM
                 
                 if (selectedPackages.Count == 0)
                 {
-                    LanguageManager.Instance.InitLanguageAtAppStart();
-                    PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
-                    
+                    _ = Dispatcher.InvokeAsync(() =>
+                    {
+                        PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
+                    }, DispatcherPriority.Loaded); // 使用 Loaded 优先级，确保在控件布局完成后执行
+                    //PackageInfoTextBlock.Text = LanguageManager.Instance.GetCodeString("NoPackagesSelected");
+
                     // Clear images when no packages are selected
                     PreviewImages.Clear();
                     
@@ -3871,7 +3674,7 @@ namespace VPM
             {
                 if (string.IsNullOrWhiteSpace(filePath))
                 {
-                    SetStatus("Cannot open folder: Invalid file path");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_22"));
                     return;
                 }
 
@@ -3885,14 +3688,14 @@ namespace VPM
                     // If path is invalid, try to use it as is if it exists, otherwise return
                     if (!File.Exists(filePath))
                     {
-                        SetStatus($"Cannot open folder: Path is invalid: {filePath}");
+                        SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_23"),filePath));
                         return;
                     }
                 }
 
                 if (!File.Exists(filePath))
                 {
-                    SetStatus($"Cannot open folder: File does not exist: {filePath}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_24"),filePath));
                     return;
                 }
 
@@ -3910,7 +3713,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                SetStatus($"Error opening folder: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("Open_Folder_Error_Message"), ex.Message));
             }
         }
 
@@ -3942,7 +3745,7 @@ namespace VPM
                 if (selectedDependencies.Count > 50)
                 {
                     PreviewImages.Clear();
-                    SetStatus($"{selectedDependencies.Count} dependencies selected – image preview disabled for performance");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_25"), selectedDependencies.Count));
                     _isDisplayingImages = false;
                     return;
                 }
@@ -4103,8 +3906,8 @@ namespace VPM
             foreach (var dependency in dependencies)
             {
                 // Skip placeholder items
-                if (dependency.Name == "No dependencies" || dependency.Name == "No dependencies found" ||
-                    dependency.Name == "No dependents" || dependency.Name == "No dependents found")
+                if (dependency.Name == LanguageManager.Instance.GetCodeString("No_Dependencies") || dependency.Name == LanguageManager.Instance.GetCodeString("list_4") ||
+                    dependency.Name == LanguageManager.Instance.GetCodeString("No_dependents") || dependency.Name == LanguageManager.Instance.GetCodeString("list_3"))
                     continue;
 
                 string baseDependencyName = dependency.Name;
@@ -4817,8 +4620,8 @@ namespace VPM
                 
                 if (missingDeps.Count == 0)
                 {
-                    CustomMessageBox.Show("No missing dependencies found.",
-                        "No Missing Dependencies", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_26"),
+                        LanguageManager.Instance.GetCodeString("title_8"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 
@@ -4826,8 +4629,8 @@ namespace VPM
                 if (string.IsNullOrEmpty(_selectedFolder))
                 {
                     CustomMessageBox.Show(
-                        "Please select a VAM root folder first.",
-                        "No Folder Selected",
+                        LanguageManager.Instance.GetCodeString("msg_27"),
+                        LanguageManager.Instance.GetCodeString("Continue_Title"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;
@@ -4877,8 +4680,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error opening downloads window: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("Error_Opening_Downloads_Window"), ex.Message),
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -4914,7 +4717,7 @@ namespace VPM
                 
                 if (duplicatePackages.Count == 0)
                 {
-                    DarkMessageBox.Show("No duplicates found in the package collection.", "Fix Duplicates",
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_28"), LanguageManager.Instance.GetCodeString("Fix_Duplicates"),
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
@@ -4959,8 +4762,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error opening duplicate management window: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_29"),ex.Message), 
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -4976,7 +4779,7 @@ namespace VPM
                 
                 if (duplicatePackages.Count == 0)
                 {
-                    DarkMessageBox.Show("No duplicates found in the package collection.", "Fix Duplicates",
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_28"), LanguageManager.Instance.GetCodeString("Fix_Duplicates"),
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
@@ -5021,8 +4824,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error opening duplicate management window: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_29"),ex.Message), 
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -5205,14 +5008,14 @@ namespace VPM
                 }
 
                 // Show progress message
-                SetStatus("Updating package database...");
+                SetStatus(LanguageManager.Instance.GetCodeString("Updating_Package_Database"));
                 
                 // Load package list (this will trigger network permission check if needed)
                 bool success = await LoadPackageDownloadListAsync();
                 
                 if (!success)
                 {
-                    SetStatus("Database update failed");
+                    SetStatus(LanguageManager.Instance.GetCodeString("Database_Update_Failed"));
                     return false;
                 }
                 
@@ -5220,18 +5023,18 @@ namespace VPM
                 int countAfter = _packageDownloader.GetPackageCount();
                 if (countAfter > 0)
                 {
-                    SetStatus($"Database updated - {countAfter:N0} packages available");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_30"), countAfter));
                     return true;
                 }
                 else
                 {
-                    SetStatus("Database update failed - no packages loaded");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_17"));
                     return false;
                 }
             }
             catch
             {
-                SetStatus("Database update failed");
+                SetStatus(LanguageManager.Instance.GetCodeString("Database_Update_Failed"));
                 return false;
             }
         }
@@ -5262,15 +5065,15 @@ namespace VPM
                             
                             if (!updateSuccess || _packageDownloader.GetPackageCount() == 0)
                             {
-                                CustomMessageBox.Show("Database update failed or no packages available. Please try again.",
-                                    "Update Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_31"),
+                                    LanguageManager.Instance.GetCodeString("title_4"), MessageBoxButton.OK, MessageBoxImage.Warning);
                                 return;
                             }
                         }
                         else if (_packageDownloader.GetPackageCount() == 0)
                         {
-                            CustomMessageBox.Show("The package database is empty. Please update the database first.",
-                                "Database Empty", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("Database_Empty_Message"),
+                                LanguageManager.Instance.GetCodeString("Database_Empty_Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
                     }
@@ -5284,8 +5087,8 @@ namespace VPM
                 
                 if (missingDeps.Count == 0)
                 {
-                    CustomMessageBox.Show("No missing dependencies found in the current view.", 
-                        "Download Missing", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_32"),
+                        LanguageManager.Instance.GetCodeString("Download_Missing"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 
@@ -5327,8 +5130,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error downloading packages: {ex.Message}", 
-                    "Download Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_33"), ex.Message),
+                    LanguageManager.Instance.GetCodeString("title_9"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -5344,10 +5147,11 @@ namespace VPM
                 // Check if a folder has been selected
                 if (string.IsNullOrEmpty(_selectedFolder))
                 {
+                    string message = LanguageManager.Instance.GetCodeString("msg_34");
+                    message = message.Replace("\\n","\n");
                     CustomMessageBox.Show(
-                        "Please select a VAM root folder first.\n\n" +
-                        "Go to File -> Select Root Folder to choose your VAM installation directory.",
-                        "No Folder Selected",
+                        message,
+                        LanguageManager.Instance.GetCodeString("Continue_Title"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;
@@ -5381,15 +5185,15 @@ namespace VPM
                             
                             if (!updateSuccess || _packageDownloader.GetPackageCount() == 0)
                             {
-                                CustomMessageBox.Show("Database update failed or no packages available. Please try again.",
-                                    "Update Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_31"),
+                                    LanguageManager.Instance.GetCodeString("title_4"), MessageBoxButton.OK, MessageBoxImage.Warning);
                                 return;
                             }
                         }
                         else if (_packageDownloader.GetPackageCount() == 0)
                         {
-                            CustomMessageBox.Show("The package database is empty. Please update the database first.",
-                                "Database Empty", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("Database_Empty_Message"),
+                                LanguageManager.Instance.GetCodeString("Database_Empty_Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
                     }
@@ -5400,10 +5204,11 @@ namespace VPM
                 
                 if (!System.IO.Directory.Exists(addonPackagesFolder))
                 {
+                    string message = LanguageManager.Instance.GetCodeString("msg_35");
+                    message = message.Replace("\\n","\n");
                     CustomMessageBox.Show(
-                        $"AddonPackages folder not found at:\n{addonPackagesFolder}\n\n" +
-                        "Please ensure you have selected the correct VAM root folder.",
-                        "Folder Not Found",
+                        message,
+                        LanguageManager.Instance.GetCodeString("title_10"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
@@ -5441,8 +5246,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error opening Package Downloads window: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_36"), ex.Message), 
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -5458,8 +5263,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error showing downloads window: {ex.Message}", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_37"),ex.Message), 
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         
@@ -5486,14 +5291,14 @@ namespace VPM
         {
             if (string.IsNullOrEmpty(_selectedFolder))
             {
-                CustomMessageBox.Show("Please select a VAM root folder first.",
-                    "No Folder Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Folder_Selected_Message"),
+                    LanguageManager.Instance.GetCodeString("No_Folder_Selected_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             try
             {
-                SetStatus("Checking VPB patch status...");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_38"));
 
                 var branch = _settingsManager?.Settings?.VpbPreferredBranch is { Length: > 0 } b ? b : "main";
 
@@ -5507,14 +5312,16 @@ namespace VPM
 
                 detailsWindow.ShowDialog();
 
-                SetStatus("VPB patch window closed");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_39"));
             }
             catch (Exception ex)
             {
-                SetStatus($"VPB patch failed: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_40"),ex.Message));
+                string message = string.Format(LanguageManager.Instance.GetCodeString("VPB_patch_failed"),ex.Message);
+                message = message.Replace("\r\n", "\n");
                 CustomMessageBox.Show(
-                    $"VPB patch failed:\n\n{ex.Message}",
-                    "VPB Patch Error",
+                    message,
+                    LanguageManager.Instance.GetCodeString("VPB_Patch_Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -5539,7 +5346,7 @@ namespace VPM
         /// </summary>
         private void LaunchDesktop_Click(object sender, RoutedEventArgs e)
         {
-            LaunchVirtAMate("Desktop", "-vrmode None");
+            LaunchVirtAMate(LanguageManager.Instance.GetCodeString("menu_1"), "-vrmode None");
         }
         
         /// <summary>
@@ -5555,17 +5362,17 @@ namespace VPM
         /// </summary>
         private void LaunchConfig_Click(object sender, RoutedEventArgs e)
         {
-            LaunchVirtAMate("Config", "-show-screen-selector");
+            LaunchVirtAMate(LanguageManager.Instance.GetCodeString("menu_2"), "-show-screen-selector");
         }
 
         private void LaunchLogModeDesktop_Click(object sender, RoutedEventArgs e)
         {
-            LaunchVirtAMate("Log Mode (Desktop)", "-vrmode None -logFile log.txt");
+            LaunchVirtAMate(LanguageManager.Instance.GetCodeString("LogModeDesktop"), "-vrmode None -logFile log.txt");
         }
 
         private void LaunchLogModeVR_Click(object sender, RoutedEventArgs e)
         {
-            LaunchVirtAMate("Log Mode (VR)", "-vrmode OpenVR -logFile log.txt");
+            LaunchVirtAMate(LanguageManager.Instance.GetCodeString("LogModeVR"), "-vrmode OpenVR -logFile log.txt");
         }
 
         private void LaunchLogModeCustom_Click(object sender, RoutedEventArgs e)
@@ -5574,16 +5381,18 @@ namespace VPM
             {
                 if (string.IsNullOrEmpty(_selectedFolder))
                 {
-                    CustomMessageBox.Show("Please select a VAM root folder first.",
-                        "No Folder Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_27"),
+                        LanguageManager.Instance.GetCodeString("Continue_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
                 var batPath = Path.Combine(_selectedFolder, "VaM (Log Mode).bat");
                 if (!File.Exists(batPath))
                 {
-                    CustomMessageBox.Show($"VaM (Log Mode).bat not found in:\n{_selectedFolder}\n\nExpected file:\n{batPath}",
-                        "Log Mode Launcher Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string message = string.Format(LanguageManager.Instance.GetCodeString(""), _selectedFolder, batPath);
+                    message = message.Replace("\\n", "\n");
+                    CustomMessageBox.Show(message,
+                        LanguageManager.Instance.GetCodeString("title_11"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -5596,12 +5405,14 @@ namespace VPM
                 };
 
                 Process.Start(startInfo);
-                SetStatus("Launched VirtAMate in Log Mode (Custom)");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_42"));
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error launching VirtAMate (Log Mode - Custom):\n\n{ex.Message}",
-                    "Launch Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string message = string.Format(LanguageManager.Instance.GetCodeString("msg_43"),ex.Message);
+                message = message.Replace("\\n", "\n");
+                CustomMessageBox.Show(message,
+                    LanguageManager.Instance.GetCodeString("title_12"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -5619,8 +5430,8 @@ namespace VPM
             {
                 if (string.IsNullOrEmpty(_selectedFolder))
                 {
-                    CustomMessageBox.Show("Please select a VAM root folder first.", 
-                        "No Folder Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Folder_Selected_Message"),
+                        LanguageManager.Instance.GetCodeString("No_Folder_Selected_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 
@@ -5629,8 +5440,10 @@ namespace VPM
                 
                 if (!System.IO.File.Exists(vamExePath))
                 {
-                    CustomMessageBox.Show($"VaM.exe not found in:\n{_selectedFolder}\n\nPlease ensure you've selected the correct VAM root folder.", 
-                        "VaM Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    string message = string.Format(LanguageManager.Instance.GetCodeString("msg_44"), _selectedFolder);
+                    message = message.Replace("\\n","\n");
+                    CustomMessageBox.Show(message,
+                        LanguageManager.Instance.GetCodeString("title_13"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 
@@ -5647,12 +5460,14 @@ namespace VPM
                 // Launch VaM
                 System.Diagnostics.Process.Start(startInfo);
                 
-                SetStatus($"Launched VirtAMate in {modeName} mode");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_45"),modeName));
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error launching VirtAMate:\n\n{ex.Message}", 
-                    "Launch Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string message = string.Format(LanguageManager.Instance.GetCodeString("msg_46"),ex.Message);
+                message = message.Replace("\\n","\n");
+                CustomMessageBox.Show(message,
+                    LanguageManager.Instance.GetCodeString("title_12"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         /// <summary>
@@ -5663,7 +5478,7 @@ namespace VPM
         {
             if (isFullRefresh)
             {
-                SetStatus("Full refresh requested...");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_9"));
                 // 假设 RefreshPackages 是执行具体业务逻辑的方法
                 RefreshPackages();
             }
@@ -5923,7 +5738,7 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show("Please select a package to view its dependency graph.", "No Package Selected",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_47"), LanguageManager.Instance.GetCodeString("title_14"),
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -5934,7 +5749,7 @@ namespace VPM
             
             if (metadata == null)
             {
-                DarkMessageBox.Show("Could not load package metadata.", "Error",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_48"), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -5989,7 +5804,7 @@ namespace VPM
             // Only handle single selection
             if (selectedDeps.Count != 1)
             {
-                DarkMessageBox.Show("Please select only one dependency to view its dependency graph.", "Multiple Selection",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_49"), LanguageManager.Instance.GetCodeString("title_15"),
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -6040,7 +5855,7 @@ namespace VPM
             // Only handle single selection
             if (selectedDeps.Count != 1)
             {
-                DarkMessageBox.Show("Please select only one dependency to open in Explorer.", "Multiple Selection",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_50"), LanguageManager.Instance.GetCodeString("title_15"),
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -6161,7 +5976,7 @@ namespace VPM
                 string gameRoot = _settingsManager?.Settings?.SelectedFolder;
                 if (string.IsNullOrEmpty(gameRoot))
                 {
-                    DarkMessageBox.Show("No game folder selected.", "Error",
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_51"), LanguageManager.Instance.GetCodeString("Error"),
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -6209,7 +6024,7 @@ namespace VPM
                         else
                         {
                             failureCount++;
-                            failedScenes.Add($"{sceneItem.DisplayName}: Source file not found");
+                            failedScenes.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_52"),sceneItem.DisplayName));
                         }
                     }
                     catch (Exception ex)
@@ -6223,8 +6038,11 @@ namespace VPM
                 // Show error message only if there were failures
                 if (failureCount > 0)
                 {
-                    DarkMessageBox.Show($"Failed to discard {failureCount} scene(s):\n\n{string.Join("\n", failedScenes)}",
-                        "Discard Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string template = LanguageManager.Instance.GetCodeString("msg_54");
+                    string message = string.Join("\n", failedScenes);
+                    string finalMessage = string.Format(template, failureCount, failedScenes);
+                    DarkMessageBox.Show(finalMessage,
+                        LanguageManager.Instance.GetCodeString("title_16"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 
                 // Remove successfully discarded scenes from the UI
@@ -6242,7 +6060,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error during discard operation: {ex.Message}", "Error",
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_55"),ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 System.Diagnostics.Debug.WriteLine($"Discard operation error: {ex}");
             }
@@ -6260,7 +6078,7 @@ namespace VPM
                 string gameRoot = _settingsManager?.Settings?.SelectedFolder;
                 if (string.IsNullOrEmpty(gameRoot))
                 {
-                    DarkMessageBox.Show("No game folder selected.", "Error",
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_51"), LanguageManager.Instance.GetCodeString("Error"),
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -6308,7 +6126,7 @@ namespace VPM
                         else
                         {
                             failureCount++;
-                            failedCustomAtoms.Add($"{customAtomItem.DisplayName}: Source file not found");
+                            failedCustomAtoms.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_52"), customAtomItem.DisplayName));
                         }
                     }
                     catch (Exception ex)
@@ -6335,13 +6153,16 @@ namespace VPM
                 // Show error message only if there were failures
                 if (failureCount > 0)
                 {
-                    DarkMessageBox.Show($"Failed to discard {failureCount} custom atom(s):\n\n{string.Join("\n", failedCustomAtoms)}",
-                        "Discard Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string template = LanguageManager.Instance.GetCodeString("msg_54");
+                    string message = string.Join("\n", failedCustomAtoms);
+                    string finalMessage = string.Format(template, failureCount, failedCustomAtoms);
+                    DarkMessageBox.Show(finalMessage,
+                        LanguageManager.Instance.GetCodeString("title_16"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error during discard operation: {ex.Message}", "Error",
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_55"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 System.Diagnostics.Debug.WriteLine($"Discard operation error: {ex}");
             }
@@ -6391,7 +6212,7 @@ namespace VPM
                 }
             }
 
-            return (false, lastError ?? "Move failed");
+            return (false, lastError ?? LanguageManager.Instance.GetCodeString("msg_56"));
         }
 
         private async void DiscardSelected_Click(object sender, RoutedEventArgs e)
@@ -6406,7 +6227,7 @@ namespace VPM
                 string gameRoot = _settingsManager?.Settings?.SelectedFolder;
                 if (string.IsNullOrEmpty(gameRoot))
                 {
-                    DarkMessageBox.Show("No game folder selected.", "Error",
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_51"), LanguageManager.Instance.GetCodeString("Error"),
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -6481,7 +6302,7 @@ namespace VPM
                         else
                         {
                             failureCount++;
-                            failedPackages.Add($"{packageItem.DisplayName}: Source file not found");
+                            failedPackages.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_52"), packageItem.DisplayName));
                         }
                     }
                     catch (Exception ex)
@@ -6501,13 +6322,16 @@ namespace VPM
                 // Show error message only if there were failures
                 if (failureCount > 0)
                 {
-                    DarkMessageBox.Show($"Failed to discard {failureCount} package(s):\n\n{string.Join("\n", failedPackages)}",
-                        "Discard Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string template = LanguageManager.Instance.GetCodeString("msg_57");
+                    string message = string.Join("\n", failedPackages);
+                    string finalMessage = string.Format(template, failureCount, failedPackages);
+                    DarkMessageBox.Show(finalMessage,
+                        LanguageManager.Instance.GetCodeString("title_16"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error during discard operation: {ex.Message}", "Error",
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_55"),ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 System.Diagnostics.Debug.WriteLine($"Discard operation error: {ex}");
             }
@@ -6520,7 +6344,7 @@ namespace VPM
                 string gameRoot = _settingsManager?.Settings?.SelectedFolder;
                 if (string.IsNullOrEmpty(gameRoot))
                 {
-                    DarkMessageBox.Show("No game folder selected.", "Error",
+                    DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_51"), LanguageManager.Instance.GetCodeString("Error"),
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -6544,7 +6368,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error opening discard location: {ex.Message}", "Error",
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_58"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 System.Diagnostics.Debug.WriteLine($"Error opening discard location: {ex}");
             }
@@ -6589,7 +6413,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error opening destinations configuration: {ex.Message}", "Error",
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_59"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 System.Diagnostics.Debug.WriteLine($"ConfigureMoveToDestinations error: {ex}");
             }
@@ -6733,17 +6557,17 @@ namespace VPM
                         else
                         {
                             var header = menuItem.Header?.ToString() ?? "";
-                            if (header == "📊 Show Dependency Graph")
+                            if (header == LanguageManager.Instance.GetCodeString("ShowDependencyGraph"))
                                 showDependencyItem = menuItem;
-                            else if (header == "📁 Open in Explorer")
+                            else if (header == LanguageManager.Instance.GetCodeString("OpenInExplorer"))
                                 openInExplorerItem = menuItem;
-                            else if (header == "👤 Filter by Creator")
+                            else if (header == LanguageManager.Instance.GetCodeString("FilterByCreator"))
                                 filterByCreatorItem = menuItem;
-                            else if (header.StartsWith("🚀 Launch Scene in VaM", StringComparison.OrdinalIgnoreCase))
+                            else if (header.StartsWith(LanguageManager.Instance.GetCodeString("LaunchSceneInVaM"), StringComparison.OrdinalIgnoreCase))
                                 launchSceneInVamMenuItem = menuItem;
-                            else if (header == "📦 Move To")
+                            else if (header == LanguageManager.Instance.GetCodeString("MoveTo"))
                                 moveToMenuItem = menuItem;
-                            else if (header == "🕹️ Add to Playlist")
+                            else if (header == LanguageManager.Instance.GetCodeString("AddToPlaylist"))
                                 addToPlaylistMenuItem = menuItem;
                         }
                     }
@@ -6789,7 +6613,7 @@ namespace VPM
                             if (baBlocks)
                             {
                                 loadContextMenuItem.IsEnabled = false;
-                                loadContextMenuItem.ToolTip = "Disabled while BrowserAssist is managing packages";
+                                loadContextMenuItem.ToolTip = LanguageManager.Instance.GetCodeString("Load_Tip");
                                 ToolTipService.SetShowOnDisabled(loadContextMenuItem, true);
                             }
                             else
@@ -6831,7 +6655,7 @@ namespace VPM
                     if (movePkgs != null && movePkgs.Count > 0 && IsAnyPackageBaManaged(movePkgs))
                     {
                         moveToMenuItem.IsEnabled = false;
-                        moveToMenuItem.ToolTip = "Disabled while BrowserAssist is managing packages";
+                        moveToMenuItem.ToolTip = LanguageManager.Instance.GetCodeString("Load_Tip");
                         ToolTipService.SetShowOnDisabled(moveToMenuItem, true);
                     }
                     else
@@ -6937,8 +6761,8 @@ namespace VPM
 
                     // Desktop
                     launchSceneInVamMenuItem.Items.Add(CreateLaunchSceneMenuItem(
-                        $"{scene.DisplayName} (Desktop)",
-                        "Desktop",
+                        string.Format(LanguageManager.Instance.GetCodeString("msg_100"), scene.DisplayName),
+                        LanguageManager.Instance.GetCodeString("menu_1"),
                         $"-vrmode None --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
@@ -6951,21 +6775,21 @@ namespace VPM
 
                     // Screen selector
                     launchSceneInVamMenuItem.Items.Add(CreateLaunchSceneMenuItem(
-                        $"{scene.DisplayName} (Screen Selector)",
-                        "Screen Selector",
+                        string.Format(LanguageManager.Instance.GetCodeString("msg_101"), scene.DisplayName),
+                        LanguageManager.Instance.GetCodeString("menu_3"),
                         $"-show-screen-selector --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
                     // Log mode submenu (3 options)
                     var logModeMenu = new MenuItem
                     {
-                        Header = $"{scene.DisplayName} (Log Mode)",
+                        Header = string.Format(LanguageManager.Instance.GetCodeString("menu_4"), scene.DisplayName),
                         ToolTip = vdsSceneValue
                     };
 
                     logModeMenu.Items.Add(CreateLaunchSceneMenuItem(
-                        "Desktop (Log)",
-                        "Desktop (Log)",
+                        LanguageManager.Instance.GetCodeString("menu_5"),
+                        LanguageManager.Instance.GetCodeString("menu_5"),
                         $"-vrmode None -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
@@ -6976,8 +6800,8 @@ namespace VPM
                         vdsSceneValue));
 
                     logModeMenu.Items.Add(CreateLaunchSceneMenuItem(
-                        "Screen Selector (Log)",
-                        "Screen Selector (Log)",
+                        LanguageManager.Instance.GetCodeString("menu_6"),
+                        LanguageManager.Instance.GetCodeString("menu_6"),
                         $"-show-screen-selector -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
@@ -7002,14 +6826,14 @@ namespace VPM
             else
             {
                 // Mode -> list of scenes
-                var desktopMenu = new MenuItem { Header = "Desktop" };
+                var desktopMenu = new MenuItem { Header = LanguageManager.Instance.GetCodeString("menu_1") };
                 var vrMenu = new MenuItem { Header = "VR" };
-                var screenSelectorMenu = new MenuItem { Header = "Screen Selector" };
-                var logModeMenu = new MenuItem { Header = "Log Mode" };
+                var screenSelectorMenu = new MenuItem { Header = LanguageManager.Instance.GetCodeString("menu_3") };
+                var logModeMenu = new MenuItem { Header = LanguageManager.Instance.GetCodeString("menu_7") };
 
-                var desktopLogMenu = new MenuItem { Header = "Desktop (Log)" };
+                var desktopLogMenu = new MenuItem { Header = LanguageManager.Instance.GetCodeString("menu_5") };
                 var vrLogMenu = new MenuItem { Header = "VR (Log)" };
-                var screenSelectorLogMenu = new MenuItem { Header = "Screen Selector (Log)" };
+                var screenSelectorLogMenu = new MenuItem { Header = LanguageManager.Instance.GetCodeString("menu_6") };
 
                 var added = 0;
 
@@ -7024,7 +6848,7 @@ namespace VPM
 
                     desktopMenu.Items.Add(CreateLaunchSceneMenuItem(
                         label,
-                        "Desktop",
+                        LanguageManager.Instance.GetCodeString("menu_1"),
                         $"-vrmode None --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
@@ -7036,13 +6860,13 @@ namespace VPM
 
                     screenSelectorMenu.Items.Add(CreateLaunchSceneMenuItem(
                         label,
-                        "Screen Selector",
+                        LanguageManager.Instance.GetCodeString("menu_3"),
                         $"-show-screen-selector --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
                     desktopLogMenu.Items.Add(CreateLaunchSceneMenuItem(
                         label,
-                        "Desktop (Log)",
+                        LanguageManager.Instance.GetCodeString("menu_5"),
                         $"-vrmode None -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
@@ -7054,7 +6878,7 @@ namespace VPM
 
                     screenSelectorLogMenu.Items.Add(CreateLaunchSceneMenuItem(
                         label,
-                        "Screen Selector (Log)",
+                        LanguageManager.Instance.GetCodeString("menu_6"),
                         $"-show-screen-selector -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                         vdsSceneValue));
 
@@ -7088,7 +6912,7 @@ namespace VPM
             MenuItem launchSceneMenuItem = null;
             foreach (var item in contextMenu.Items)
             {
-                if (item is MenuItem menuItem && menuItem.Header?.ToString().StartsWith("🚀 Launch Scene", StringComparison.OrdinalIgnoreCase) == true)
+                if (item is MenuItem menuItem && menuItem.Header?.ToString().StartsWith(LanguageManager.Instance.GetCodeString("btn_1"), StringComparison.OrdinalIgnoreCase) == true)
                 {
                     launchSceneMenuItem = menuItem;
                     break;
@@ -7133,8 +6957,8 @@ namespace VPM
             void AddModeItems(ItemsControl targetMenu, List<string> deps)
             {
                 targetMenu.Items.Add(CreateLaunchSceneMenuItem(
-                    "Desktop",
-                    "Desktop",
+                    LanguageManager.Instance.GetCodeString("menu_1"),
+                    LanguageManager.Instance.GetCodeString("menu_1"),
                     $"-vrmode None --vpb.vds.scene \"{vdsSceneValue}\"",
                     toolTip,
                     deps));
@@ -7147,21 +6971,21 @@ namespace VPM
                     deps));
 
                 targetMenu.Items.Add(CreateLaunchSceneMenuItem(
-                    "Screen Selector",
-                    "Screen Selector",
+                    LanguageManager.Instance.GetCodeString("menu_3"),
+                    LanguageManager.Instance.GetCodeString("menu_3"),
                     $"-show-screen-selector --vpb.vds.scene \"{vdsSceneValue}\"",
                     toolTip,
                     deps));
 
                 var logModeMenu = new MenuItem
                 {
-                    Header = "Log Mode",
+                    Header = "menu_7",
                     ToolTip = toolTip
                 };
 
                 logModeMenu.Items.Add(CreateLaunchSceneMenuItem(
-                    "Desktop (Log)",
-                    "Desktop (Log)",
+                    LanguageManager.Instance.GetCodeString("menu_5"),
+                    LanguageManager.Instance.GetCodeString("menu_5"),
                     $"-vrmode None -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                     toolTip,
                     deps));
@@ -7174,8 +6998,8 @@ namespace VPM
                     deps));
 
                 logModeMenu.Items.Add(CreateLaunchSceneMenuItem(
-                    "Screen Selector (Log)",
-                    "Screen Selector (Log)",
+                    LanguageManager.Instance.GetCodeString("menu_6"),
+                    LanguageManager.Instance.GetCodeString("menu_6"),
                     $"-show-screen-selector -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                     toolTip,
                     deps));
@@ -7218,9 +7042,11 @@ namespace VPM
 
                             if (missingCount > 0)
                             {
+                                string message = string.Format(LanguageManager.Instance.GetCodeString("msg_60"), missingCount);
+                                message = message.Replace("\\n","\n");
                                 var result = CustomMessageBox.Show(
-                                    $"{missingCount} dependencies are missing and could cause scene to not load correctly.\n\nWould you like to launch the scene?",
-                                    "Missing Dependencies",
+                                    message,
+                                    LanguageManager.Instance.GetCodeString("title_18"),
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Warning);
                                 
@@ -7261,9 +7087,11 @@ namespace VPM
 
                         if (missingDeps > 0)
                         {
+                            string message = string.Format(LanguageManager.Instance.GetCodeString("msg_60"), missingDeps);
+                            message = message.Replace("\\n", "\n");
                             var proceed = CustomMessageBox.Show(
-                                $"{missingDeps} dependencies are missing and could cause scene to not load correctly.\n\nWould you like to launch the scene?",
-                                "Missing Dependencies",
+                                message,
+                                LanguageManager.Instance.GetCodeString("title_18"),
                                 MessageBoxButton.YesNo,
                                 MessageBoxImage.Warning);
                             
@@ -7295,10 +7123,11 @@ namespace VPM
 
                         if (!string.IsNullOrEmpty(value) && !value.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                         {
+                            string message = string.Format(LanguageManager.Instance.GetCodeString("msg_61"), value);
+                            message = message.Replace("\\n","\n");
                             CustomMessageBox.Show(
-                                $"Refusing to launch: vpb.vds.scene is not a .json scene file:\n\n{value}\n\n" +
-                                "This usually means the tile points to a preview image instead of the scene JSON.",
-                                "Invalid Scene Path",
+                                message,
+                                LanguageManager.Instance.GetCodeString("title_19"),
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                             return;
@@ -7309,8 +7138,10 @@ namespace VPM
                 }
                 catch (Exception ex)
                 {
-                    CustomMessageBox.Show($"Error launching VirtAMate:\n\n{ex.Message}",
-                        "Launch Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string message = string.Format(LanguageManager.Instance.GetCodeString("msg_62"), ex.Message);
+                    message = message.Replace("\\n","\n");
+                    CustomMessageBox.Show(message,
+                        LanguageManager.Instance.GetCodeString("title_12"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             };
 
@@ -7323,8 +7154,8 @@ namespace VPM
             {
                 if (string.IsNullOrEmpty(_selectedFolder))
                 {
-                    CustomMessageBox.Show("Please select a VAM root folder first.",
-                        "No Folder Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomMessageBox.Show(LanguageManager.Instance.GetCodeString("No_Folder_Selected_Message"),
+                        LanguageManager.Instance.GetCodeString("No_Folder_Selected_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
@@ -7345,8 +7176,8 @@ namespace VPM
                     var deps = dependencies;
 
                     targetMenu.Items.Add(CreateLaunchSceneMenuItem(
-                        "Desktop",
-                        "Desktop",
+                        LanguageManager.Instance.GetCodeString("menu_1"),
+                        LanguageManager.Instance.GetCodeString("menu_1"),
                         $"-vrmode None --vpb.vds.scene \"{vdsSceneValue}\"",
                         isVarScene ? vdsSceneValue : toolTip,
                         deps));
@@ -7359,21 +7190,21 @@ namespace VPM
                         deps));
 
                     targetMenu.Items.Add(CreateLaunchSceneMenuItem(
-                        "Screen Selector",
-                        "Screen Selector",
+                        LanguageManager.Instance.GetCodeString("menu_3"),
+                        LanguageManager.Instance.GetCodeString("menu_3"),
                         $"-show-screen-selector --vpb.vds.scene \"{vdsSceneValue}\"",
                         isVarScene ? vdsSceneValue : toolTip,
                         deps));
 
                     var logModeMenu = new MenuItem
                     {
-                        Header = "Log Mode",
+                        Header = LanguageManager.Instance.GetCodeString("menu_7"),
                         ToolTip = isVarScene ? vdsSceneValue : toolTip
                     };
 
                     logModeMenu.Items.Add(CreateLaunchSceneMenuItem(
-                        "Desktop (Log)",
-                        "Desktop (Log)",
+                        LanguageManager.Instance.GetCodeString("menu_5"),
+                        LanguageManager.Instance.GetCodeString("menu_5"),
                         $"-vrmode None -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                         isVarScene ? vdsSceneValue : toolTip,
                         deps));
@@ -7386,8 +7217,8 @@ namespace VPM
                         deps));
 
                     logModeMenu.Items.Add(CreateLaunchSceneMenuItem(
-                        "Screen Selector (Log)",
-                        "Screen Selector (Log)",
+                        LanguageManager.Instance.GetCodeString("menu_6"),
+                        LanguageManager.Instance.GetCodeString("menu_6"),
                         $"-show-screen-selector -logFile log.txt --vpb.vds.scene \"{vdsSceneValue}\"",
                         isVarScene ? vdsSceneValue : toolTip,
                         deps));
@@ -7516,8 +7347,8 @@ namespace VPM
                         if (string.IsNullOrEmpty(internalJson) || !internalJson.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                         {
                             CustomMessageBox.Show(
-                                "Unable to resolve a valid scene .json path from this tile.",
-                                "Invalid Scene Path",
+                                LanguageManager.Instance.GetCodeString("msg_63"),
+                                LanguageManager.Instance.GetCodeString("title_19"),
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                             return;
@@ -7538,8 +7369,8 @@ namespace VPM
                         else
                         {
                             CustomMessageBox.Show(
-                                "Unable to resolve a valid scene .json path from this package.",
-                                "Invalid Scene Path",
+                                LanguageManager.Instance.GetCodeString("msg_64"),
+                                LanguageManager.Instance.GetCodeString("title_19"),
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                             return;
@@ -7561,10 +7392,11 @@ namespace VPM
                     }
                     else
                     {
+                        string message = LanguageManager.Instance.GetCodeString("msg_65");
+                        message = message.Replace("\\n","\n");
                         CustomMessageBox.Show(
-                            "No scene JSON files were found in this package under Saves/scene/*.json.\n\n" +
-                            "This tile appears to reference a preview image, not a scene file.",
-                            "No Scenes Found",
+                            message,
+                            LanguageManager.Instance.GetCodeString("title_20"),
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
                         return;
@@ -7580,8 +7412,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error launching scene menu:\n\n{ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_66"), ex.Message),
+                    LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -7614,9 +7446,9 @@ namespace VPM
                 {
                     if (item is MenuItem menuItem)
                     {
-                        if (menuItem.Header?.ToString() == "📊 Show Dependency Graph")
+                        if (menuItem.Header?.ToString() == LanguageManager.Instance.GetCodeString("ShowDependencyGraph"))
                             showDependencyItem = menuItem;
-                        else if (menuItem.Header?.ToString() == "📁 Open in Explorer")
+                        else if (menuItem.Header?.ToString() == LanguageManager.Instance.GetCodeString("OpenInExplorer"))
                             openInExplorerItem = menuItem;
                     }
                 }
@@ -7680,7 +7512,7 @@ namespace VPM
             }
             else
             {
-                var newConfigItem = new MenuItem { Header = "⚙️ Configure Destinations..." };
+                var newConfigItem = new MenuItem { Header = LanguageManager.Instance.GetCodeString("ConfigureDestinations") };
                 newConfigItem.Click += ConfigureMoveToDestinations_Click;
                 moveToMenuItem.Items.Add(newConfigItem);
             }
@@ -7690,7 +7522,7 @@ namespace VPM
         {
             var manageItem = addToPlaylistMenuItem.Items.Cast<object>()
                 .OfType<MenuItem>()
-                .FirstOrDefault(m => m.Header?.ToString()?.Contains("Manage Playlists") == true);
+                .FirstOrDefault(m => m.Header?.ToString()?.Contains(LanguageManager.Instance.GetCodeString("title_17")) == true);
 
             foreach (var item in addToPlaylistMenuItem.Items.Cast<object>().OfType<MenuItem>().ToList())
             {
@@ -7709,7 +7541,7 @@ namespace VPM
             }
             else
             {
-                var newManageItem = new MenuItem { Header = "🕹️ Manage Playlists..." };
+                var newManageItem = new MenuItem { Header = LanguageManager.Instance.GetCodeString("ManagePlaylists") };
                 newManageItem.Click += ManagePlaylists_Click;
                 addToPlaylistMenuItem.Items.Add(newManageItem);
             }
@@ -7748,7 +7580,7 @@ namespace VPM
 
                 var moreMenuItem = new MenuItem
                 {
-                    Header = $"More... ({remainingCount})"
+                    Header = string.Format(LanguageManager.Instance.GetCodeString("msg_102"), remainingCount)
                 };
 
                 // Put the remaining playlists into a submenu so the top-level menu doesn't get too tall
@@ -7759,7 +7591,7 @@ namespace VPM
                     var item = new MenuItem
                     {
                         Header = $"{playlistNumber} - {playlist.Name} ({playlist.PackageKeys.Count})",
-                        ToolTip = $"{playlist.PackageKeys.Count} packages",
+                        ToolTip = string.Format(LanguageManager.Instance.GetCodeString("msg_103"),playlist.PackageKeys.Count),
                         Tag = playlist
                     };
                     item.Click += AddPackageToPlaylist_Click;
@@ -7778,7 +7610,7 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), "Add to Playlist",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), LanguageManager.Instance.GetCodeString("title_21"),
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -7805,13 +7637,13 @@ namespace VPM
                 // Refresh the DataGrid to show updated playlist tags
                 PackageDataGrid?.Items?.Refresh();
 
-                SetStatus($"Added {addedCount} package(s) to playlist: {playlist.Name}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_67"),addedCount,playlist.Name));
             }
             else
             {
                 DarkMessageBox.Show(
-                    $"No packages were added. They may already be in the playlist: {playlist.Name}",
-                    "Add to Playlist",
+                    string.Format(LanguageManager.Instance.GetCodeString("msg_68"), playlist.Name),
+                    LanguageManager.Instance.GetCodeString("title_21"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -7849,7 +7681,7 @@ namespace VPM
             var destination = tag.Destination;
             if (destination == null || string.IsNullOrEmpty(destination.Path))
             {
-                DarkMessageBox.Show("Invalid destination configuration.", "Error",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_69"), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -7865,9 +7697,11 @@ namespace VPM
                     }
                     else
                     {
+                        string message = LanguageManager.Instance.GetCodeString("msg_70");
+                        message = message.Replace("\\n","\n");
                         var result = DarkMessageBox.Show(
-                            $"The destination folder does not exist:\n{destination.Path}\n\nWould you like to create it?",
-                            "Create Folder?",
+                            message,
+                            LanguageManager.Instance.GetCodeString("title_22"),
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Question);
 
@@ -7887,14 +7721,14 @@ namespace VPM
                 }
                 catch (Exception ex)
                 {
-                    DarkMessageBox.Show($"Destination folder is not writable: {ex.Message}", "Error",
+                    DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_71"),ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Cannot access destination folder: {ex.Message}", "Error",
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_72"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -7907,14 +7741,14 @@ namespace VPM
             var selectedPackages = PackageDataGrid?.SelectedItems?.Cast<PackageItem>().ToList();
             if (selectedPackages == null || selectedPackages.Count == 0)
             {
-                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), "Move To",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("NoPackagesSelected"), LanguageManager.Instance.GetCodeString("title_23"),
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             if (IsAnyPackageBaManaged(selectedPackages))
             {
-                DarkMessageBox.Show("Disabled while BrowserAssist is managing packages.", "Move To",
+                DarkMessageBox.Show(LanguageManager.Instance.GetCodeString("msg_73"), LanguageManager.Instance.GetCodeString("title_23"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -7924,14 +7758,17 @@ namespace VPM
             // Build summary of packages to move
             var packageSummary = string.Join("\n", selectedPackages.Take(10).Select(p => $"  • {p.DisplayName}"));
             if (selectedPackages.Count > 10)
-                packageSummary += $"\n  ... and {selectedPackages.Count - 10} more";
-
+            {
+                // 从多语言管理器获取带占位符的翻译模板，动态传入差值变量
+                string moreCountText = (selectedPackages.Count - 10).ToString();
+                packageSummary += $"\n  {string.Format(LanguageManager.Instance.GetCodeString("msg_104"), moreCountText)}";
+            }
             if (!suppressDialogs)
             {
                 // Confirm the operation
                 var confirmResult = DarkMessageBox.Show(
-                    $"Move to: {destination.Name}\n{destination.Path}\n\n{packageSummary}",
-                    "Confirm Move",
+                    LanguageManager.Instance.GetCodeString("msg_74") + $" {destination.Name}\n{destination.Path}\n\n{packageSummary}",
+                    LanguageManager.Instance.GetCodeString("title_24"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
@@ -7952,7 +7789,7 @@ namespace VPM
             var skippedPackages = new List<string>();
             var movedPackages = new List<PackageItem>();
 
-            SetStatus($"Moving {packages.Count} package(s) to {destinationPath}...");
+            SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_75"), packages.Count, destinationPath));
 
             try
             {
@@ -8012,14 +7849,14 @@ namespace VPM
                         if (metadata == null || string.IsNullOrEmpty(metadata.FilePath))
                         {
                             failureCount++;
-                            failedPackages.Add($"{packageItem.DisplayName}: Package metadata not found");
+                            failedPackages.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_76"),packageItem.DisplayName));
                             continue;
                         }
 
                         if (!File.Exists(metadata.FilePath))
                         {
                             failureCount++;
-                            failedPackages.Add($"{packageItem.DisplayName}: Source file not found");
+                            failedPackages.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_77"), packageItem.DisplayName));
                             continue;
                         }
 
@@ -8074,7 +7911,7 @@ namespace VPM
                             
                             if (destInfo.Length != sourceInfo.Length)
                             {
-                                throw new IOException("File copy verification failed - size mismatch");
+                                throw new IOException(LanguageManager.Instance.GetCodeString("msg_78"));
                             }
 
                             copySucceeded = true;
@@ -8099,7 +7936,7 @@ namespace VPM
 
                             if (!deleteSucceeded)
                             {
-                                throw new IOException("Failed to delete source file after 3 retries");
+                                throw new IOException(LanguageManager.Instance.GetCodeString("msg_79"));
                             }
                         });
 
@@ -8113,7 +7950,7 @@ namespace VPM
                     {
                         failureCount++;
                         failedPackages.Add($"{packageItem.DisplayName}: {ex.Message}");
-                        System.Diagnostics.Debug.WriteLine($"Error moving package {packageItem.DisplayName}: {ex}");
+                        System.Diagnostics.Debug.WriteLine(string.Format(LanguageManager.Instance.GetCodeString("msg_80"), packageItem.DisplayName ,ex));
                     }
                 }
 
@@ -8238,13 +8075,13 @@ namespace VPM
                 var summaryParts = new List<string>();
                 
                 if (successCount > 0)
-                    summaryParts.Add($"✓ Successfully moved {successCount} package(s)");
+                    summaryParts.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_81"), successCount));
                 
                 if (skippedCount > 0)
-                    summaryParts.Add($"⊘ Skipped {skippedCount} package(s) (already in destination)");
+                    summaryParts.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_82"), skippedCount));
                 
                 if (failureCount > 0)
-                    summaryParts.Add($"✗ Failed to move {failureCount} package(s)");
+                    summaryParts.Add(string.Format(LanguageManager.Instance.GetCodeString("msg_83"), failureCount));
                 
                 if (summaryParts.Count > 0)
                 {
@@ -8257,7 +8094,7 @@ namespace VPM
                         
                         if (skippedPackages.Count > 0)
                         {
-                            summaryMessage += "Skipped:\n" + string.Join("\n", skippedPackages.Take(5).Select(p => $"  • {p}"));
+                            summaryMessage += LanguageManager.Instance.GetCodeString("msg_84") + "\n" + string.Join("\n", skippedPackages.Take(5).Select(p => $"  • {p}"));
                             if (skippedPackages.Count > 5)
                                 summaryMessage += $"\n  ... and {skippedPackages.Count - 5} more";
                             summaryMessage += "\n\n";
@@ -8265,7 +8102,7 @@ namespace VPM
                         
                         if (failedPackages.Count > 0)
                         {
-                            summaryMessage += "Failed:\n" + string.Join("\n", failedPackages.Take(5));
+                            summaryMessage += LanguageManager.Instance.GetCodeString("msg_85") + "\n" + string.Join("\n", failedPackages.Take(5));
                             if (failedPackages.Count > 5)
                                 summaryMessage += $"\n  ... and {failedPackages.Count - 5} more";
                         }
@@ -8277,15 +8114,15 @@ namespace VPM
                     // - Always show an error dialog when at least one move failed.
                     if (failureCount > 0)
                     {
-                        DarkMessageBox.Show(summaryMessage, "Move Operation Complete", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        DarkMessageBox.Show(summaryMessage, LanguageManager.Instance.GetCodeString("title_25"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                     else if (!suppressDialogs)
                     {
-                        DarkMessageBox.Show(summaryMessage, "Move Operation Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        DarkMessageBox.Show(summaryMessage, LanguageManager.Instance.GetCodeString("title_25"), MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 
-                SetStatus($"Move complete: {successCount} moved, {skippedCount} skipped, {failureCount} failed");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_86"), successCount, skippedCount, failureCount));
                 
                 // Refresh the UI to reflect the moved packages and update filter counts
                 if (successCount > 0)
@@ -8305,8 +8142,8 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                SetStatus($"Error during move operation: {ex.Message}");
-                DarkMessageBox.Show($"Error during move operation: {ex.Message}", "Error",
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_87"), ex.Message));
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_87"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 System.Diagnostics.Debug.WriteLine($"Move operation error: {ex}");
             }

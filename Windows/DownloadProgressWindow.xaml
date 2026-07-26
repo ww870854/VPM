@@ -1,7 +1,9 @@
 ﻿<Window x:Class="VPM.Windows.DownloadProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Downloading Packages" 
+        xmlns:local="clr-namespace:VPM"
+        xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+        Title="{Binding [Downloading_Packages], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
         Height="500" 
         Width="700"
         MinHeight="300"
@@ -80,7 +82,7 @@
                     </Grid.ColumnDefinitions>
                     
                     <TextBlock Grid.Column="0" 
-                               Text="Downloading Packages" 
+                               Text="{Binding [Downloading_Packages], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                                FontSize="12" 
                                Foreground="White" 
                                VerticalAlignment="Center" 
@@ -110,13 +112,13 @@
                 </Grid.ColumnDefinitions>
                 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Package Downloads" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
-                    <TextBlock x:Name="SummaryText" Text="Preparing downloads..." FontSize="12" Foreground="#B0B0B0" Margin="0,4,0,0"/>
+                    <TextBlock Text="{Binding [Package_Downloads], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
+                    <TextBlock x:Name="SummaryText" Text="{Binding [Preparing_download], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" FontSize="12" Foreground="#B0B0B0" Margin="0,4,0,0"/>
                 </StackPanel>
                 
                 <Button x:Name="CancelAllButton" 
                         Grid.Column="1"
-                        Content="Cancel All" 
+                        Content="{Binding [Cancel_all], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                         Click="CancelAllButton_Click"
                         MinWidth="120"
                         Height="32"

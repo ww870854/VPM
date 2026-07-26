@@ -2,9 +2,11 @@
     x:Class="VPM.Windows.UpdateOverviewWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Updates Overview"
+    xmlns:local="clr-namespace:VPM"
+    xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+    Title="{Binding [title_28], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="500"
-    Height="400"
+    Height="460"
     Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
     Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
     ResizeMode="NoResize"
@@ -23,6 +25,8 @@
             <RowDefinition Height="Auto" />
             <!--  VPM Status  -->
             <RowDefinition Height="Auto" />
+            <!--  VPM International Section  -->
+            <RowDefinition Height="Auto" />
             <!--  VPB Status  -->
             <RowDefinition Height="*" />
             <!--  Spacer  -->
@@ -38,7 +42,7 @@
             HorizontalAlignment="Center"
             FontSize="20"
             FontWeight="Bold"
-            Text="Update Status" />
+            Text="{Binding [text_10], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
         <!--  VPM Section  -->
         <Border
@@ -57,11 +61,11 @@
                     <TextBlock
                         FontSize="14"
                         FontWeight="Bold"
-                        Text="VPM (Application)" />
+                        Text="{Binding [text_11], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <TextBlock
                         x:Name="VpmStatusText"
                         Margin="0,5,0,0"
-                        Text="Checking..." />
+                        Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <TextBlock
                         x:Name="VpmVersionText"
                         Margin="0,2,0,0"
@@ -75,12 +79,11 @@
                     Height="32"
                     VerticalAlignment="Center"
                     Click="VpmUpdateButton_Click"
-                    Content="Update"
+                    Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                     Visibility="Collapsed" />
             </Grid>
         </Border>
-
-        <!--  VPB Section  -->
+        <!--  VPM International Section  -->
         <Border
             Grid.Row="2"
             Margin="0,0,0,10"
@@ -97,11 +100,50 @@
                     <TextBlock
                         FontSize="14"
                         FontWeight="Bold"
-                        Text="VPB Plugin" />
+                        Text="{Binding [text_23], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                    <TextBlock
+                        x:Name="VpmInternationalStatusText"
+                        Margin="0,5,0,0"
+                        Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                    <TextBlock
+                        x:Name="VpmInternationalVersionText"
+                        Margin="0,2,0,0"
+                        Opacity="0.7"
+                        Text="v1.0.0 -&gt; v1.0.1" />
+                </StackPanel>
+                <Button
+                    x:Name="VpmInternationalUpdateButton"
+                    Grid.Column="1"
+                    Width="100"
+                    Height="32"
+                    VerticalAlignment="Center"
+                    Click="VpmInternationalUpdateButton_Click"
+                    Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Border>
+        <!--  VPB Section  -->
+        <Border
+            Grid.Row="3"
+            Margin="0,0,0,10"
+            Padding="10"
+            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+            BorderThickness="1"
+            CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Text="{Binding [text_14], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <TextBlock
                         x:Name="VpbStatusText"
                         Margin="0,5,0,0"
-                        Text="Checking..." />
+                        Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     <TextBlock
                         x:Name="VpbDetailsText"
                         Margin="0,2,0,0"
@@ -116,7 +158,7 @@
                     Height="32"
                     VerticalAlignment="Center"
                     Click="VpbUpdateButton_Click"
-                    Content="Update"
+                    Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                     Visibility="Collapsed" />
             </Grid>
         </Border>
@@ -126,7 +168,7 @@
             Grid.Row="4"
             Margin="0,0,0,8"
             HorizontalAlignment="Center"
-            Content="Check for updates on startup"
+            Content="{Binding [text_15], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
             IsChecked="{Binding CheckForAppUpdates, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <Button
@@ -135,6 +177,6 @@
             Height="32"
             HorizontalAlignment="Center"
             Click="CloseButton_Click"
-            Content="Close" />
+            Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
     </Grid>
 </Window>

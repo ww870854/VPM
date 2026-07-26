@@ -403,49 +403,106 @@ namespace VPM
                 ShowWindow(consoleWindow, shouldShowConsole ? SW_SHOW : SW_HIDE);
             }
         }
-        
+
         #endregion
 
         #region Theme Management
 
+        //private void SwitchTheme(string themeName)
+        //{
+        //    try
+        //    {
+        //        _currentTheme = themeName;
+
+        //        // Update settings (this will trigger auto-save)
+        //        _settingsManager.Settings.Theme = themeName;
+
+        //        // Clear existing theme resources
+        //        Application.Current.Resources.MergedDictionaries.Clear();
+
+        //        // Load the appropriate theme
+        //        var themeUri = themeName switch
+        //        {
+        //            "Light" => new Uri("Themes/LightTheme.xaml", UriKind.Relative),
+        //            "Dark" => new Uri("Themes/DarkTheme.xaml", UriKind.Relative),
+        //            _ => new Uri("Themes/DarkTheme.xaml", UriKind.Relative) // Default to dark
+        //        };
+
+        //        var themeDict = new ResourceDictionary { Source = themeUri };
+        //        Application.Current.Resources.MergedDictionaries.Add(themeDict);
+
+        //        // Update menu checkmarks
+        //        UpdateThemeMenuItems();
+
+        //        // Apply dark title bar for dark theme
+        //        if (themeName == "Dark")
+        //        {
+        //            ApplyDarkTitleBar();
+        //        }
+
+        //        SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_99"), themeName));
+        //    }
+        //    catch (Exception)
+        //    {
+        //    }
+        //}
         private void SwitchTheme(string themeName)
         {
             try
             {
                 _currentTheme = themeName;
-                
-                // Update settings (this will trigger auto-save)
                 _settingsManager.Settings.Theme = themeName;
-                
-                // Clear existing theme resources
-                Application.Current.Resources.MergedDictionaries.Clear();
-                
-                // Load the appropriate theme
+
+                // 1. 【关键】不要 Clear() 所有字典，只移除旧的主题字典
+                // 假设主题字典总是最后一个加入的，或者你可以通过 URI 判断
+                var dicts = Application.Current.Resources.MergedDictionaries;
+
+                // 移除所有非语言相关的动态字典（这里简化处理：假设只有主题字典需要替换）
+                // 更稳健的做法是：记录语言字典的索引或实例，只移除主题字典
+                if (dicts.Count > 0)
+                {
+                    // 简单策略：如果知道语言字典是第一个加入的，可以保留它
+                    // 或者遍历移除 Source 包含 "Themes/" 的字典
+                    for (int i = dicts.Count - 1; i >= 0; i--)
+                    {
+                        var dict = dicts[i];
+                        if (dict.Source != null && dict.Source.ToString().Contains("Themes/"))
+                        {
+                            dicts.RemoveAt(i);
+                        }
+                    }
+                }
+
+                // 2. 加载新主题
                 var themeUri = themeName switch
                 {
                     "Light" => new Uri("Themes/LightTheme.xaml", UriKind.Relative),
-                    "Dark" => new Uri("Themes/DarkTheme.xaml", UriKind.Relative),
-                    _ => new Uri("Themes/DarkTheme.xaml", UriKind.Relative) // Default to dark
+                    _ => new Uri("Themes/DarkTheme.xaml", UriKind.Relative)
                 };
-                
+
                 var themeDict = new ResourceDictionary { Source = themeUri };
-                Application.Current.Resources.MergedDictionaries.Add(themeDict);
-                
-                // Update menu checkmarks
+                dicts.Add(themeDict);
+
+                // 3. 更新 UI
                 UpdateThemeMenuItems();
-                
-                // Apply dark title bar for dark theme
-                if (themeName == "Dark")
+                if (themeName == "Dark") ApplyDarkTitleBar();
+
+                // 4. 设置状态（此时语言资源依然存在于 MergedDictionaries 中，可正常获取）
+                string msgTemplate = LanguageManager.Instance.GetCodeString("msg_99");
+                string finalMsg = string.Format(msgTemplate, themeName);
+
+                _ = Dispatcher.InvokeAsync(() =>
                 {
-                    ApplyDarkTitleBar();
-                }
-                
-                SetStatus($"Switched to {themeName} theme");
+                    SetStatus(finalMsg);
+                }, DispatcherPriority.Loaded);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // 建议记录日志，方便排查
+                System.Diagnostics.Debug.WriteLine($"Theme switch error: {ex.Message}");
             }
         }
+
 
         private void UpdateThemeMenuItems()
         {
@@ -970,7 +1027,7 @@ namespace VPM
             
             if (string.IsNullOrEmpty(_selectedFolder))
             {
-                MessageBox.Show("Please select a VAM root folder first.", "No Folder Selected", 
+                MessageBox.Show(LanguageManager.Instance.GetCodeString("No_Folder_Selected_Message"), LanguageManager.Instance.GetCodeString("No_Folder_Selected_Title"), 
                                MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -979,7 +1036,7 @@ namespace VPM
             _isLoadingPackages = true;
             DisableHubButtons();
             
-            SetStatus("Scanning VAR files...");
+            SetStatus(LanguageManager.Instance.GetCodeString("msg_88"));
 
             try
             {
@@ -1004,12 +1061,20 @@ namespace VPM
 
 
                 var externalCount = externalFiles.Values.Sum(l => l.Count);
-                SetStatus($"Found {installedFiles.Count + availableFiles.Count + externalCount} VAR files. Processing...");
+                int totalCount = installedFiles.Count + availableFiles.Count + externalCount;
+                string template = LanguageManager.Instance.GetCodeString("msg_89");
+                string finalMessage = string.Format(template, totalCount);
+                SetStatus(finalMessage);
 
                 // Update package mapping with progress
                 var progress = new Progress<(int current, int total)>(p =>
                 {
-                    SetStatus($"Processing packages... {p.current}/{p.total} ({(double)p.current/p.total*100:F1}%)");
+                    int current = p.current;
+                    int total = p.total;
+                    double percentage = total > 0 ? (double)current / total * 100 : 0.0;
+                    string template = LanguageManager.Instance.GetCodeString("msg_90");
+                    string finalMessage = string.Format(template, current, total, percentage.ToString("F1"));
+                    SetStatus(finalMessage);
                 });
 
                 // Use synchronous fast method with proper progress reporting
@@ -1085,13 +1150,13 @@ namespace VPM
                 {
                 }
 
-                SetStatus("Ready");
+                SetStatus(LanguageManager.Instance.GetCodeString("StatusReady"));
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error refreshing packages: {ex.Message}", "Error", 
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_91"), ex.Message), LanguageManager.Instance.GetCodeString("Error"), 
                                MessageBoxButton.OK, MessageBoxImage.Error);
-                SetStatus("Package refresh failed");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_92"));
             }
             finally
             {
@@ -1175,7 +1240,7 @@ namespace VPM
             // Full refresh - clear and reload
             Packages.Clear();
             Dependencies.Clear();
-            SetStatus("Loading packages...");
+            SetStatus(LanguageManager.Instance.GetCodeString("ShowMainTable_Loading"));
             
             // Load packages in background
             _ = Task.Run(async () =>
@@ -1354,10 +1419,26 @@ namespace VPM
                                 ? k.Substring(0, k.Length - 9) : k)
                             .Distinct(StringComparer.OrdinalIgnoreCase).Count();
 
-                        SetStatus(allKeys.Count == processedCount
-                            ? $"Showing all {allKeys.Count:N0} entries ({uniquePackageCount:N0} unique packages)"
-                            : $"Showing {allKeys.Count:N0} of {processedCount:N0} entries ({uniquePackageCount:N0} of {uniqueTotalCount:N0} unique packages)");
-                        
+                        //SetStatus(allKeys.Count == processedCount
+                        //    ? $"Showing all {allKeys.Count:N0} entries ({uniquePackageCount:N0} unique packages)"
+                        //    : $"Showing {allKeys.Count:N0} of {processedCount:N0} entries ({uniquePackageCount:N0} of {uniqueTotalCount:N0} unique packages)");
+                        string statusMessage;
+                        string totalCountStr = allKeys.Count.ToString("N0");
+                        string processedCountStr = processedCount.ToString("N0");
+                        string uniquePkgCountStr = uniquePackageCount.ToString("N0");
+                        string uniqueTotalCountStr = uniqueTotalCount.ToString("N0");
+                        if (allKeys.Count == processedCount)
+                        {
+                            string template = LanguageManager.Instance.GetCodeString("msg_93");
+                            statusMessage = string.Format(template, totalCountStr, uniquePkgCountStr);
+                        }
+                        else
+                        {
+                            string template = LanguageManager.Instance.GetCodeString("msg_94");
+                            statusMessage = string.Format(template, totalCountStr, processedCountStr, uniquePkgCountStr, uniqueTotalCountStr);
+                        }
+                        SetStatus(statusMessage);
+
                         // Refresh filter lists AFTER packages are loaded
                         // NOTE: _isLoadingPackages will be set to false at the END of RefreshFilterLists
                         // after all UI updates complete, not here
@@ -1375,7 +1456,7 @@ namespace VPM
                 {
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        SetStatus("Error loading packages");
+                        SetStatus(LanguageManager.Instance.GetCodeString("msg_95"));
                         _isLoadingPackages = false;
                     });
                 }
@@ -1421,8 +1502,8 @@ namespace VPM
                     return filterSnapshot.SelectedDestinations.Contains(packageDestKey);
                 }
 
-                bool externalExplicitlySelected = filterSnapshot.SelectedStatuses.Contains("External");
-                bool localExplicitlySelected = filterSnapshot.SelectedStatuses.Contains("Local");
+                bool externalExplicitlySelected = filterSnapshot.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External"));
+                bool localExplicitlySelected = filterSnapshot.SelectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local"));
                 
                 if (localExplicitlySelected && !externalExplicitlySelected)
                 {
@@ -1603,10 +1684,21 @@ namespace VPM
                 // Update status
                 var visibleCount = Packages.Count;
                 var totalCount = _packageManager.PackageMetadata.Count;
-                SetStatus(totalCount == visibleCount 
-                    ? $"Showing all {totalCount:N0} packages"
-                    : $"Showing {visibleCount:N0} of {totalCount:N0} packages");
-                
+                string message;
+                string totalStr = totalCount.ToString("N0");
+                string visibleStr = visibleCount.ToString("N0");
+                if (totalCount == visibleCount)
+                {
+                    string template = LanguageManager.Instance.GetCodeString("msg_96");
+                    message = string.Format(template, totalStr);
+                }
+                else
+                {
+                    string template = LanguageManager.Instance.GetCodeString("msg_97");
+                    message = string.Format(template, visibleStr, totalStr);
+                }
+                SetStatus(message);
+
                 // Restore scroll position
                 var scrollViewer = PackageDataGrid != null ? FindVisualChild<ScrollViewer>(PackageDataGrid) : null;
                 scrollViewer?.ScrollToVerticalOffset(scrollOffset);
@@ -1959,9 +2051,9 @@ namespace VPM
                             if (!string.IsNullOrEmpty(itemText))
                             {
                                 var statusName = ExtractFilterValue(itemText);
-                                if (statusName.Equals("Duplicates", StringComparison.OrdinalIgnoreCase))
+                                if (statusName.Equals(LanguageManager.Instance.GetCodeString("Duplicates"), StringComparison.OrdinalIgnoreCase))
                                 {
-                                    statusName = "Duplicate";
+                                    statusName = LanguageManager.Instance.GetCodeString("Duplicate");
                                 }
                                 selectedStatuses.Add(statusName);
                             }
@@ -1970,7 +2062,7 @@ namespace VPM
                         StatusFilterList.Items.Clear();
                         foreach (var status in statusCounts.OrderBy(s => s.Key))
                         {
-                            var displayName = status.Key.Equals("Duplicate", StringComparison.OrdinalIgnoreCase) ? "Duplicates" : status.Key;
+                            var displayName = status.Key.Equals(LanguageManager.Instance.GetCodeString("Duplicate"), StringComparison.OrdinalIgnoreCase) ? LanguageManager.Instance.GetCodeString("Duplicates") : status.Key;
                             var displayText = $"{displayName} ({status.Value:N0})";
                             StatusFilterList.Items.Add(displayText);
                             
@@ -2004,9 +2096,9 @@ namespace VPM
                         }
 
                         // Add custom dependents count
-                        var customDisplayText = $"Dependents (Custom) ({customDependentCount:N0})";
+                        var customDisplayText = string.Format(LanguageManager.Instance.GetCodeString("list_6"), customDependentCount);
                         StatusFilterList.Items.Add(customDisplayText);
-                        if (selectedStatuses.Contains("Dependents (Custom)"))
+                        if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("list_5")))
                         {
                             StatusFilterList.SelectedItems.Add(customDisplayText);
                         }
@@ -2017,9 +2109,9 @@ namespace VPM
                         
                         if (externalCount > 0)
                         {
-                            var displayText = $"External ({externalCount:N0})";
+                            var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_8"), externalCount);
                             StatusFilterList.Items.Add(displayText);
-                            if (selectedStatuses.Contains("External"))
+                            if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("External")))
                             {
                                 StatusFilterList.SelectedItems.Add(displayText);
                             }
@@ -2027,9 +2119,9 @@ namespace VPM
                         
                         if (localCount > 0)
                         {
-                            var displayText = $"Local ({localCount:N0})";
+                            var displayText = string.Format(LanguageManager.Instance.GetCodeString("list_2"), localCount);
                             StatusFilterList.Items.Add(displayText);
-                            if (selectedStatuses.Contains("Local"))
+                            if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Local")))
                             {
                                 StatusFilterList.SelectedItems.Add(displayText);
                             }
@@ -2037,10 +2129,10 @@ namespace VPM
 
                         if (_favoritesManager != null)
                         {
-                            var favText = $"Favorites ({favoriteCount:N0})";
+                            var favText = string.Format(LanguageManager.Instance.GetCodeString("msg_105"),favoriteCount);
                             StatusFilterList.Items.Add(favText);
                             
-                            if (selectedStatuses.Contains("Favorites"))
+                            if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("Favorites")))
                             {
                                 StatusFilterList.SelectedItems.Add(favText);
                             }
@@ -2048,10 +2140,10 @@ namespace VPM
 
                         if (_autoInstallManager != null && _packageManager?.PackageMetadata != null)
                         {
-                            var autoInstallText = $"AutoInstall ({autoInstallCount:N0})";
+                            var autoInstallText = string.Format(LanguageManager.Instance.GetCodeString("list_1"),autoInstallCount);
                             StatusFilterList.Items.Add(autoInstallText);
                             
-                            if (selectedStatuses.Contains("AutoInstall"))
+                            if (selectedStatuses.Contains(LanguageManager.Instance.GetCodeString("AutoInstall")))
                             {
                                 StatusFilterList.SelectedItems.Add(autoInstallText);
                             }
@@ -2094,16 +2186,7 @@ namespace VPM
                             }
 
                             DateFilterList.Items.Clear();
-                            //var dateOptions = new[]
-                            //{
-                            //    new { Text = "All Time", Tag = "AllTime", Count = dateCounts["AllTime"] },
-                            //    new { Text = "Today", Tag = "Today", Count = dateCounts["Today"] },
-                            //    new { Text = "Past Week", Tag = "PastWeek", Count = dateCounts["PastWeek"] },
-                            //    new { Text = "Past Month", Tag = "PastMonth", Count = dateCounts["PastMonth"] },
-                            //    new { Text = "Past 3 Months", Tag = "Past3Months", Count = dateCounts["Past3Months"] },
-                            //    new { Text = "Past Year", Tag = "PastYear", Count = dateCounts["PastYear"] },
-                            //    new { Text = "Custom Range...", Tag = "CustomRange", Count = 0 }
-                            //};
+
                             var lm = LanguageManager.Instance;
                             var dateOptions = new[]
                             {
@@ -2127,38 +2210,7 @@ namespace VPM
                                 }
                             }
                         }
-                        // Update file size filter list
-                        //if (FileSizeFilterList != null && _filterManager != null)
-                        //{
-                        //    var selectedFileSizeRanges = new List<string>();
-                        //    foreach (var item in FileSizeFilterList.SelectedItems)
-                        //    {
-                        //        string itemText = item?.ToString() ?? "";
-                        //        if (!string.IsNullOrEmpty(itemText))
-                        //        {
-                        //            var rangeName = itemText.Split('(')[0].Trim();
-                        //            selectedFileSizeRanges.Add(rangeName);
-                        //        }
-                        //    }
-
-                        //    FileSizeFilterList.Items.Clear();
-
-                        //    var orderedRanges = new[] { "Tiny", "Small", "Medium", "Large" };
-                        //    foreach (var range in orderedRanges)
-                        //    {
-                        //        if (fileSizeCounts.ContainsKey(range) && fileSizeCounts[range] > 0)
-                        //        {
-                        //            var displayText = $"{range} ({fileSizeCounts[range]:N0})";
-                        //            FileSizeFilterList.Items.Add(displayText);
-
-                        //            if (selectedFileSizeRanges.Contains(range))
-                        //            {
-                        //                FileSizeFilterList.SelectedItems.Add(displayText);
-                        //            }
-                        //        }
-                        //    }
-                        //}
-                        // Update file size filter list
+                        //Update file size filter list
                         if (FileSizeFilterList != null && _filterManager != null)
                         {
                             var selectedFileSizeRanges = new List<string>();
@@ -2174,24 +2226,15 @@ namespace VPM
 
                             FileSizeFilterList.Items.Clear();
 
-                            var orderedRanges = new[]
+                            var orderedRanges = new[] { LanguageManager.Instance.GetCodeString("Tiny"), LanguageManager.Instance.GetCodeString("Small"), LanguageManager.Instance.GetCodeString("Medium"), LanguageManager.Instance.GetCodeString("Large") };
+                            foreach (var range in orderedRanges)
                             {
-                                nameof(FilterManager.FileSizeCategory.Tiny),
-                                nameof(FilterManager.FileSizeCategory.Small),
-                                nameof(FilterManager.FileSizeCategory.Medium),
-                                nameof(FilterManager.FileSizeCategory.Large)
-                            };
-
-                            foreach (var rangeKey in orderedRanges)
-                            {
-                                if (fileSizeCounts.ContainsKey(rangeKey) && fileSizeCounts[rangeKey] > 0)
+                                if (fileSizeCounts.ContainsKey(range) && fileSizeCounts[range] > 0)
                                 {
-                                    var localizedName = LanguageManager.Instance.GetCodeString(rangeKey);
-                                    var displayText = $"{localizedName} ({fileSizeCounts[rangeKey]:N0})";
+                                    var displayText = $"{range} ({fileSizeCounts[range]:N0})";
                                     FileSizeFilterList.Items.Add(displayText);
 
-                                    // 兼容性：之前可能用的是枚举名，也可能用本地化文本，两个都检查
-                                    if (selectedFileSizeRanges.Contains(rangeKey) || selectedFileSizeRanges.Contains(localizedName))
+                                    if (selectedFileSizeRanges.Contains(range))
                                     {
                                         FileSizeFilterList.SelectedItems.Add(displayText);
                                     }
@@ -2336,8 +2379,8 @@ namespace VPM
                             }
 
                             PlaylistsFilterList.Items.Clear();
-                            var inText = $"In Playlists ({inPlaylistsCount:N0})";
-                            var notInText = $"Not in Playlists ({notInPlaylistsCount:N0})";
+                            var inText = string.Format(LanguageManager.Instance.GetCodeString("btn_2"), inPlaylistsCount);
+                            var notInText = string.Format(LanguageManager.Instance.GetCodeString("btn_3"), notInPlaylistsCount);
                             PlaylistsFilterList.Items.Add(inText);
                             PlaylistsFilterList.Items.Add(notInText);
 
@@ -2402,7 +2445,7 @@ namespace VPM
                 _suppressSelectionEvents = savedSuppressSelectionEvents;
             }
         }
-
+#region Cancelled
         //private void PopulateDateFilterList(Dictionary<string, VarMetadata> packagesToCount = null)
         //{
         //    if (DateFilterList == null || _packageManager?.PackageMetadata == null) return;
@@ -2449,6 +2492,7 @@ namespace VPM
         //    {
         //    }
         //}
+#endregion
         private void PopulateDateFilterList(Dictionary<string, VarMetadata> packagesToCount = null)
         {
             if (DateFilterList == null || _packageManager?.PackageMetadata == null) return;
@@ -2742,7 +2786,7 @@ namespace VPM
         {
             if (_packageFileManager == null)
             {
-                MessageBox.Show("Please select a VAM folder first.", "No VAM Folder", 
+                MessageBox.Show(LanguageManager.Instance.GetCodeString("msg_98"), LanguageManager.Instance.GetCodeString("title_26"), 
                                MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }

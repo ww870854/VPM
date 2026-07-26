@@ -487,7 +487,7 @@ namespace VPM.Models
                 };
             }
         }
-        
+
         /// <summary>
         /// Implements IComparable to support safe sorting by name
         /// </summary>

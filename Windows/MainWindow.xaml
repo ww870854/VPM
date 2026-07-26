@@ -11,8 +11,8 @@
 
     x:Name="VPMWindow"
     Title="{Binding [App_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-    Width="1200"
-    Height="800"
+    Width="1360"
+    Height="860"
     Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
     Icon="pack://application:,,,/icon.ico"
     PreviewKeyDown="MainWindow_PreviewKeyDown"
@@ -187,11 +187,11 @@
             </Style>
 
             <!--  MenuItem Style for vertical centering - inherits from DarkThemeMenuItemStyle  -->
-            <Style BasedOn="{StaticResource DarkThemeMenuItemStyle}" TargetType="MenuItem">
+            <!--<Style BasedOn="{StaticResource ThemeMenuItemStyle}" TargetType="MenuItem">
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Setter Property="Height" Value="32" />
-            </Style>
+            </Style>-->
         </ResourceDictionary>
     </Window.Resources>
 
@@ -287,7 +287,7 @@
                 <MenuItem
                     x:Name="MenuButton"
                     Header="☰ VPM v1.0.0"
-                    Style="{StaticResource MenuButtonStyle}">
+                    Style="{DynamicResource MenuButtonStyle}">
                     <!--  File Operations Section  -->
                     <MenuItem Header="{Binding [FileOperations], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                         <MenuItem Click="SelectRootFolder_Click" Header="{Binding [SelectRootFolder], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
