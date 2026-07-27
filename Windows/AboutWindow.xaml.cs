@@ -2,9 +2,10 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
-using VPM.Services;
 using VPM.Language;
+using VPM.Services;
 
 namespace VPM
 {
@@ -26,7 +27,11 @@ namespace VPM
             SourceInitialized += AboutWindow_SourceInitialized;
             PopulateInformation();
         }
-
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
         private void AboutWindow_SourceInitialized(object sender, EventArgs e)
         {
             ApplyDarkTitleBar();

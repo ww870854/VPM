@@ -11,80 +11,85 @@
     Background="{DynamicResource WindowBackgroundBrush}"
     Foreground="{DynamicResource TextBrush}"
     ResizeMode="CanResizeWithGrip"
+    WindowStyle="None"
+    AllowsTransparency="True"
     WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <SolidColorBrush x:Key="WindowTitleBrush" Color="#202020" />
     </Window.Resources>
     <shell:WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="0" />
+        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="0" ResizeBorderThickness="0" />
     </shell:WindowChrome.WindowChrome>
-    <DockPanel Background="{DynamicResource WindowBackgroundBrush}">
-        <Border
+    <Grid UseLayoutRounding="True" SnapsToDevicePixels="True">
+        <Border BorderBrush="#FF005494" BorderThickness="1" CornerRadius="5" Background="{DynamicResource WindowBackgroundBrush}">
+            <DockPanel Margin="1" Background="{DynamicResource WindowBackgroundBrush}">
+                <Border
             Height="32"
             Padding="12,4,12,4"
             Background="{DynamicResource ControlBackgroundBrush}"
             DockPanel.Dock="Top">
-            <TextBlock
+                    <TextBlock
                 VerticalAlignment="Center"
                 FontWeight="Bold"
                 Foreground="{DynamicResource TextBrush}"
                 Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
-        </Border>
+                </Border>
 
-        <Grid>
-            <Grid x:Name="MainContentGrid">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid x:Name="MainContentGrid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                <!--  Sidebar  -->
-                <Border
+                        <!--  Sidebar  -->
+                        <Border
                     Grid.Column="0"
                     Background="{DynamicResource ControlBackgroundBrush}"
                     BorderBrush="{DynamicResource ControlBorderBrush}"
                     BorderThickness="0,0,1,0">
-                    <Grid Margin="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                            <Grid Margin="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                    <!--  Header  -->
-                    <DockPanel
+                                <!--  Header  -->
+                                <DockPanel
                         Grid.Row="0"
                         Margin="0,0,0,12"
                         LastChildFill="False">
-                        <TextBlock
+                                    <TextBlock
                             VerticalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
-                            Text="Playlists" />
-                        <Button
+                            Text="{Binding [text_24], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    <Button
                             x:Name="NewPlaylistBtn"
                             Height="32"
+                            Width="70"
                             Padding="10,5"
                             Click="NewPlaylist_Click"
-                            Content="➕ New"
+                            Content="{Binding [text_25], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             DockPanel.Dock="Right"
                             FontSize="14" />
-                    </DockPanel>
+                                </DockPanel>
 
-                    <!--  Search  -->
-                    <TextBox
+                                <!--  Search  -->
+                                <TextBox
                         x:Name="PlaylistSearchBox"
                         Grid.Row="1"
                         Height="32"
                         Margin="0,0,0,12"
                         VerticalContentAlignment="Center"
                         FontSize="14"
-                        Tag="Search playlists..."
+                        Tag="{Binding [text_26], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                         TextChanged="PlaylistSearchBox_TextChanged" />
 
-                    <!--  List  -->
-                    <ListBox
+                                <!--  List  -->
+                                <ListBox
                         x:Name="PlaylistsListBox"
                         Grid.Row="2"
                         AllowDrop="True"
@@ -97,38 +102,38 @@
                         DragLeave="PlaylistsListBox_DragLeave"
                         Drop="PlaylistsListBox_Drop"
                         SelectionChanged="PlaylistsListBox_SelectionChanged">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border
                                         Margin="0,0,8,0"
                                         Padding="4,1"
                                         VerticalAlignment="Center"
                                         Background="{DynamicResource ControlBorderBrush}"
                                         CornerRadius="3">
-                                        <TextBlock
+                                                    <TextBlock
                                             FontSize="11"
                                             Foreground="{DynamicResource SecondaryTextBrush}">
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="#{0}">
-                                                    <Binding Path="SortOrder" Converter="{StaticResource AddOneConverter}" />
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </Border>
-                                    <TextBlock
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="#{0}">
+                                                                <Binding Path="SortOrder" Converter="{StaticResource AddOneConverter}" />
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </Border>
+                                                <TextBlock
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
                                         FontSize="14"
                                         FontWeight="Medium"
                                         Text="{Binding Name}"
                                         TextTrimming="CharacterEllipsis" />
-                                    <Button
+                                                <Button
                                         Grid.Column="2"
                                         Width="28"
                                         Height="24"
@@ -139,48 +144,48 @@
                                         Content="🗑️"
                                         FontSize="12"
                                         Foreground="{DynamicResource SecondaryTextBrush}"
-                                        ToolTip="Delete playlist" />
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                                        ToolTip="{Binding [text_27], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
 
-                    <TextBlock
+                                <TextBlock
                         Grid.Row="3"
                         Margin="0,10,0,0"
                         HorizontalAlignment="Center"
                         FontSize="12"
                         Foreground="{DynamicResource SecondaryTextBrush}"
                         Opacity="0.7"
-                        Text="Drag to reorder" />
-                    </Grid>
-                </Border>
+                        Text="{Binding [text_28], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            </Grid>
+                        </Border>
 
-                <!--  Content Area  -->
-                <Grid Grid.Column="1" Margin="24">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                        <!--  Content Area  -->
+                        <Grid Grid.Column="1" Margin="24">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                <!--  Header / Toolbar  -->
-                <Grid Grid.Row="0" Margin="0,0,0,24">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                            <!--  Header / Toolbar  -->
+                            <Grid Grid.Row="0" Margin="0,0,0,24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock
                             Margin="0,0,0,4"
                             FontSize="11"
                             FontWeight="Bold"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             Opacity="0.7"
-                            Text="PLAYLIST NAME" />
-                        <TextBox
+                            Text="{Binding [text_29], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    <TextBox
                             x:Name="PlaylistNameTextBox"
                             Padding="0,0,0,0"
                             Background="Transparent"
@@ -190,45 +195,45 @@
                             FontWeight="Bold"
                             Foreground="{DynamicResource TextBrush}"
                             TextChanged="PlaylistName_Changed" />
-                    </StackPanel>
+                                </StackPanel>
 
-                    <StackPanel
+                                <StackPanel
                         Grid.Column="1"
-                        Margin="0,0,0,2"
+                        Margin="0,0,0,0"
                         VerticalAlignment="Bottom"
                         Orientation="Horizontal">
-                        <Button
+                                    <Button
                             x:Name="ActivatePlaylistBtn"
                             Width="90"
-                            Height="32"
+                            Height="36"
                             Margin="12,0,12,0"
                             Padding="16,0"
                             Background="{DynamicResource ButtonBackgroundBrush}"
                             Click="ActivatePlaylist_Click"
-                            Content="▶️ Activate"
+                            Content="{Binding [text_30], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             FontSize="14"
                             FontWeight="SemiBold" />
-                        <Button
+                                    <Button
                             x:Name="SavePlaylistBtn"
                             Width="80"
-                            Height="32"
+                            Height="36"
                             Padding="16,0"
                             Click="SavePlaylist_Click"
-                            Content="💾 Save"
+                            Content="{Binding [Save_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             FontSize="14" />
-                    </StackPanel>
-                </Grid>
+                                </StackPanel>
+                            </Grid>
 
-                <!--  Details  -->
-                <StackPanel Grid.Row="1" Margin="0,0,0,24">
-                    <TextBlock
+                            <!--  Details  -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                                <TextBlock
                         Margin="0,0,0,6"
                         FontSize="11"
                         FontWeight="Bold"
                         Foreground="{DynamicResource SecondaryTextBrush}"
                         Opacity="0.7"
-                        Text="DESCRIPTION" />
-                    <TextBox
+                        Text="{Binding [text_31], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                <TextBox
                         x:Name="PlaylistDescriptionTextBox"
                         Height="80"
                         Padding="8"
@@ -238,85 +243,86 @@
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto" />
 
-                    <CheckBox
+                                <CheckBox
                         x:Name="UnloadOthersCheckBox"
                         Margin="0,12,0,0"
                         Checked="UnloadOthers_Changed"
-                        Content="Unload other packages when activated"
+                        Content="{Binding [text_32], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                         FontSize="14"
                         Unchecked="UnloadOthers_Changed" />
-                </StackPanel>
+                            </StackPanel>
 
-                <!--  Packages List  -->
-                <Grid Grid.Row="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                            <!--  Packages List  -->
+                            <Grid Grid.Row="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
 
-                    <DockPanel Margin="0,0,0,10" LastChildFill="False">
-                        <TextBlock
+                                <DockPanel Margin="0,0,0,10" LastChildFill="False">
+                                    <TextBlock
                             VerticalAlignment="Center"
                             FontSize="11"
                             FontWeight="Bold"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             Opacity="0.7"
-                            Text="PACKAGES" />
-                        <TextBlock
+                            Text="{Binding [text_33], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    <TextBlock
                             x:Name="PackageCountTextBlock"
                             Margin="10,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="12"
                             Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="0 items" />
-                    </DockPanel>
+                            Text="{Binding [text_34], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                </DockPanel>
 
-                    <Grid Grid.Row="1" Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox
+                                <Grid Grid.Row="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox
                             x:Name="PlaylistPackagesSearchBox"
                             Height="28"
                             VerticalContentAlignment="Center"
                             FontSize="13"
-                            Tag="Search packages..."
+                            Tag="{Binding [text_35], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             TextChanged="PlaylistPackagesSearchBox_TextChanged" />
-                        <Button
+                                    <Button
                             x:Name="PlaylistPackagesSortToggleBtn"
                             Grid.Column="1"
-                            Height="28"
+                            Height="36"
+                            Width="50"
                             Margin="10,0,0,0"
                             Padding="10,0"
                             Click="PlaylistPackagesSortToggle_Click"
                             Content="A–Z"
                             FontSize="13"
-                            ToolTip="Toggle sorting (A–Z / Original)" />
-                    </Grid>
+                            ToolTip="{Binding [text_36], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                </Grid>
 
-                    <ListBox
+                                <ListBox
                         x:Name="PlaylistPackagesListBox"
                         Grid.Row="2"
                         Background="{DynamicResource ControlBackgroundBrush}"
                         BorderBrush="{DynamicResource ControlBorderBrush}"
                         BorderThickness="1"
                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0,4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
                                         VerticalAlignment="Center"
                                         FontSize="14"
                                         Text="{Binding Display}"
                                         TextTrimming="CharacterEllipsis"
                                         ToolTip="{Binding Key}" />
-                                    <Button
+                                                <Button
                                         Grid.Column="1"
                                         Width="24"
                                         Height="24"
@@ -326,42 +332,42 @@
                                         Click="RemovePackage_Click"
                                         Content="✕"
                                         Foreground="{DynamicResource SecondaryTextBrush}"
-                                        ToolTip="Remove from playlist" />
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem
+                                        ToolTip="{Binding [text_37], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <ListBox.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem
                                     Click="CopySelectedPlaylistPackageKey_Click"
-                                    Header="Copy package key" />
-                            </ContextMenu>
-                        </ListBox.ContextMenu>
-                    </ListBox>
-                </Grid>
+                                    Header="{Binding [text_38], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                        </ContextMenu>
+                                    </ListBox.ContextMenu>
+                                </ListBox>
+                            </Grid>
 
-                <!--  Footer  -->
-                <StackPanel
+                            <!--  Footer  -->
+                            <StackPanel
                     Grid.Row="3"
                     Margin="0,24,0,0"
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
-                    <Button
+                                <Button
                         Width="100"
                         Height="32"
                         Padding="0,0"
                         Click="Close_Click"
-                        Content="Close"
+                        Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                         FontSize="14" />
-                </StackPanel>
-                </Grid>
-            </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
 
-            <Grid
+                    <Grid
                 x:Name="ActivationBusyOverlay"
                 Background="#80000000"
                 Visibility="Collapsed">
-                <Border
+                        <Border
                     Width="320"
                     Padding="16"
                     HorizontalAlignment="Center"
@@ -370,32 +376,34 @@
                     BorderBrush="{DynamicResource ControlBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8">
-                    <StackPanel>
-                        <TextBlock
+                            <StackPanel>
+                                <TextBlock
                             Margin="0,0,0,12"
                             FontSize="14"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource TextBrush}"
-                            Text="Activating playlist..." />
-                        <TextBlock
+                            Text="{Binding [text_39], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                <TextBlock
                             x:Name="ActivationBusyStatusText"
                             Margin="0,0,0,6"
                             FontSize="12"
                             Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="Preparing..." />
-                        <TextBlock
+                            Text="{Binding [text_40], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}" />
+                                <TextBlock
                             x:Name="ActivationBusyProgressText"
                             Margin="0,0,0,10"
                             FontSize="12"
                             Foreground="{DynamicResource SecondaryTextBrush}"
                             Text="0 / 0" />
-                        <ProgressBar
+                                <ProgressBar
                             x:Name="ActivationBusyProgressBar"
                             Height="10"
                             IsIndeterminate="True" />
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Grid>
-    </DockPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </Grid>
 </Window>

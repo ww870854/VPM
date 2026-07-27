@@ -9,17 +9,13 @@
         mc:Ignorable="d"
         Title="{Binding [SupportMe], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
         Height="520" Width="480"
+        WindowStyle="None"
+        AllowsTransparency="True"
         WindowStartupLocation="CenterOwner">
 
-    <!-- 完全复用MainWindow里的WindowChrome圆角配置，和主窗口视觉风格完全对齐 -->
-    <WindowChrome.WindowChrome>
-        <WindowChrome
-            CaptionHeight="32"
-            CornerRadius="12"
-            GlassFrameThickness="0"
-            ResizeBorderThickness="5" />
-    </WindowChrome.WindowChrome>
-
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="0" ResizeBorderThickness="0" />
+    </shell:WindowChrome.WindowChrome>
     <!-- 继承项目统一的全局样式资源 -->
     <Window.Resources>
         <ResourceDictionary>
@@ -27,27 +23,28 @@
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
         </ResourceDictionary>
     </Window.Resources>
+    <Grid UseLayoutRounding="True" SnapsToDevicePixels="True">
+        <Border BorderBrush="#FF005494" BorderThickness="1" CornerRadius="5" Background="{DynamicResource WindowBackgroundBrush}">
+            <!-- 布局内容：标题栏+图片区域 -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- 第一行对应WindowChrome设置的32px标题栏可拖拽区域 -->
+                    <RowDefinition Height="32"/>
+                    <!-- 第二行留给图片显示区域 -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-    <!-- 布局内容：标题栏+图片区域 -->
-    <Grid>
-        <Grid.RowDefinitions>
-            <!-- 第一行对应WindowChrome设置的32px标题栏可拖拽区域 -->
-            <RowDefinition Height="32"/>
-            <!-- 第二行留给图片显示区域 -->
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- 自定义标题栏，完全适配WindowChrome规则，支持原生拖拽 -->
-        <Grid Grid.Row="0" Background="Transparent">
-            <TextBlock 
+                <!-- 自定义标题栏，完全适配WindowChrome规则，支持原生拖拽 -->
+                <Grid Grid.Row="0" Background="Transparent">
+                    <TextBlock 
                 Text="{Binding [SupportMe], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 VerticalAlignment="Center"
                 Margin="10,0,0,0"
                 Foreground="#FFF"
                 FontSize="12"/>
 
-            <!-- 自定义关闭按钮 -->
-            <Button 
+                    <!-- 自定义关闭按钮 -->
+                    <Button 
                 Content="✕"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
@@ -59,46 +56,48 @@
                 FontSize="14"
                 Cursor="Hand"
                 Click="CloseButton_Click">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border 
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border 
                                         Background="{TemplateBinding Background}"
                                         CornerRadius="0,8,0,0">
-                                        <ContentPresenter 
+                                                <ContentPresenter 
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#E0E0E0"/>
-                                            <Setter Property="Foreground" Value="Red"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                                    <Setter Property="Foreground" Value="Red"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
 
-                <!-- 声明按钮不属于非客户区，避免系统拦截点击事件 -->
-                <WindowChrome.IsHitTestVisibleInChrome>True</WindowChrome.IsHitTestVisibleInChrome>
-            </Button>
-        </Grid>
+                        <!-- 声明按钮不属于非客户区，避免系统拦截点击事件 -->
+                        <WindowChrome.IsHitTestVisibleInChrome>True</WindowChrome.IsHitTestVisibleInChrome>
+                    </Button>
+                </Grid>
 
-        <!-- 图片内容区域 -->
-        <Grid Grid.Row="1" Margin="10">
-            <Image 
+                <!-- 图片内容区域 -->
+                <Grid Grid.Row="1" Margin="10">
+                    <Image 
                 x:Name="DisplayImage"
                 Stretch="Uniform"/>
-            <TextBlock 
+                    <TextBlock 
                 x:Name="StatusText"
                 Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Foreground="Gray"/>
-        </Grid>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

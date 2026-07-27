@@ -10,6 +10,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM.Windows
 {
@@ -165,7 +166,7 @@ namespace VPM.Windows
 
             if (PlaylistPackagesSortToggleBtn != null)
             {
-                PlaylistPackagesSortToggleBtn.Content = _sortPlaylistPackagesAlphabetical ? "Original" : "A–Z";
+                PlaylistPackagesSortToggleBtn.Content = _sortPlaylistPackagesAlphabetical ? LanguageManager.Instance.GetCodeString("text_43") : "A–Z";
             }
         }
 
@@ -176,7 +177,7 @@ namespace VPM.Windows
 
             if (_playlistPackagesView == null)
             {
-                PackageCountTextBlock.Text = "0 items";
+                PackageCountTextBlock.Text = LanguageManager.Instance.GetCodeString("text_34");
                 return;
             }
 
@@ -184,8 +185,8 @@ namespace VPM.Windows
             int visible = _playlistPackagesView.Cast<object>().Count();
 
             PackageCountTextBlock.Text = visible == total
-                ? $"{total} items"
-                : $"{visible} / {total} items";
+                ? string.Format(LanguageManager.Instance.GetCodeString("text_41"), total)
+                : string.Format(LanguageManager.Instance.GetCodeString("text_42"), visible, total);
         }
 
         private void ClearDetails()
@@ -199,7 +200,7 @@ namespace VPM.Windows
             PlaylistDescriptionTextBox.Text = "";
             UnloadOthersCheckBox.IsChecked = false;
             PlaylistPackagesListBox.ItemsSource = null;
-            PackageCountTextBlock.Text = "0 items";
+            PackageCountTextBlock.Text = LanguageManager.Instance.GetCodeString("text_34");
 
             if (PlaylistPackagesSearchBox != null)
                 PlaylistPackagesSearchBox.Text = "";
@@ -472,7 +473,7 @@ namespace VPM.Windows
         {
             var newPlaylist = new Playlist
             {
-                Name = $"Playlist {_playlists.Count + 1}",
+                Name = string.Format(LanguageManager.Instance.GetCodeString("text_44"), _playlists.Count + 1),
                 SortOrder = _playlists.Count
             };
 
@@ -496,8 +497,8 @@ namespace VPM.Windows
                 return;
 
             var result = DarkMessageBox.Show(
-                $"Are you sure you want to delete the playlist \"{_currentPlaylist.Name}\"?",
-                "Delete Playlist",
+                string.Format(LanguageManager.Instance.GetCodeString("text_45"), _currentPlaylist.Name),
+                LanguageManager.Instance.GetCodeString("text_27"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -526,8 +527,8 @@ namespace VPM.Windows
                 return;
 
             var result = DarkMessageBox.Show(
-                $"Are you sure you want to delete the playlist \"{playlist.Name}\"?",
-                "Delete Playlist",
+                string.Format(LanguageManager.Instance.GetCodeString("text_45"), playlist.Name),
+                LanguageManager.Instance.GetCodeString("text_27"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -597,9 +598,11 @@ namespace VPM.Windows
 
             if (_hasUnsavedChanges)
             {
+                string message = LanguageManager.Instance.GetCodeString("text_46");
+                message = message.Replace("\\n", "\n");
                 var saveResult = DarkMessageBox.Show(
-                    "You have unsaved changes.\n\nYes = Save & Activate\nNo = Activate Without Saving\nCancel = Go Back",
-                    "Unsaved Changes",
+                    message,
+                    LanguageManager.Instance.GetCodeString("text_47"),
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Question);
 
@@ -624,12 +627,15 @@ namespace VPM.Windows
                     UpdateSaveButton();
                 }
             }
-
+            var confirmMessage = string.Format(
+                LanguageManager.Instance.GetCodeString("text_48"), 
+                _currentPlaylist.Name, 
+                _currentPlaylist.PackageKeys.Count,
+                _currentPlaylist.UnloadOtherPackages
+                ? LanguageManager.Instance.GetCodeString("text_49"):string.Empty).Replace("\\n", "\n");
             var result = DarkMessageBox.Show(
-                $"Activate playlist \"{_currentPlaylist.Name}\"?\n\n" +
-                $"This will load {_currentPlaylist.PackageKeys.Count} packages and their dependencies." +
-                (_currentPlaylist.UnloadOtherPackages ? "\n\nPackages not in this playlist will be unloaded." : ""),
-                "Activate Playlist",
+                confirmMessage,
+                LanguageManager.Instance.GetCodeString("text_50"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -651,20 +657,23 @@ namespace VPM.Windows
                 var activationResult = await ActivatePlaylistAsync(_currentPlaylist);
 
                 var unloadText = _currentPlaylist.UnloadOtherPackages
-                    ? "Unload others: Yes"
-                    : "Unload others: No";
-                var details = $"Loaded: {activationResult.LoadedCount:N0}\nUnloaded: {activationResult.UnloadedCount:N0}\n{unloadText}";
+                    ? LanguageManager.Instance.GetCodeString("text_51")
+                    : LanguageManager.Instance.GetCodeString("text_52");
+                var details = string.Format(LanguageManager.Instance.GetCodeString("text_53"),
+                    activationResult.LoadedCount,
+                    activationResult.UnloadedCount,
+                    unloadText).Replace("\\n", "\n");
 
                 DarkMessageBox.Show(
-                    $"Playlist activated successfully!\n\n{details}",
-                    "Success",
+                    string.Format(LanguageManager.Instance.GetCodeString("text_54"), details).Replace("\\n", "\n"),
+                    LanguageManager.Instance.GetCodeString("text_55"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 Close();
             }
             catch (Exception ex)
             {
-                DarkMessageBox.Show($"Error activating playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                DarkMessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("text_56"), ex.Message), LanguageManager.Instance.GetCodeString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -681,7 +690,7 @@ namespace VPM.Windows
         {
             if (_playlistManager == null)
             {
-                throw new InvalidOperationException("PlaylistManager is not initialized. Cannot activate playlist without package manager access.");
+                throw new InvalidOperationException(LanguageManager.Instance.GetCodeString("text_57"));
             }
 
             var progress = new Progress<PlaylistActivationProgress>(p =>
@@ -690,7 +699,7 @@ namespace VPM.Windows
                 {
                     if (ActivationBusyStatusText != null)
                     {
-                        var phase = string.IsNullOrWhiteSpace(p?.Phase) ? "Working" : p.Phase;
+                        var phase = string.IsNullOrWhiteSpace(p?.Phase) ? LanguageManager.Instance.GetCodeString("text_58") : p.Phase;
                         var pkg = string.IsNullOrWhiteSpace(p?.CurrentPackageKey) ? "" : $"\n{p.CurrentPackageKey}";
                         ActivationBusyStatusText.Text = $"{phase}...{pkg}";
                     }
@@ -780,8 +789,8 @@ namespace VPM.Windows
             if (_hasUnsavedChanges)
             {
                 var result = DarkMessageBox.Show(
-                    "You have unsaved changes. Do you want to save before closing?",
-                    "Unsaved Changes",
+                    LanguageManager.Instance.GetCodeString("text_59"),
+                    LanguageManager.Instance.GetCodeString("text_47"),
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Question);
 

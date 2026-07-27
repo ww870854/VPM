@@ -107,54 +107,6 @@ namespace VPM.Services
                 };
             }
         }
-        public static async Task<SupportInfo1> GetSupportInfoAsync1()
-        {
-            if (_cachedInfo1 != null)
-                return _cachedInfo1;
-
-            try
-            {
-                // Add a random query parameter to bypass GitHub raw caching
-                string urlWithCacheBuster = $"{DATA_URL}?t={DateTime.UtcNow.Ticks}";
-
-                var json = await _httpClient.GetStringAsync(urlWithCacheBuster);
-                var data = JsonSerializer.Deserialize<SupportDataJson>(json);
-
-                _cachedInfo1 = new SupportInfo1
-                {
-                    PatreonLink = Decode(data.patreonLink),
-                    Supporters1 = new List<SupporterItem>()
-                };
-
-                if (data.supporters != null)
-                {
-                    foreach (var s in data.supporters)
-                    {
-                        _cachedInfo.Supporters.Add(new SupporterItem
-                        {
-                            Name = Decode(s.name),
-                            Since = Decode(s.since),
-                            Link = Decode(s.link)
-                        });
-                    }
-                }
-
-                return _cachedInfo1;
-            }
-            catch (Exception ex)
-            {
-                // Fallback or rethrow
-                System.Diagnostics.Debug.WriteLine($"Error fetching support data: {ex.Message}");
-                return new SupportInfo1
-                {
-                    PatreonLink = "https://hovv.cn/Support.html", // Fallback
-                    Supporters1 = new List<SupporterItem>
-                    {
-                        new SupporterItem { Name = LanguageManager.Instance.GetCodeString("msg_108"), Since = "Now" }
-                    }
-                };
-            }
-        }
 
         private static string Decode(string encoded)
         {

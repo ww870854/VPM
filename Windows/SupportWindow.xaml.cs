@@ -112,7 +112,7 @@ namespace VPM
         private void InternationalButton_Click(object sender, RoutedEventArgs e)
         {
             // 1. 定义图片链接（可以是硬编码，也可以从配置/输入框获取）
-            string imageUrl = "https://hovv.cn/usr/uploads/2026/07/3792200568.jpg";
+            string imageUrl = "https://www.imageoss.com/images/2026/07/26/_20260726054509_5_8882b735d8ca8fd38.jpg";
 
             // 2. 创建子窗口实例
             // 假设你的子窗口类名为 ImageWindow，构造函数接收图片URL
