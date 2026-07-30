@@ -9,53 +9,69 @@
         mc:Ignorable="d"
         Title="{Binding [SupportMe], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
         Height="520" Width="480"
+        Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
         WindowStartupLocation="CenterOwner">
 
     <shell:WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="0" ResizeBorderThickness="0" />
+        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="-1" ResizeBorderThickness="6" />
     </shell:WindowChrome.WindowChrome>
-    <!-- 继承项目统一的全局样式资源 -->
     <Window.Resources>
         <ResourceDictionary>
-            <!-- 复用主窗口里已定义的通用转换器，无需重复编写 -->
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
         </ResourceDictionary>
     </Window.Resources>
-    <Grid UseLayoutRounding="True" SnapsToDevicePixels="True">
-        <Border BorderBrush="#FF005494" BorderThickness="1" CornerRadius="5" Background="{DynamicResource WindowBackgroundBrush}">
-            <!-- 布局内容：标题栏+图片区域 -->
+    <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Normal">
+                        <Setter Property="Margin" Value="8" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="Margin" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Border x:Name="WindowRootBorder"
+            Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+            CornerRadius="5"
+            BorderBrush="#FF676767"
+            BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect 
+                ShadowDepth="0" 
+                BlurRadius="5" 
+                Opacity="0.6" 
+                Color="#FF2C2C2C" />
+            </Border.Effect>
             <Grid>
                 <Grid.RowDefinitions>
-                    <!-- 第一行对应WindowChrome设置的32px标题栏可拖拽区域 -->
                     <RowDefinition Height="32"/>
-                    <!-- 第二行留给图片显示区域 -->
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
-                <!-- 自定义标题栏，完全适配WindowChrome规则，支持原生拖拽 -->
                 <Grid Grid.Row="0" Background="Transparent">
                     <TextBlock 
-                Text="{Binding [SupportMe], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                VerticalAlignment="Center"
-                Margin="10,0,0,0"
-                Foreground="#FFF"
-                FontSize="12"/>
+                        Text="{Binding [SupportMe], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                        VerticalAlignment="Center"
+                        Margin="10,0,0,0"
+                        Foreground="#FFF"
+                        FontSize="12"/>
 
-                    <!-- 自定义关闭按钮 -->
                     <Button 
-                Content="✕"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Width="32"
-                Height="32"
-                Background="Transparent"
-                BorderThickness="0"
-                Foreground="#999999"
-                FontSize="14"
-                Cursor="Hand"
-                Click="CloseButton_Click">
+                        Content="✗"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Width="32"
+                        Height="32"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#999999"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Click="CloseButton_Click">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -79,23 +95,19 @@
                                 </Setter>
                             </Style>
                         </Button.Style>
-
-                        <!-- 声明按钮不属于非客户区，避免系统拦截点击事件 -->
                         <WindowChrome.IsHitTestVisibleInChrome>True</WindowChrome.IsHitTestVisibleInChrome>
                     </Button>
                 </Grid>
-
-                <!-- 图片内容区域 -->
                 <Grid Grid.Row="1" Margin="10">
                     <Image 
-                x:Name="DisplayImage"
-                Stretch="Uniform"/>
+                        x:Name="DisplayImage"
+                        Stretch="Uniform"/>
                     <TextBlock 
-                x:Name="StatusText"
-                Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Foreground="Gray"/>
+                        x:Name="StatusText"
+                        Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="Gray"/>
                 </Grid>
             </Grid>
         </Border>

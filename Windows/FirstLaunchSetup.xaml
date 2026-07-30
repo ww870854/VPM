@@ -4,13 +4,14 @@
         xmlns:local="clr-namespace:VPM"
         xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
         Title="{Binding [Welcom_window_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
-        Height="500" Width="700"
+        Width="700"
+        SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True">
-    
+
     <Window.Resources>
         <!-- Modern Button Style -->
         <Style x:Key="ModernButton" TargetType="Button">
@@ -72,37 +73,164 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="RoundedBlueComboBox" TargetType="ComboBox">
+            <!-- 全局统一基础属性，适配蓝色导航栏风格 -->
+            <Setter Property="Background" Value="#0078D7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <!-- 核心：外层容器直接设置全局圆角，所有边角统一生效 -->
+                            <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                                <Grid>
+                                    <!-- 文本显示区域，完全透明不遮挡背景 -->
+                                    <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
+                                              VerticalAlignment="Center"
+                                              Margin="8,0,28,0"/>
+                                    <!-- 下拉箭头，放在右侧不影响圆角显示 -->
+                                    <Path Data="M0 0 L4 4 L8 0" 
+                                  Fill="White"
+                                  HorizontalAlignment="Right"
+                                  Margin="0,0,10,0"
+                                  VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <!-- 下拉弹出层，同步设置圆角，避免展开后边角突兀 -->
+                            <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom">
+                                <Border Background="#222222"
+                                BorderBrush="White"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Margin="0,4,0,0">
+                                    <ScrollViewer>
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <!-- 下拉选项样式，适配深色界面 -->
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Padding" Value="8,5"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#0078D7"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border BorderBrush="#0078D4" BorderThickness="2" CornerRadius="10">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-
-            <!-- Header -->
+            <!-- Header 改造：新增右上角语言选择下拉区域 -->
             <Border Grid.Row="0" Background="#0078D4" CornerRadius="8,8,0,0" Padding="30,25">
-                <StackPanel>
-                    <TextBlock Text="{Binding [Welcome_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
-                             FontSize="28" 
-                             FontWeight="Bold" 
-                             Foreground="White"
-                             HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding [Welcome_Subtitle], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
-                             FontSize="14" 
-                             Foreground="#E0E0E0"
-                             HorizontalAlignment="Center"
-                             Margin="0,8,0,0"/>
-                </StackPanel>
+                <Grid>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding [Welcome_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
+                     FontSize="28" 
+                     FontWeight="Bold" 
+                     Foreground="White"
+                     HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding [Welcome_Subtitle], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
+                     FontSize="14" 
+                     Foreground="#E0E0E0"
+                     HorizontalAlignment="Center"
+                     Margin="0,8,0,0"/>
+                    </StackPanel>
+                    <!-- 新增语言选择下拉控件 -->
+                    <ComboBox x:Name="LanguageSelectCombo"
+                              SelectionChanged="LanguageSelectCombo_SelectionChanged"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center"
+                              Width="110" Height="32"
+                              Background="#0078D7" BorderBrush="#222222" BorderThickness="1">
+                        <ComboBox.Template>
+                            <ControlTemplate TargetType="ComboBox">
+                                <!-- 拆分两列：左列自适应放文字，右列固定30px放箭头 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- 主外框：左侧保留左上、左下圆角，右侧边框留空 -->
+                                    <Border Grid.ColumnSpan="2"
+                                            CornerRadius="4" 
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"/>
+                                    <!-- 原生标准弹窗，保留原有正常弹出逻辑 -->
+                                    <Popup x:Name="PART_Popup" AllowsTransparency="True" IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <Border Background="#222222" CornerRadius="4" BorderBrush="#333333" BorderThickness="1" Width="110">
+                                            <ScrollViewer>
+                                                <ItemsPresenter/>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </Popup>
+                                    <!-- 文字展示区：完全放在左列，不会被箭头遮挡 -->
+                                    <ContentPresenter Grid.Column="0"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      Margin="10 0 0 0"/>
+                                    <!-- 箭头专属按钮区：放在右列，仅右侧两个边角做圆角 -->
+                                    <ToggleButton Grid.Column="1"
+                                                  Background="Transparent"
+                                                  BorderThickness="0"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent"
+                                                        CornerRadius="0 4 4 0">
+                                                    <Path Data="M0,0 L4,4 L8,0" Fill="White" Stroke="White" StrokeThickness="1" StrokeLineJoin="Round" Stretch="Uniform" Width="8" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                </Grid>
+                            </ControlTemplate>
+                        </ComboBox.Template>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" Foreground="White" Padding="8 4"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Padding" Value="10 6"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+                </Grid>
             </Border>
 
             <!-- Content -->
             <Grid Grid.Row="1" Margin="40,30">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Auto-detected path section -->
@@ -129,7 +257,7 @@
                                      Foreground="#A5D6A7"
                                      TextWrapping="Wrap"
                                      Margin="0,0,0,12"/>
-                            <Button Content="✅ Use This Path" 
+                            <Button Content="{Binding [text_0], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                                   Style="{StaticResource ModernButton}"
                                   Background="#4CAF50"
                                   HorizontalAlignment="Center"
@@ -138,7 +266,7 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="OR" 
+                    <TextBlock Text="{Binding [or], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                              FontSize="14" 
                              FontWeight="Bold" 
                              Foreground="#666666"
@@ -157,7 +285,7 @@
                             <TextBlock x:Name="ManualSelectionTitle"
                                      Text="{Binding [ManualSelection_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" 
                                      FontSize="18" 
-                                     FontWeight="Bold" 
+                                     FontWeight="Bold"
                                      Foreground="#FFFFFF"
                                      HorizontalAlignment="Center"
                                      Margin="0,0,0,15"/>
@@ -173,7 +301,7 @@
                                   HorizontalAlignment="Center"
                                   MinWidth="220"
                                   Click="BrowseFolder_Click"/>
-                            
+
                             <!-- Selected path display -->
                             <Border x:Name="SelectedPathBorder" 
                                   Background="#1E1E1E" 
@@ -226,4 +354,3 @@
         </Grid>
     </Border>
 </Window>
-

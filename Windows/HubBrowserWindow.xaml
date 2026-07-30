@@ -396,7 +396,7 @@
                         <RadioButton
                             x:Name="TabDiscussion"
                             Click="OverviewTab_Click"
-                            Content="💬 Discussion"
+                            Content="{Binding [text_63], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             GroupName="OverviewTabs"
                             Style="{StaticResource DetailTabStyle}" />
                     </StackPanel>
@@ -415,7 +415,7 @@
                                 HorizontalAlignment="Center"
                                 FontSize="14"
                                 Foreground="{StaticResource DarkText}"
-                                Text="Loading..." />
+                                Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <ProgressBar
                                 Width="200"
                                 Height="4"
@@ -448,7 +448,7 @@
                                 HorizontalAlignment="Center"
                                 FontSize="14"
                                 Foreground="{StaticResource DarkTextSecondary}"
-                                Text="Select a resource to view its overview"
+                                Text="{Binding [text_64], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 TextAlignment="Center"
                                 TextWrapping="Wrap" />
                         </StackPanel>
@@ -474,7 +474,7 @@
                                 HorizontalAlignment="Center"
                                 FontSize="14"
                                 Foreground="{StaticResource DarkText}"
-                                Text="Unable to load content"
+                                Text="{Binding [text_65], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 TextAlignment="Center"
                                 TextWrapping="Wrap" />
                             <Button
@@ -482,7 +482,7 @@
                                 Margin="0,16,0,0"
                                 Padding="16,8"
                                 Click="OpenInBrowser_Click"
-                                Content="🔗 Open in Browser" />
+                                Content="{Binding [text_66], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -544,7 +544,7 @@
                         FontSize="20"
                         FontWeight="Bold"
                         Foreground="{StaticResource DarkText}"
-                        Text="🌐 VaM Hub" />
+                        Text="{Binding [VaMHub], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                     <Grid
                         Grid.Column="1"
@@ -571,7 +571,7 @@
                                 FontSize="16"
                                 Foreground="{StaticResource DarkTextSecondary}"
                                 IsHitTestVisible="False"
-                                Text="Search titles, creators, tags..."
+                                Text="{Binding [text_67], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Visible" />
                         </Grid>
                         <Button
@@ -587,7 +587,7 @@
                             Content="✕"
                             FontSize="12"
                             Foreground="{StaticResource DarkTextSecondary}"
-                            ToolTip="Clear search"
+                            ToolTip="{Binding [text_68], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             Visibility="{Binding ClearSearchVisibility}">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -620,10 +620,10 @@
                         HorizontalAlignment="Right"
                         Command="{Binding RefreshCommand}"
                         FontSize="14"
-                        ToolTip="Refresh">
+                        ToolTip="{Binding [btn_9], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Margin="0,0,6,0" Text="🔄" />
-                            <TextBlock Text="Refresh" />
+                            <TextBlock Text="{Binding [btn_9], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -642,12 +642,14 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Scope:" />
+                            Text="{Binding [text_69], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <ComboBox
                             x:Name="HostedOptionFilter"
                             MinWidth="160"
                             ItemsSource="{Binding ScopeOptions}"
-                            SelectedItem="{Binding Scope, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            DisplayMemberPath="DisplayText"
+                            SelectedValuePath="InternalKey"
+                            SelectedValue="{Binding Scope, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             ToolTip="{Binding SelectedItem, RelativeSource={RelativeSource Self}}" />
                     </StackPanel>
 
@@ -660,12 +662,14 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Category:" />
+                            Text="{Binding [text_70], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <ComboBox
                             x:Name="CategoryFilter"
                             Width="110"
-                            ItemsSource="{Binding Categories}"
-                            SelectedItem="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            ItemsSource="{Binding CategoryOptions}"
+                            DisplayMemberPath="DisplayText"
+                            SelectedValuePath="InternalKey"
+                            SelectedValue="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
                     <!--  Creator Filter with Searchable Popup  -->
@@ -677,7 +681,7 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Creator:" />
+                            Text="{Binding [text_71], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <ComboBox
                             x:Name="CreatorFilter"
                             Width="160"
@@ -685,7 +689,7 @@
                             IsEditable="True"
                             IsTextSearchEnabled="True"
                             ItemsSource="{Binding Creators}"
-                            Text="{Binding Creator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            SelectedItem="{Binding Creator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
                     <!--  Pay Type Filter  -->
@@ -697,12 +701,14 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Type:" />
+                            Text="{Binding [text_72], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <ComboBox
                             x:Name="PayTypeFilter"
                             Width="75"
                             ItemsSource="{Binding PayTypeOptions}"
-                            SelectedItem="{Binding PayType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            SelectedValue="{Binding PayType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedValuePath="InternalKey"
+                            DisplayMemberPath="DisplayText"/>
                     </StackPanel>
 
                     <!--  Sort  -->
@@ -714,12 +720,14 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Sort:" />
+                            Text="{Binding [text_73], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <ComboBox
                             x:Name="SortFilter"
                             Width="140"
-                            ItemsSource="{Binding SortOptions}"
-                            SelectedItem="{Binding Sort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            ItemsSource="{Binding SortsOptions}"
+                            SelectedValuePath="InternalKey"
+                            DisplayMemberPath="DisplayText"
+                            SelectedValue="{Binding Sort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
                     <!--  Secondary Sort  -->
@@ -731,12 +739,14 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Then:" />
+                            Text="{Binding [text_74], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <ComboBox
                             x:Name="SortSecondaryFilter"
                             Width="110"
-                            ItemsSource="{Binding SortSecondaryOptions}"
-                            SelectedItem="{Binding SortSecondary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            ItemsSource="{Binding Sort2Options}"
+                            SelectedValuePath="InternalKey"
+                            DisplayMemberPath="DisplayText"
+                            SelectedValue="{Binding SortSecondary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
                     <!--  Tags Filter with Searchable Popup  -->
@@ -748,7 +758,7 @@
                             Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkText}"
-                            Text="Tags:" />
+                            Text="{Binding [text_75], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="110" />
@@ -781,7 +791,7 @@
                                 </ToggleButton.Template>
                                 <TextBlock
                                     x:Name="TagsDisplayText"
-                                    Text="All"
+                                    Text="{Binding [text_76], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     TextTrimming="CharacterEllipsis" />
                             </ToggleButton>
 
@@ -916,7 +926,7 @@
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource DarkTextSecondary}"
-                            Text="Active:" />
+                            Text="{Binding [text_77], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                         <ItemsControl x:Name="ActiveFiltersItems" Grid.Column="1">
                             <ItemsControl.ItemsPanel>
@@ -948,7 +958,7 @@
                             Margin="8,0,0,0"
                             Padding="12,4"
                             Click="ClearAllFilters_Click"
-                            Content="Clear all" />
+                            Content="{Binding [ClearAll], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </Grid>
                 </Border>
 
@@ -974,7 +984,7 @@
                                     HorizontalAlignment="Center"
                                     FontSize="16"
                                     Foreground="{StaticResource DarkText}"
-                                    Text="Loading..." />
+                                    Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 <ProgressBar
                                     Width="200"
                                     Height="20"
@@ -1003,20 +1013,20 @@
                                     HorizontalAlignment="Center"
                                     FontSize="16"
                                     Foreground="{StaticResource DarkText}"
-                                    Text="No results found"
+                                    Text="{Binding [text_78], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     TextAlignment="Center" />
                                 <TextBlock
                                     Margin="0,6,0,0"
                                     HorizontalAlignment="Center"
                                     FontSize="12"
                                     Foreground="{StaticResource DarkTextSecondary}"
-                                    Text="Try adjusting filters or clearing search."
+                                    Text="{Binding [text_79], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     TextAlignment="Center" />
                                 <Button
                                     Margin="0,14,0,0"
                                     Padding="16,0"
                                     Command="{Binding ClearAllFiltersCommand}"
-                                    Content="Clear All Filters" />
+                                    Content="{Binding [ClearAllFilters_ToolTip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </StackPanel>
                         </Border>
 
@@ -1040,7 +1050,7 @@
                                     HorizontalAlignment="Center"
                                     FontSize="16"
                                     Foreground="{StaticResource DarkText}"
-                                    Text="Could not load results"
+                                    Text="{Binding [text_80], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     TextAlignment="Center" />
                                 <TextBlock
                                     x:Name="ErrorResultsText"
@@ -1059,12 +1069,12 @@
                                     <Button
                                         Padding="16,8"
                                         Command="{Binding SearchCommand}"
-                                        Content="Retry" />
+                                        Content="{Binding [text_81], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                     <Button
                                         Margin="10,0,0,0"
                                         Padding="16,8"
                                         Command="{Binding ClearAllFiltersCommand}"
-                                        Content="Clear Filters" />
+                                        Content="{Binding [text_82], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -1173,7 +1183,7 @@
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     Foreground="#909090"
-                                                    Text="No preview">
+                                                    Text="{Binding [text_83], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed" />
@@ -1205,7 +1215,7 @@
                                                         <TextBlock
                                                             FontSize="10"
                                                             Foreground="White"
-                                                            Text="✓ In Library" />
+                                                            Text="{Binding [text_84], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                     </Border>
                                                     <Border
                                                         Margin="4,0,0,0"
@@ -1216,7 +1226,7 @@
                                                         <TextBlock
                                                             FontSize="10"
                                                             Foreground="White"
-                                                            Text="⬆ Update" />
+                                                            Text="{Binding [text_85], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                     </Border>
                                                 </StackPanel>
 
@@ -1256,12 +1266,12 @@
                                                         Padding="4,2"
                                                         Background="#795548"
                                                         CornerRadius="2"
-                                                        ToolTip="Requires external download"
+                                                        ToolTip="{Binding [text_86], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                         Visibility="{Binding IsExternallyHosted, Converter={StaticResource BoolToVis}}">
                                                         <TextBlock
                                                             FontSize="10"
                                                             Foreground="White"
-                                                            Text="🔗 External" />
+                                                            Text="{Binding [text_87], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                     </Border>
                                                 </StackPanel>
 
@@ -1288,7 +1298,7 @@
                                                             FontSize="14"
                                                             FontWeight="SemiBold"
                                                             Foreground="#E0E0E0"
-                                                            ToolTip="Download or update package and dependencies"
+                                                            ToolTip="{Binding [text_88], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                             Visibility="{Binding ShowsCardDownloadAll, Converter={StaticResource BoolToVis}}">
                                                             <Button.Template>
                                                                 <ControlTemplate TargetType="Button">
@@ -1400,7 +1410,7 @@
                                                         Padding="3,0"
                                                         Background="#607D8B"
                                                         CornerRadius="3"
-                                                        ToolTip="Open in system browser">
+                                                        ToolTip="{Binding [text_89], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                                         <Border.Style>
                                                             <Style TargetType="Border">
                                                                 <Setter Property="Visibility" Value="Visible" />
@@ -1477,7 +1487,7 @@
                                                         Margin="0,0,10,0"
                                                         FontSize="11"
                                                         Foreground="{StaticResource DarkTextSecondary}"
-                                                        ToolTip="Download count">
+                                                        ToolTip="{Binding [text_90], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                                         <Run Text="⬇" />
                                                         <Run Text="{Binding DownloadCount, Mode=OneWay}" />
                                                     </TextBlock>
@@ -1488,7 +1498,7 @@
                                                         Margin="0,0,10,0"
                                                         FontSize="11"
                                                         Foreground="{StaticResource DarkTextSecondary}"
-                                                        ToolTip="Rating (number of ratings)">
+                                                        ToolTip="{Binding [text_91], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                                         <Run Text="⭐" />
                                                         <Run Text="{Binding RatingDisplay, Mode=OneWay}" />
                                                     </TextBlock>
@@ -1598,8 +1608,8 @@
                             Margin="12,0,0,0"
                             Padding="12,0"
                             Click="MissingDepsPanelButton_Click"
-                            Content="🔗 Missing"
-                            ToolTip="View missing dependencies" />
+                            Content="{Binding [text_92], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                            ToolTip="{Binding [text_93], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                         <!--  Download Queue Button  -->
                         <Button
@@ -1636,7 +1646,7 @@
                                 </Style>
                             </Button.Style>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="⬇ Downloads: " />
+                                <TextBlock Text="{Binding [text_94], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 <TextBlock
                                     x:Name="DownloadQueueCountText"
                                     FontWeight="Bold"
@@ -1684,16 +1694,16 @@
                                             FontSize="13"
                                             FontWeight="SemiBold"
                                             Foreground="{StaticResource DarkText}"
-                                            Text="📥 Download Queue" />
+                                            Text="{Binding [text_95], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                         <Button
                                             x:Name="OpenDownloadingButton"
                                             Grid.Column="1"
                                             Margin="0,0,8,0"
                                             Padding="6,2"
                                             Click="OpenDownloading_Click"
-                                            Content="📂 View Details"
+                                            Content="{Binding [text_96], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}"
                                             FontSize="10"
-                                            ToolTip="Open detail panels for downloading resources"
+                                            ToolTip="{Binding [text_97], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                             Visibility="Collapsed">
                                             <Button.Style>
                                                 <Style TargetType="Button">
@@ -1784,7 +1794,7 @@
                                                             FontSize="14"
                                                             FontWeight="Bold"
                                                             Tag="{Binding}"
-                                                            ToolTip="Cancel Download"
+                                                            ToolTip="{Binding [text_98], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                             Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}">
                                                             <Button.Style>
                                                                 <Style TargetType="Button">
@@ -1866,7 +1876,7 @@
                                         Padding="10,4"
                                         HorizontalAlignment="Right"
                                         Click="CancelAllDownloads_Click"
-                                        Content="Cancel All"
+                                        Content="{Binding [Cancel_all], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                         FontSize="11">
                                         <Button.Style>
                                             <Style TargetType="Button">
@@ -1913,7 +1923,7 @@
                             Margin="0,0,4,0"
                             Padding="12,0"
                             Command="{Binding PrevPageCommand}"
-                            Content="◀ Prev" />
+                            Content="{Binding [text_99], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         <StackPanel
                             Margin="8,0"
                             VerticalAlignment="Center"
@@ -1922,7 +1932,7 @@
                                 Margin="0,0,4,0"
                                 VerticalAlignment="Center"
                                 Foreground="{StaticResource DarkText}"
-                                Text="Page" />
+                                Text="{Binding [text_100], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <TextBox
                                 x:Name="PageNumberBox"
                                 Width="40"
@@ -1938,7 +1948,7 @@
                                 Margin="4,0"
                                 VerticalAlignment="Center"
                                 Foreground="{StaticResource DarkText}"
-                                Text="of" />
+                                Text="{Binding [text_101], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <TextBlock
                                 x:Name="TotalPagesText"
                                 VerticalAlignment="Center"
@@ -1950,7 +1960,7 @@
                             Margin="4,0,0,0"
                             Padding="12,0"
                             Command="{Binding NextPageCommand}"
-                            Content="Next ▶" />
+                            Content="{Binding [text_102], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </StackPanel>
 
                     <!--  Updates + Total Count  -->
@@ -1965,8 +1975,8 @@
                             Margin="0,0,12,0"
                             Padding="12,0"
                             Click="UpdatesPanelButton_Click"
-                            Content="⬆ Updates"
-                            ToolTip="View available package updates" />
+                            Content="{Binding [text_103], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                            ToolTip="{Binding [text_104], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                         <TextBlock
                             x:Name="TotalCountText"
@@ -1998,7 +2008,7 @@
                     Click="TogglePanel_Click"
                     Content="▶"
                     FontSize="10"
-                    ToolTip="Hide details panel">
+                    ToolTip="{Binding [text_105], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="4,0,0,4" />
@@ -2053,7 +2063,7 @@
                                         Click="OpenResourceLandingInBrowser_Click"
                                         Cursor="Hand"
                                         FontSize="12"
-                                        ToolTip="Open in system browser"
+                                        ToolTip="{Binding [text_89], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                         Visibility="Collapsed">
                                         <Button.Style>
                                             <Style TargetType="Button">
@@ -2099,7 +2109,7 @@
                                         Click="CopyResourceLandingLink_Click"
                                         Cursor="Hand"
                                         FontSize="12"
-                                        ToolTip="Copy Hub link"
+                                        ToolTip="{Binding [text_106], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}"
                                         Visibility="Collapsed">
                                         <Button.Style>
                                             <Style TargetType="Button">
@@ -2174,7 +2184,7 @@
                                 MouseLeftButtonDown="DetailCreator_Click"
                                 Text=""
                                 TextDecorations="Underline"
-                                ToolTip="Click to filter by this creator" />
+                                ToolTip="{Binding [text_107], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <!--  Support Creator Link  -->
                             <TextBlock
                                 x:Name="SupportCreatorButton"
@@ -2184,9 +2194,9 @@
                                 FontSize="14"
                                 Foreground="#E85B9C"
                                 MouseLeftButtonDown="SupportCreator_Click"
-                                Text="( ♥️ Support Author )"
+                                Text="{Binding [text_108], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 TextDecorations="Underline"
-                                ToolTip="Open creator's support/promotional page"
+                                ToolTip="{Binding [text_109], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Collapsed" />
                         </StackPanel>
 
@@ -2207,9 +2217,9 @@
                                 Padding="8,4"
                                 HorizontalAlignment="Stretch"
                                 Click="MissingDepsSaveListButton_Click"
-                                Content="💾 Save list to file"
+                                Content="{Binding [text_110], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 FontSize="12"
-                                ToolTip="Save missing dependencies list to a text file" />
+                                ToolTip="{Binding [text_111], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <Button
                                 x:Name="MissingDepsCopyListButton"
                                 Grid.Column="1"
@@ -2217,9 +2227,9 @@
                                 Padding="8,4"
                                 HorizontalAlignment="Stretch"
                                 Click="MissingDepsCopyListButton_Click"
-                                Content="📋 Copy list to clipboard"
+                                Content="{Binding [text_112], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 FontSize="12"
-                                ToolTip="Copy missing dependencies list to clipboard" />
+                                ToolTip="{Binding [text_113], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         </Grid>
 
                         <!--  Navigation Stack Controls Row  -->
@@ -2246,7 +2256,7 @@
                                 Click="StackDropdownButton_Click"
                                 Content="▼"
                                 FontSize="9"
-                                ToolTip="Show all items in stack - click to navigate">
+                                ToolTip="{Binding [text_114], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="Transparent" />
@@ -2285,7 +2295,7 @@
                                 Click="ClearStackButton_Click"
                                 Content="✕"
                                 FontSize="9"
-                                ToolTip="Clear navigation stack">
+                                ToolTip="{Binding [text_115], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="Transparent" />
@@ -2404,7 +2414,7 @@
                                 <TextBlock
                                     FontSize="10"
                                     Foreground="White"
-                                    Text="✓ In Library" />
+                                    Text="{Binding [text_84], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </Border>
                             <Border
                                 x:Name="DetailUpdateBadge"
@@ -2416,7 +2426,7 @@
                                 <TextBlock
                                     FontSize="10"
                                     Foreground="White"
-                                    Text="⬆ Update Available" />
+                                    Text="{Binding [text_116], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </Border>
                             <Border
                                 x:Name="DetailExternalBadge"
@@ -2424,12 +2434,12 @@
                                 Padding="6,3"
                                 Background="#795548"
                                 CornerRadius="3"
-                                ToolTip="Requires external download"
+                                ToolTip="{Binding [text_86], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Collapsed">
                                 <TextBlock
                                     FontSize="10"
                                     Foreground="White"
-                                    Text="🔗 External" />
+                                    Text="{Binding [text_87], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </Border>
                         </WrapPanel>
 
@@ -2469,7 +2479,7 @@
                                 MouseLeftButtonDown="DetailCategory_Click"
                                 Text=""
                                 TextDecorations="Underline"
-                                ToolTip="Click to filter by this category"
+                                ToolTip="{Binding [text_117], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Collapsed" />
                             <TextBlock
                                 x:Name="DetailDownloads"
@@ -2477,21 +2487,21 @@
                                 FontSize="12"
                                 Foreground="{StaticResource DarkTextSecondary}"
                                 Text=""
-                                ToolTip="Download count" />
+                                ToolTip="{Binding [text_90], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <TextBlock
                                 x:Name="DetailRating"
                                 Margin="0,0,14,4"
                                 FontSize="12"
                                 Foreground="{StaticResource DarkTextSecondary}"
                                 Text=""
-                                ToolTip="Rating (number of ratings)" />
+                                ToolTip="{Binding [text_91], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <TextBlock
                                 x:Name="DetailDependencies"
                                 Margin="0,0,14,4"
                                 FontSize="12"
                                 Foreground="#E57373"
                                 Text=""
-                                ToolTip="Number of dependencies required"
+                                ToolTip="{Binding [text_118], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Collapsed" />
                             <TextBlock
                                 x:Name="DetailFileSize"
@@ -2499,7 +2509,7 @@
                                 FontSize="12"
                                 Foreground="{StaticResource DarkTextSecondary}"
                                 Text=""
-                                ToolTip="Total file size"
+                                ToolTip="{Binding [text_119], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Collapsed" />
                             <TextBlock
                                 x:Name="DetailLastUpdate"
@@ -2507,7 +2517,7 @@
                                 FontSize="12"
                                 Foreground="#909090"
                                 Text=""
-                                ToolTip="Last updated"
+                                ToolTip="{Binding [text_120], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 Visibility="Collapsed" />
                         </WrapPanel>
 
@@ -2533,7 +2543,7 @@
                             FontSize="13"
                             FontWeight="SemiBold"
                             Foreground="{StaticResource DarkText}"
-                            Text="📦 Package Files" />
+                            Text="{Binding [text_121], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                         <!--  Download All Button / Progress Bar  -->
                         <Grid x:Name="DownloadAllContainer" Margin="0,6,0,10">
@@ -2552,7 +2562,7 @@
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
                                 Click="DownloadAll_Click"
-                                Content="⬇ Download All"
+                                Content="{Binding [text_122], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                 FontSize="12"
                                 FontWeight="SemiBold" />
 
@@ -2584,19 +2594,19 @@
                                             BorderBrush="{StaticResource DarkBorder}"
                                             Foreground="{StaticResource DarkText}">
                                             <TextBlock LineHeight="16" TextWrapping="Wrap">
-                                                <Run FontWeight="SemiBold" Text="No Change:" />
+                                                <Run FontWeight="SemiBold" Text="{Binding [text_123], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                 <LineBreak />
-                                                <Run Text="Keep all old versions in their original location" />
-                                                <LineBreak />
-                                                <LineBreak />
-                                                <Run FontWeight="SemiBold" Text="Archive All Old:" />
-                                                <LineBreak />
-                                                <Run Text="Move all old versions to \ArchivedPackages\OldPackages\" />
+                                                <Run Text="{Binding [text_124], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                 <LineBreak />
                                                 <LineBreak />
-                                                <Run FontWeight="SemiBold" Text="Discard All Old:" />
+                                                <Run FontWeight="SemiBold" Text="{Binding [text_125], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                 <LineBreak />
-                                                <Run Text="Move all old versions to \DiscardedPackages\" />
+                                                <Run Text="{Binding [text_126], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                                <LineBreak />
+                                                <LineBreak />
+                                                <Run FontWeight="SemiBold" Text="{Binding [text_127], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                                <LineBreak />
+                                                <Run Text="{Binding [text_128], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                             </TextBlock>
                                         </ToolTip>
                                     </TextBlock.ToolTip>
@@ -2608,16 +2618,16 @@
                                     VerticalAlignment="Center"
                                     FontSize="11"
                                     Foreground="{StaticResource DarkTextSecondary}"
-                                    Text="After Update Complete -&gt;" />
+                                    Text="{Binding [text_129], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
                                 <ComboBox
                                     x:Name="OldVersionHandlingDropdown"
                                     Grid.Column="2"
                                     HorizontalAlignment="Stretch"
                                     FontSize="11">
-                                    <ComboBoxItem Content="No Change" IsSelected="True" />
-                                    <ComboBoxItem Content="Archive All Old" />
-                                    <ComboBoxItem Content="Discard All Old" />
+                                    <ComboBoxItem Content="{Binding [text_123], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" IsSelected="True" />
+                                    <ComboBoxItem Content="{Binding [ArchiveAllOld], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    <ComboBoxItem Content="{Binding [text_134], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 </ComboBox>
                             </Grid>
 
@@ -2625,18 +2635,18 @@
                                 <CheckBox
                                     x:Name="LoadAfterDownloadCheck"
                                     Checked="LoadAfterDownloadCheck_Changed"
-                                    Content=" Load Dependencies After Download"
+                                    Content="{Binding [text_130], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     Style="{StaticResource HubOptionCheckBoxStyle}"
-                                    ToolTip="After downloading a package, automatically load its dependencies."
+                                    ToolTip="{Binding [text_131], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     Unchecked="LoadAfterDownloadCheck_Changed" />
 
                                 <CheckBox
                                     x:Name="HideInstalledCheck"
                                     Margin="0,4,0,0"
                                     Checked="HideInstalledCheck_Changed"
-                                    Content=" Hide Installed Packages"
+                                    Content="{Binding [text_132], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     Style="{StaticResource HubOptionCheckBoxStyle}"
-                                    ToolTip="Hide packages and dependencies that are already in your library."
+                                    ToolTip="{Binding [text_133], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                     Unchecked="HideInstalledCheck_Changed" />
                             </StackPanel>
 
@@ -2678,7 +2688,7 @@
                                                 FontSize="11"
                                                 FontWeight="SemiBold"
                                                 Foreground="White"
-                                                Text="Downloading..." />
+                                                Text="{Binding [text_135], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}" />
                                             <TextBlock
                                                 x:Name="DownloadProgressDetail"
                                                 HorizontalAlignment="Center"
@@ -2698,7 +2708,7 @@
                                     Click="CancelAllDetailDownloads_Click"
                                     FontSize="12"
                                     FontWeight="SemiBold"
-                                    ToolTip="Cancel all active downloads">
+                                    ToolTip="{Binding [text_136], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}">
                                     <Button.Style>
                                         <Style TargetType="Button">
                                             <Setter Property="Background" Value="#FFCC3333" />
@@ -2719,7 +2729,7 @@
                                                                 FontSize="12"
                                                                 FontWeight="SemiBold"
                                                                 Foreground="White"
-                                                                Text="✕ Cancel" />
+                                                                Text="{Binding [Cancel], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
@@ -2741,7 +2751,7 @@
                             Margin="0,12,0,6"
                             Padding="10,6"
                             Click="LoadSubDependenciesButton_Click"
-                            Content="🔍 Find Sub-Dependencies"
+                            Content="{Binding [text_137], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                             FontSize="12"
                             FontWeight="SemiBold"
                             Visibility="Visible" />
@@ -2759,7 +2769,7 @@
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Foreground="{StaticResource DarkText}"
-                                Text="🔗 Sub-dependencies (0)" />
+                                Text="{Binding [text_138], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         </Border>
 
                         <!--  Sub-dependencies List  -->
@@ -2808,7 +2818,7 @@
                                                             <Setter Property="Background" Value="#FF333333" />
                                                             <Setter Property="Foreground" Value="#FFE0E0E0" />
                                                             <Setter Property="BorderBrush" Value="#FF4A4A4A" />
-                                                            <Setter Property="ToolTip" Value="Download" />
+                                                            <Setter Property="ToolTip" Value="{Binding [Download_Selected_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                             <Setter Property="Template">
                                                                 <Setter.Value>
                                                                     <ControlTemplate TargetType="Button">
@@ -2837,13 +2847,13 @@
                                                                 <DataTrigger Binding="{Binding HasUpdate}" Value="True">
                                                                     <Setter Property="Background" Value="#FFFF8C00" />
                                                                     <Setter Property="Foreground" Value="White" />
-                                                                    <Setter Property="ToolTip" Value="Download Update" />
+                                                                    <Setter Property="ToolTip" Value="{Binding [text_139], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding IsDownloading}" Value="True">
                                                                     <Setter Property="Background" Value="#FFCC3333" />
                                                                     <Setter Property="Foreground" Value="White" />
                                                                     <Setter Property="Content" Value="✕" />
-                                                                    <Setter Property="ToolTip" Value="Cancel Download" />
+                                                                    <Setter Property="ToolTip" Value="{Binding [Cancel_download], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                                     <Setter Property="FontWeight" Value="Bold" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -2859,7 +2869,7 @@
                                                     Content="📂"
                                                     FontSize="12"
                                                     Tag="{Binding}"
-                                                    ToolTip="Open in Explorer"
+                                                    ToolTip="{Binding [text_140], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                     Visibility="Collapsed">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
@@ -2912,7 +2922,7 @@
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Foreground="{StaticResource DarkText}"
-                                Text="📄 Files" />
+                                Text="{Binding [text_141], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             <Border
                                 Grid.Column="1"
                                 Width="150"
@@ -2937,7 +2947,7 @@
                                         FontSize="10"
                                         Foreground="#888888"
                                         IsHitTestVisible="False"
-                                        Text="Filter files..."
+                                        Text="{Binding [text_142], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                         Visibility="{Binding Text, ElementName=DetailSearchBox, Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
                                 </Grid>
                             </Border>
@@ -3000,7 +3010,7 @@
                                                             <Setter Property="Background" Value="#FF333333" />
                                                             <Setter Property="Foreground" Value="#FFE0E0E0" />
                                                             <Setter Property="BorderBrush" Value="#FF4A4A4A" />
-                                                            <Setter Property="ToolTip" Value="Download" />
+                                                            <Setter Property="ToolTip" Value="{Binding [Download_Selected_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                             <Setter Property="Template">
                                                                 <Setter.Value>
                                                                     <ControlTemplate TargetType="Button">
@@ -3029,13 +3039,13 @@
                                                                 <DataTrigger Binding="{Binding HasUpdate}" Value="True">
                                                                     <Setter Property="Background" Value="#FFFF8C00" />
                                                                     <Setter Property="Foreground" Value="White" />
-                                                                    <Setter Property="ToolTip" Value="Download Update" />
+                                                                    <Setter Property="ToolTip" Value="{Binding [text_139], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding IsDownloading}" Value="True">
                                                                     <Setter Property="Background" Value="#FFCC3333" />
                                                                     <Setter Property="Foreground" Value="White" />
                                                                     <Setter Property="Content" Value="✕" />
-                                                                    <Setter Property="ToolTip" Value="Cancel Download" />
+                                                                    <Setter Property="ToolTip" Value="{Binding [Cancel_download], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}" />
                                                                     <Setter Property="FontWeight" Value="Bold" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -3052,7 +3062,7 @@
                                                     Content="📂"
                                                     FontSize="12"
                                                     Tag="{Binding}"
-                                                    ToolTip="Open in Explorer"
+                                                    ToolTip="{Binding [text_140], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                     Visibility="Collapsed">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
@@ -3101,7 +3111,7 @@
                             FontWeight="SemiBold"
                             Foreground="{StaticResource DarkText}"
                             Visibility="Collapsed">
-                            <Run x:Name="DependenciesHeaderText" Text="🔗 Dependencies" />
+                            <Run x:Name="DependenciesHeaderText" Text="{Binding [text_143], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                         </TextBlock>
 
                         <ItemsControl x:Name="DetailDependenciesControl" Margin="0,6,0,0">
@@ -3153,7 +3163,7 @@
                                                             <Setter Property="Background" Value="#FF333333" />
                                                             <Setter Property="Foreground" Value="#FFE0E0E0" />
                                                             <Setter Property="BorderBrush" Value="#FF4A4A4A" />
-                                                            <Setter Property="ToolTip" Value="Download" />
+                                                            <Setter Property="ToolTip" Value="{Binding [Download_Selected_Title], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                             <Setter Property="Template">
                                                                 <Setter.Value>
                                                                     <ControlTemplate TargetType="Button">
@@ -3182,13 +3192,13 @@
                                                                 <DataTrigger Binding="{Binding HasUpdate}" Value="True">
                                                                     <Setter Property="Background" Value="#FFFF8C00" />
                                                                     <Setter Property="Foreground" Value="White" />
-                                                                    <Setter Property="ToolTip" Value="Download Update" />
+                                                                    <Setter Property="ToolTip" Value="{Binding [text_139], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding IsDownloading}" Value="True">
                                                                     <Setter Property="Background" Value="#FFCC3333" />
                                                                     <Setter Property="Foreground" Value="White" />
                                                                     <Setter Property="Content" Value="✕" />
-                                                                    <Setter Property="ToolTip" Value="Cancel Download" />
+                                                                    <Setter Property="ToolTip" Value="{Binding [Cancel_download], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}" />
                                                                     <Setter Property="FontWeight" Value="Bold" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -3205,7 +3215,7 @@
                                                     Content="📂"
                                                     FontSize="12"
                                                     Tag="{Binding}"
-                                                    ToolTip="Open in Explorer"
+                                                    ToolTip="{Binding [text_140], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
                                                     Visibility="Collapsed">
                                                     <Button.Style>
                                                         <Style TargetType="Button">

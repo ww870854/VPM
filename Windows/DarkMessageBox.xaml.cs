@@ -1,6 +1,7 @@
 ﻿using System.Windows;
-using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Input;
+using VPM.Language;
 using VPM.Services;
 
 namespace VPM
@@ -47,20 +48,20 @@ namespace VPM
             switch (button)
             {
                 case MessageBoxButton.OK:
-                    messageBox.Button1.Content = customBtn1Text ?? "OK";
+                    messageBox.Button1.Content = customBtn1Text ?? LanguageManager.Instance.GetCodeString("Btn_Confirm");
                     messageBox.Button1.IsDefault = true;
                     messageBox.Button2.Visibility = Visibility.Collapsed;
                     break;
                 case MessageBoxButton.YesNo:
-                    messageBox.Button1.Content = customBtn1Text ?? "Yes";
+                    messageBox.Button1.Content = customBtn1Text ?? LanguageManager.Instance.GetCodeString("Btn_Yes");
                     messageBox.Button1.IsDefault = true;
-                    messageBox.Button2.Content = customBtn2Text ?? "No";
+                    messageBox.Button2.Content = customBtn2Text ?? LanguageManager.Instance.GetCodeString("Btn_No");
                     messageBox.Button2.Visibility = Visibility.Visible;
                     break;
                 case MessageBoxButton.YesNoCancel:
-                    messageBox.Button1.Content = customBtn1Text ?? "Yes";
+                    messageBox.Button1.Content = customBtn1Text ?? LanguageManager.Instance.GetCodeString("Btn_Yes");
                     messageBox.Button1.IsDefault = true;
-                    messageBox.Button2.Content = customBtn2Text ??  "No";
+                    messageBox.Button2.Content = customBtn2Text ?? LanguageManager.Instance.GetCodeString("Btn_No");
                     messageBox.Button2.Visibility = Visibility.Visible;
                     // For simplicity, we'll treat this as YesNo for now
                     break;
@@ -86,9 +87,9 @@ namespace VPM
 
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
-            if (Button1.Content.ToString() == "OK")
+            if (Button1.Content.ToString() == LanguageManager.Instance.GetCodeString("Btn_Confirm"))
                 Result = MessageBoxResult.OK;
-            else if (Button1.Content.ToString() == "Yes")
+            else if (Button1.Content.ToString() == LanguageManager.Instance.GetCodeString("Btn_Yes"))
                 Result = MessageBoxResult.Yes;
             
             Close();
@@ -96,7 +97,7 @@ namespace VPM
 
         private void Button2_Click(object sender, RoutedEventArgs e)
         {
-            if (Button2.Content.ToString() == "No")
+            if (Button2.Content.ToString() == LanguageManager.Instance.GetCodeString("Btn_No"))
                 Result = MessageBoxResult.No;
             else
                 Result = MessageBoxResult.Cancel;

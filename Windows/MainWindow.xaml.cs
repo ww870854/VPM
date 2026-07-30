@@ -23,6 +23,7 @@ namespace VPM
         public partial class MainWindow : Window, IPackageMetadataProvider
         {
             // Ensure ImageManager and PackageDownloader are disposed to release resources
+            private AppSettings _currentAppSettings;
             protected override void OnClosed(EventArgs e)
             {
                 base.OnClosed(e);
@@ -129,12 +130,17 @@ namespace VPM
         public MainWindow(SettingsManager settingsManager = null)
         {
             InitializeComponent();
+            // 直接通过已经初始化过的_settingsManager获取配置实例
+            PropertyChangedEventManager.AddHandler(
+                LanguageManager.Instance,
+                (s, e) =>
+                {
+                    // 直接传入_settingsManager.Settings
+                    ApplyPaneVisibility(_settingsManager.Settings);
+                },
+                string.Empty
+            );
 
-            this.ContentRendered += (s, e) =>
-            {
-                // 程序完全渲染完成后，一次性执行语言资源全量加载刷新
-                LanguageManager.Instance.InitLanguageAtAppStart();
-            };
             // Set version in menu button
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != null)

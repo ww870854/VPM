@@ -124,7 +124,7 @@ namespace VPM
 
             // 4. 【关键步骤】设置启动位置为“相对于所有者居中”
             childWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
+ 
             // 5. 显示窗口
             childWindow.ShowDialog();
         }

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -1760,7 +1758,7 @@ namespace VPM
                         // Change button content to "Loading..."
                         button.IsEnabled = false;
                         var originalContent = button.Content;
-                        button.Content = "Loading...";
+                        button.Content = LanguageManager.Instance.GetCodeString("text_7");
 
                         // Index 50 more images
                         bool added = await _imageManager.IndexMoreImagesAsync(metadata.FilePath, 50);

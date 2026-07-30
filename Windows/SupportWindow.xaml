@@ -4,17 +4,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:VPM"
     xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     Title="{Binding [Support_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="500"
     Height="700"
     MinWidth="400"
     MinHeight="400"
-    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+    Background="Transparent"
     Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
     ResizeMode="CanResize"
     ShowInTaskbar="False"
+    WindowStyle="None"
+    AllowsTransparency="True"
     WindowStartupLocation="CenterOwner">
-
+    <!--Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"-->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="122" GlassFrameThickness="-1" ResizeBorderThickness="6" />
+    </shell:WindowChrome.WindowChrome>
     <Window.Resources>
         <!--  Modern Button Style  -->
         <Style x:Key="ModernButton" TargetType="Button">
@@ -96,143 +102,170 @@
     </Window.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <!--  Header  -->
-        <Border Grid.Row="0" Padding="20">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Offset="0" Color="#FF962FBF" />
-                    <!--  Patreon-ish Gradient  -->
-                    <GradientStop Offset="1" Color="#FFD65DB1" />
-                </LinearGradientBrush>
-            </Border.Background>
-            <StackPanel>
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Foreground="White"
-                    Text="{Binding [Support_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                <TextBlock
-                    Margin="0,5,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    Foreground="#FFE0E0E0"
-                    Text="{Binding [text_3], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                <TextBlock
-                    Margin="0,5,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    FontWeight="Bold"
-                    Foreground="#000000"
-                    Text="{Binding [text_8], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-            </StackPanel>
-        </Border>
-
-        <!--  Patreon Link Section  -->
-        <StackPanel
-            Grid.Row="1"
-            Margin="20"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <Button
-                x:Name="PatreonButton"
-                Click="PatreonButton_Click"
-                Style="{StaticResource ModernButton}"
-                Margin="5,10,5,0">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="{Binding [btn_5], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                </StackPanel>
-            </Button>
-            <Button
-                x:Name="InternationalButton"
-                Click="InternationalButton_Click"
-                Style="{StaticResource ModernButton}"
-                Margin="5,10,5,0">
-                <TextBlock FontSize="14" Text="{Binding [btn_6], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-            </Button>
-            <TextBlock
-                x:Name="PatreonLinkText"
-                Margin="0,5,0,0"
-                HorizontalAlignment="Center"
-                FontSize="10"
-                Foreground="Gray"
-                Text="{Binding [text_5], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                Visibility="Collapsed" />
-        </StackPanel>
-
-        <!--  Supporters List  -->
-        <DockPanel Grid.Row="2" Margin="20,0,20,20">
-            <TextBlock
-                Margin="0,0,0,10"
-                HorizontalAlignment="Center"
-                DockPanel.Dock="Top"
-                FontSize="14"
-                FontWeight="SemiBold"
-                Text="{Binding [text_6], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Normal">
+                        <Setter Property="Margin" Value="8" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="Margin" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Border x:Name="WindowRootBorder"
+            Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+            CornerRadius="5"
+            BorderBrush="#FF676767"
+            BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect 
+                ShadowDepth="0" 
+                BlurRadius="5" 
+                Opacity="0.6" 
+                Color="#FF2C2C2C" />
+            </Border.Effect>
             <Grid>
-                <Border
-                    Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
-                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-                    BorderThickness="1"
-                    CornerRadius="4">
-                    <ListBox
-                        x:Name="SupportersList"
-                        HorizontalContentAlignment="Center"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontFamily="Segoe UI Emoji, Segoe UI Symbol, Segoe UI"
-                                        FontSize="14"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding Name}" />
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="13"
-                                        Opacity="0.8"
-                                        Text="{Binding InfoText}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Border>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <Border
-                    x:Name="LoadingOverlay"
-                    Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
-                    CornerRadius="4"
-                    Opacity="0.8"
-                    Visibility="Visible">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!--  Header  -->
+                <Border Grid.Row="0" Padding="20" CornerRadius="5,5,0,0">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="#FF962FBF" />
+                            <!--  Patreon-ish Gradient  -->
+                            <GradientStop Offset="1" Color="#FFD65DB1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <StackPanel>
                         <TextBlock
-                            FontSize="16"
-                            Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
-                            Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            HorizontalAlignment="Center"
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="{Binding [Support_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                        <TextBlock
+                            Margin="0,5,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            Foreground="#FFE0E0E0"
+                            Text="{Binding [text_3], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                        <TextBlock
+                            Margin="0,5,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="#000000"
+                            Text="{Binding [text_8], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
-            </Grid>
-        </DockPanel>
 
-        <!--  Close Button  -->
-        <Button
-            Grid.Row="3"
-            Width="100"
-            Height="30"
-            Margin="0,0,0,20"
-            HorizontalAlignment="Center"
-            Click="CloseButton_Click"
-            Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                <!--  Patreon Link Section  -->
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="20"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        x:Name="PatreonButton"
+                        Click="PatreonButton_Click"
+                        Style="{StaticResource ModernButton}"
+                        Margin="5,10,5,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="14" Text="{Binding [btn_5], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        x:Name="InternationalButton"
+                        Click="InternationalButton_Click"
+                        Style="{StaticResource ModernButton}"
+                        Margin="5,10,5,0">
+                        <TextBlock FontSize="14" Text="{Binding [btn_6], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                    </Button>
+                    <TextBlock
+                        x:Name="PatreonLinkText"
+                        Margin="0,5,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="10"
+                        Foreground="Gray"
+                        Text="{Binding [text_5], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                        Visibility="Collapsed" />
+                </StackPanel>
+
+                <!--  Supporters List  -->
+                <DockPanel Grid.Row="2" Margin="20,0,20,20">
+                    <TextBlock
+                        Margin="0,0,0,10"
+                        HorizontalAlignment="Center"
+                        DockPanel.Dock="Top"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Text="{Binding [text_6], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+
+                    <Grid>
+                        <Border
+                            Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+                            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <ListBox
+                                x:Name="SupportersList"
+                                HorizontalContentAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontFamily="Segoe UI Emoji, Segoe UI Symbol, Segoe UI"
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding Name}" />
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                Opacity="0.8"
+                                                Text="{Binding InfoText}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+
+                        <Border
+                            x:Name="LoadingOverlay"
+                            Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+                            CornerRadius="4"
+                            Opacity="0.8"
+                            Visibility="Visible">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock
+                                    FontSize="16"
+                                    Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
+                                    Text="{Binding [text_7], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+
+                <!--  Close Button  -->
+                <Button
+                    Grid.Row="3"
+                    Width="100"
+                    Height="30"
+                    Margin="0,0,0,20"
+                    HorizontalAlignment="Center"
+                    Click="CloseButton_Click"
+                    Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+            </Grid>
+        </Border>
     </Grid>
 </Window>

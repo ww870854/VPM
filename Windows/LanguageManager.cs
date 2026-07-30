@@ -27,10 +27,6 @@ namespace VPM.Language
             {
                 return App.SettingsManager;
             }
-
-            // 方案 2: 如果通过 Application.Current.Resources 获取
-            // if (Application.Current.Resources["SettingsManager"] is ISettingsManager sm) return sm;
-
             // 兜底：如果都获取不到，返回 null 或抛出异常，视项目架构而定
             // 这里假设你能通过某种全局方式获取，否则需要重构 LanguageManager 以支持依赖注入
             throw new InvalidOperationException("无法获取 SettingsManager 实例，请检查全局配置。");
@@ -112,15 +108,37 @@ namespace VPM.Language
             IsLanguageResourcesLoaded = true;
         }
 
-        public string GetCodeString(string key)
+        //public string GetCodeString(string key)
+        //{
+        //    // 优化：增加空值兜底，极端情况下资源字典未初始化时直接返回Key，不会抛异常
+        //    if (Application.Current?.Resources != null && Application.Current.Resources.Contains(key))
+        //    {
+        //        return Application.Current.Resources[key]?.ToString() ?? key;
+        //    }
+        //    return key;
+        //}
+        public string GetCodeString(string key, params object[] formatArgs)
         {
-            // 优化：增加空值兜底，极端情况下资源字典未初始化时直接返回Key，不会抛异常
+            // 1. 保留原有资源读取+空值兜底逻辑，极端场景不抛异常
+            string rawText;
             if (Application.Current?.Resources != null && Application.Current.Resources.Contains(key))
             {
-                return Application.Current.Resources[key]?.ToString() ?? key;
+                rawText = Application.Current.Resources[key]?.ToString() ?? key;
             }
-            return key;
+            else
+            {
+                rawText = key;
+            }
+
+            // 2. 先处理转义换行：把资源里写的 \n 替换为实际换行符
+            // 额外兼容跨平台场景，可选替换为 Environment.NewLine 自动适配系统换行规则
+            rawText = rawText.Replace("\\n", "\n");
+            // 跨平台兼容写法可替换为：rawText = rawText.Replace("\\n", Environment.NewLine);
+
+            // 3. 处理动态格式化：如果传入了参数就执行string.Format，无参数直接返回处理后的文本
+            return formatArgs.Length > 0 ? string.Format(rawText, formatArgs) : rawText;
         }
+
 
         public void ForceAllBindingsRefresh()
         {
@@ -160,6 +178,41 @@ namespace VPM.Language
             ChangeLanguage(defaultLang);
             // 执行全绑定刷新，覆盖所有启动阶段没加载到资源的控件
             ForceAllBindingsRefresh();
+        }
+        // 新增递归刷新方法，触发所有元素的动态资源重载
+        public void UpdateAllDependencyObjects(DependencyObject parent)
+        {
+            if (parent == null) return;
+
+            // 用OfType过滤出所有UI元素，避免非元素类型调用方法报错
+            var children = LogicalTreeHelper.GetChildren(parent).OfType<DependencyObject>().ToList();
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child is not FrameworkElement fe)
+                {
+                    UpdateAllDependencyObjects(child);
+                    continue;
+                }
+
+                // 遍历元素的所有依赖属性，重新绑定动态资源
+                var properties = fe.GetLocalValueEnumerator();
+                while (properties.MoveNext())
+                {
+                    var prop = properties.Current.Property;
+                    if (prop.ReadOnly) continue;
+
+                    // 移除对内部私有类型ResourceReferenceExpression的依赖，完全规避CS0246报错
+                    var value = fe.ReadLocalValue(prop);
+                    if (value is DynamicResourceExtension)
+                    {
+                        fe.ClearValue(prop);
+                        // 从资源字典中重新拉取资源值，替代旧的SetResourceReference逻辑
+                        fe.SetValue(prop, Application.Current.Resources[prop.Name]);
+                    }
+                }
+                UpdateAllDependencyObjects(fe);
+            }
         }
     }
 }

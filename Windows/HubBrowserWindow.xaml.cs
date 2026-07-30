@@ -8,9 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +26,7 @@ using VPM.Services;
 
 namespace VPM.Windows
 {
+    #region ========== 1 =========
     /// <summary>
     /// Hub Browser Window - Browse and download packages from VaM Hub
     /// </summary>
@@ -373,7 +372,8 @@ namespace VPM.Windows
                 Debug.WriteLine($"[HubBrowserWindow] Failed to update HideInstalled setting: {ex}");
             }
         }
-
+        #endregion
+    #region ========== 2 =========
         private void DetailSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox textBox)
@@ -970,7 +970,7 @@ namespace VPM.Windows
                 Debug.WriteLine($"[HubBrowserWindow] Failed to dispose OverviewWebView: {ex}");
             }
         }
-        
+        #endregion
         /// <summary>
         /// Initialize WebView2 asynchronously
         /// </summary>
@@ -1015,7 +1015,7 @@ namespace VPM.Windows
             catch (Exception ex)
             {
                 _webViewInitialized = false;
-                ShowWebViewError($"WebView2 initialization failed: {ex.Message}");
+                ShowWebViewError(string.Format(LanguageManager.Instance.GetCodeString("msg_132"), ex.Message));
             }
         }
         
@@ -1031,7 +1031,7 @@ namespace VPM.Windows
             
             if (!e.IsSuccess)
             {
-                ShowWebViewError($"Failed to load page: {e.WebErrorStatus}");
+                ShowWebViewError(string.Format(LanguageManager.Instance.GetCodeString("msg_133"), e.WebErrorStatus));
             }
             else
             {
@@ -1171,7 +1171,7 @@ namespace VPM.Windows
             {
                 try
                 {
-                    StatusText.Text = "No Hub URL available for this item.";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("msg_134");
                 }
                 catch
                 {
@@ -1183,7 +1183,7 @@ namespace VPM.Windows
             {
                 try
                 {
-                    StatusText.Text = "Invalid URL.";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("msg_135");
                 }
                 catch
                 {
@@ -1197,7 +1197,7 @@ namespace VPM.Windows
                 OpenUrlInSystemBrowser(url);
                 try
                 {
-                    StatusText.Text = "Opened in system browser.";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("msg_136");
                 }
                 catch
                 {
@@ -1208,7 +1208,7 @@ namespace VPM.Windows
                 Debug.WriteLine($"[HubBrowserWindow] Failed to open URL in browser ({context}): {ex}");
                 try
                 {
-                    StatusText.Text = $"Failed to open browser: {ex.GetType().Name}: {ex.Message}";
+                    StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_137"), ex.GetType().Name, ex.Message);
                 }
                 catch
                 {
@@ -1771,19 +1771,33 @@ namespace VPM.Windows
 
                 var q = _vm?.SearchText?.Trim();
                 if (!string.IsNullOrEmpty(q))
-                    chips.Add(new ActiveFilterChip { Kind = "search", Value = q, DisplayText = $"Search: {q}" });
+                    chips.Add(new ActiveFilterChip { Kind = "search", Value = q, DisplayText = string.Format(LanguageManager.Instance.GetCodeString("text_149"), q) });
 
                 var source = _vm?.Scope ?? "All";
                 if (!string.Equals(source, "All", StringComparison.OrdinalIgnoreCase))
-                    chips.Add(new ActiveFilterChip { Kind = "source", Value = source, DisplayText = $"Source: {source}" });
+                {
+                    var matchedOption = _vm?.ScopeOptions.FirstOrDefault(opt
+                        => string.Equals(opt.InternalKey, source, StringComparison.OrdinalIgnoreCase));
+                    var showText = matchedOption?.DisplayText ?? source;
+                    chips.Add(new ActiveFilterChip { Kind = "source", Value = source, DisplayText = string.Format(LanguageManager.Instance.GetCodeString("text_148"), showText) });
+                }
 
                 var category = _vm?.Category ?? "All";
                 if (!string.Equals(category, "All", StringComparison.OrdinalIgnoreCase))
-                    chips.Add(new ActiveFilterChip { Kind = "category", Value = category, DisplayText = $"Category: {category}" });
-
+                {
+                    var matchedOption = _vm?.CategoryOptions.FirstOrDefault(opt
+                        => string.Equals(opt.InternalKey, category, StringComparison.OrdinalIgnoreCase));
+                    var showText = matchedOption?.DisplayText ?? category;
+                    chips.Add(new ActiveFilterChip { Kind = "category", Value = category, DisplayText = string.Format(LanguageManager.Instance.GetCodeString("text_150"), showText) });
+                }
                 var pay = _vm?.PayType ?? "All";
                 if (!string.Equals(pay, "All", StringComparison.OrdinalIgnoreCase))
-                    chips.Add(new ActiveFilterChip { Kind = "pay", Value = pay, DisplayText = $"Type: {pay}" });
+                {
+                    var matchedOption = _vm?.PayTypeOptions.FirstOrDefault(opt
+                        => string.Equals(opt.InternalKey, pay, StringComparison.OrdinalIgnoreCase));
+                    var showText = matchedOption?.DisplayText ?? pay;
+                    chips.Add(new ActiveFilterChip { Kind = "pay", Value = pay, DisplayText = string.Format(LanguageManager.Instance.GetCodeString("text_147"), showText) });
+                }
 
                 var creator = _vm?.Creator ?? "All";
                 if (!string.IsNullOrEmpty(creator) && !string.Equals(creator, "All", StringComparison.OrdinalIgnoreCase))
@@ -1791,11 +1805,21 @@ namespace VPM.Windows
 
                 var sort = _vm?.Sort ?? "Latest Update";
                 if (!string.IsNullOrEmpty(sort) && !string.Equals(sort, "Latest Update", StringComparison.OrdinalIgnoreCase))
-                    chips.Add(new ActiveFilterChip { Kind = "sort", Value = sort, DisplayText = $"Sort: {sort}" });
+                {
+                    var matchedOption = _vm?.SortsOptions.FirstOrDefault(opt
+                        => string.Equals(opt.InternalKey, sort, StringComparison.OrdinalIgnoreCase));
+                    var showText = matchedOption?.DisplayText ?? sort;
+                    chips.Add(new ActiveFilterChip { Kind = "sort", Value = sort, DisplayText = string.Format(LanguageManager.Instance.GetCodeString("text_151"), showText) });
+                }
 
                 var sort2 = _vm?.SortSecondary ?? "None";
                 if (!string.IsNullOrEmpty(sort2) && !string.Equals(sort2, "None", StringComparison.OrdinalIgnoreCase))
-                    chips.Add(new ActiveFilterChip { Kind = "sort2", Value = sort2, DisplayText = $"Then: {sort2}" });
+                {
+                    var matchedOption = _vm?.Sort2Options.FirstOrDefault(opt
+                        => string.Equals(opt.InternalKey, sort2, StringComparison.OrdinalIgnoreCase));
+                    var showText = matchedOption?.DisplayText ?? sort2;
+                    chips.Add(new ActiveFilterChip { Kind = "sort2", Value = sort2, DisplayText = string.Format(LanguageManager.Instance.GetCodeString("text_152"), showText) });
+                }
 
                 if (_selectedTags != null && _selectedTags.Count > 0)
                 {
@@ -2028,7 +2052,7 @@ namespace VPM.Windows
 
             PageNumberBox.Text = current.ToString();
             TotalPagesText.Text = totalPages.ToString();
-            TotalCountText.Text = $"Total: {total}";
+            TotalCountText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_138"), total);
 
             PrevPageButton.IsEnabled = current > 1;
             NextPageButton.IsEnabled = current < totalPages;
@@ -2087,7 +2111,7 @@ namespace VPM.Windows
         {
             try
             {
-                StatusText.Text = $"Loading details for {resource.Title}...";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_139"), resource.Title);
                 
                 // Check if this resource is in saved downloading details
                 if (_savedDownloadingDetails.TryGetValue(resource.ResourceId, out var savedEntry))
@@ -2098,7 +2122,7 @@ namespace VPM.Windows
                     RestoreDetailFromStack(savedEntry);
                     ExpandPanel();
                     UpdateDetailStackUI();
-                    StatusText.Text = "Ready";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("StatusReady");
                     return;
                 }
                 
@@ -2211,12 +2235,12 @@ namespace VPM.Windows
                         await NavigateToHubPage("TabOverview");
                     }
                     
-                    StatusText.Text = "Ready";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("StatusReady");
                 }
             }
             catch (Exception ex)
             {
-                StatusText.Text = $"Error loading details: {ex.Message}";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_140"), ex.Message);
                 Debug.WriteLine($"[HubBrowserWindow] Failed to load resource details: {ex}");
             }
         }
@@ -2234,11 +2258,11 @@ namespace VPM.Windows
                 
                 if (_hasLoadedSubDependencies)
                 {
-                    LoadSubDependenciesButton.Content = "Sub-dependencies Loaded";
+                    LoadSubDependenciesButton.Content = LanguageManager.Instance.GetCodeString("msg_141");
                 }
                 else if (!_isSubDependencyLoading)
                 {
-                    LoadSubDependenciesButton.Content = "Find Sub-Dependencies";
+                    LoadSubDependenciesButton.Content = LanguageManager.Instance.GetCodeString("msg_142");
                 }
                 // If _isSubDependencyLoading is true, we leave the content alone 
                 // so it can show progress or "Initializing..." from the click handler
@@ -2266,8 +2290,8 @@ namespace VPM.Windows
             // Stats - only show count when we can actually list dependency files
             if (directCount > 0)
             {
-                DetailDependencies.Text = $"📦 {directCount} dep{(directCount > 1 ? "s" : "")}";
-                DetailDependencies.Visibility = Visibility.Visible;
+                    DetailDependencies.Text = string.Format(LanguageManager.Instance.GetCodeString(directCount > 1 ? "dependency_count_single" : "dependency_count_plural"),directCount);
+                    DetailDependencies.Visibility = Visibility.Visible;
             }
             else
             {
@@ -2294,7 +2318,7 @@ namespace VPM.Windows
             if (_currentDependencies.Any())
             {
                 DependenciesHeader.Visibility = Visibility.Visible;
-                DependenciesHeaderText.Text = $"🔗 Dependencies ({_currentDependencies.Count})";
+                DependenciesHeaderText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_143"), _currentDependencies.Count);
                 DetailDependenciesControl.ItemsSource = CollectionViewSource.GetDefaultView(_currentDependencies);
             }
             else
@@ -2325,9 +2349,9 @@ namespace VPM.Windows
                 {
                     IndirectDependenciesHeader.Visibility = Visibility.Visible;
                     if (_currentIndirectDependencies.Any())
-                        IndirectDependenciesHeaderText.Text = $"🔗 Sub-dependencies ({indirectCount})";
+                        IndirectDependenciesHeaderText.Text = string.Format(LanguageManager.Instance.GetCodeString("text_138"), indirectCount);
                     else
-                        IndirectDependenciesHeaderText.Text = "🔗 Sub-dependencies";
+                        IndirectDependenciesHeaderText.Text = LanguageManager.Instance.GetCodeString("text_144");
                     DetailIndirectDependenciesControl.ItemsSource = _currentIndirectDependencies.Any() ? CollectionViewSource.GetDefaultView(_currentIndirectDependencies) : null;
                 }
                 else
@@ -2342,7 +2366,7 @@ namespace VPM.Windows
                 IndirectDependenciesHeader.Visibility = _currentDependencies.Any()
                     ? Visibility.Visible
                     : Visibility.Collapsed;
-                IndirectDependenciesHeaderText.Text = "🔗 Sub-dependencies";
+                IndirectDependenciesHeaderText.Text = LanguageManager.Instance.GetCodeString("text_144");
                 DetailIndirectDependenciesControl.ItemsSource = null;
             }
 
@@ -2374,11 +2398,11 @@ namespace VPM.Windows
                 
                 if (_hasLoadedSubDependencies)
                 {
-                    LoadSubDependenciesButton.Content = "Sub-dependencies Loaded";
+                    LoadSubDependenciesButton.Content = LanguageManager.Instance.GetCodeString("msg_141");
                 }
                 else
                 {
-                    LoadSubDependenciesButton.Content = _isSubDependencyLoading ? "Searching sub-dependencies..." : "Find Sub-Dependencies";
+                    LoadSubDependenciesButton.Content = _isSubDependencyLoading ? LanguageManager.Instance.GetCodeString("msg_144") : LanguageManager.Instance.GetCodeString("msg_142");
                 }
                 
                 LoadSubDependenciesButton.Visibility = Visibility.Visible;
@@ -2404,7 +2428,7 @@ namespace VPM.Windows
             DetailCreator.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4A90D9"));
             DetailCreator.TextDecorations = TextDecorations.Underline;
             DetailCreator.Cursor = Cursors.Hand;  // Clickable
-            DetailCreator.ToolTip = "Click to filter by this creator";
+            DetailCreator.ToolTip = LanguageManager.Instance.GetCodeString("text_107");
             
             // Category (Type) with filter link
             if (!string.IsNullOrEmpty(detail.Type))
@@ -2485,7 +2509,7 @@ namespace VPM.Windows
                 {
                     DetailTagsPanel.Visibility = Visibility.Visible;
                     DetailTagsPanel.Inlines.Clear();
-                    DetailTagsPanel.Inlines.Add(new Run("Tags: "));
+                    DetailTagsPanel.Inlines.Add(new Run(LanguageManager.Instance.GetCodeString("msg_145")));
                     
                     for (int i = 0; i < detail.TagsList.Count; i++)
                     {
@@ -2648,7 +2672,7 @@ namespace VPM.Windows
                 if (LoadSubDependenciesButton != null)
                 {
                     LoadSubDependenciesButton.IsEnabled = false;
-                    LoadSubDependenciesButton.Content = "Initializing...";
+                    LoadSubDependenciesButton.Content = LanguageManager.Instance.GetCodeString("msg_146");
                 }
 
                 var progress = new Progress<string>(status =>
@@ -2680,7 +2704,7 @@ namespace VPM.Windows
                 if (LoadSubDependenciesButton != null)
                 {
                     LoadSubDependenciesButton.IsEnabled = !_hasLoadedSubDependencies;
-                    LoadSubDependenciesButton.Content = _hasLoadedSubDependencies ? "Sub-dependencies Loaded" : "Find Sub-Dependencies";
+                    LoadSubDependenciesButton.Content = _hasLoadedSubDependencies ? LanguageManager.Instance.GetCodeString("msg_141") : LanguageManager.Instance.GetCodeString("msg_142");
                 }
             }
         }
@@ -2799,7 +2823,7 @@ namespace VPM.Windows
                 if (hubLatestVersion > 0 && localVersion > 0 && hubLatestVersion > localVersion)
                 {
                     // Update available!
-                    vm.Status = $"Update {localVersion} → {hubLatestVersion}";
+                    vm.Status = string.Format(LanguageManager.Instance.GetCodeString("msg_147"), localVersion, hubLatestVersion);
                     vm.StatusColor = new SolidColorBrush(Colors.Orange);
                     vm.CanDownload = true;
                     vm.ButtonText = "⬆";
@@ -2816,7 +2840,7 @@ namespace VPM.Windows
                 }
                 else
                 {
-                    vm.Status = "✓ In Library";
+                    vm.Status = LanguageManager.Instance.GetCodeString("text_84");
                     vm.StatusColor = new SolidColorBrush(Colors.LimeGreen);
                     vm.CanDownload = false;
                     vm.ButtonText = "✓";
@@ -2824,14 +2848,14 @@ namespace VPM.Windows
             }
             else if (string.IsNullOrEmpty(vm.DownloadUrl))
             {
-                vm.Status = "Not available";
+                vm.Status = LanguageManager.Instance.GetCodeString("msg_148");
                 vm.StatusColor = new SolidColorBrush(Colors.Gray);
                 vm.CanDownload = false;
                 vm.ButtonText = "N/A";
             }
             else
             {
-                vm.Status = "Ready to download";
+                vm.Status = LanguageManager.Instance.GetCodeString("msg_149");
                 vm.StatusColor = new SolidColorBrush(Colors.White);
                 vm.CanDownload = true;
                 vm.ButtonText = "⬇";
@@ -3060,19 +3084,19 @@ namespace VPM.Windows
             {
                 DownloadAllButton.IsEnabled = totalDownloadable > 0;
                 DownloadAllButton.Content = totalDownloadable > 0
-                    ? $"⬇ Download Hub Dependencies ({totalDownloadable})"
-                    : "🔗 Externally Hosted";
+                    ? string.Format(LanguageManager.Instance.GetCodeString("msg_150"), totalDownloadable)
+                    : LanguageManager.Instance.GetCodeString("msg_151");
                 DownloadAllButton.ToolTip = totalDownloadable > 0
-                    ? "Main package is externally hosted; only Hub-hosted dependencies can be downloaded."
-                    : "This package is hosted externally. Install status cannot be verified.";
+                    ? LanguageManager.Instance.GetCodeString("msg_152")
+                    : LanguageManager.Instance.GetCodeString("msg_153");
                 return;
             }
 
             DownloadAllButton.ToolTip = null;
             DownloadAllButton.IsEnabled = totalDownloadable > 0;
             DownloadAllButton.Content = totalDownloadable > 0 
-                ? $"⬇ Download All ({totalDownloadable})" 
-                : "✓ All Installed";
+                ? string.Format(LanguageManager.Instance.GetCodeString("msg_154"), totalDownloadable) 
+                : LanguageManager.Instance.GetCodeString("msg_155");
         }
 
         private void ExpandPanel()
@@ -3082,7 +3106,7 @@ namespace VPM.Windows
                 DetailPanelColumn.Width = new GridLength(PanelWidth);
                 DetailPanelSplitter.Visibility = Visibility.Visible;
                 TogglePanelButton.Content = "▶";
-                TogglePanelButton.ToolTip = "Hide details panel";
+                TogglePanelButton.ToolTip = LanguageManager.Instance.GetCodeString("text_105");
                 _isPanelExpanded = true;
 
                 ApplyGoldenRatioSizing(force: true);
@@ -3096,7 +3120,7 @@ namespace VPM.Windows
                 DetailPanelColumn.Width = new GridLength(0);
                 DetailPanelSplitter.Visibility = Visibility.Collapsed;
                 TogglePanelButton.Content = "◀";
-                TogglePanelButton.ToolTip = "Show details panel";
+                TogglePanelButton.ToolTip = LanguageManager.Instance.GetCodeString("msg_156");
                 _isPanelExpanded = false;
 
                 ApplyGoldenRatioSizing(force: true);
@@ -3606,10 +3630,10 @@ namespace VPM.Windows
             var percent = (_completedDownloadsInBatch * 100) / _totalDownloadsInBatch;
             DownloadAllProgressBar.Value = percent;
             
-            DownloadProgressText.Text = $"Completed {_completedDownloadsInBatch}/{_totalDownloadsInBatch}";
+            DownloadProgressText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_157"), _completedDownloadsInBatch, _totalDownloadsInBatch);
             DownloadProgressDetail.Text = string.IsNullOrEmpty(_currentDownloadingPackage)
-                ? "Waiting for downloads to start..."
-                : $"Current: {_currentDownloadingPackage}";
+                ? LanguageManager.Instance.GetCodeString("msg_158")
+                : string.Format(LanguageManager.Instance.GetCodeString("msg_159"), _currentDownloadingPackage);
         }
         
         private void OnBatchDownloadComplete()
@@ -3621,7 +3645,7 @@ namespace VPM.Windows
             // Progress container (with cancel button) will be hidden after delay
             
             // Show completed state briefly, then revert to button
-            DownloadProgressText.Text = "✓ All Downloads Complete";
+            DownloadProgressText.Text = LanguageManager.Instance.GetCodeString("msg_160");
             DownloadProgressDetail.Text = "";
             DownloadAllProgressBar.Value = 100;
 
@@ -3664,7 +3688,7 @@ namespace VPM.Windows
             else
             {
                 // Fallback: just reset the UI state
-                file.Status = "Cancelled";
+                file.Status = LanguageManager.Instance.GetCodeString("Cancelled");
                 file.StatusColor = new SolidColorBrush(Colors.Gray);
                 file.IsDownloading = false;
                 file.CanDownload = true;
@@ -3706,7 +3730,7 @@ namespace VPM.Windows
             }
             
             // Update UI to show queued state
-            file.Status = "Queued...";
+            file.Status = LanguageManager.Instance.GetCodeString("msg_161");
             file.StatusColor = new SolidColorBrush(Colors.Cyan);
             file.CanDownload = false;
             file.ButtonText = "⏳";
@@ -3745,7 +3769,7 @@ namespace VPM.Windows
                         {
                             case DownloadStatus.Downloading:
                                 _lastDownloadUiProgressPercent = -1;
-                                file.Status = file.HasUpdate ? "Updating..." : "Downloading...";
+                                file.Status = file.HasUpdate ? LanguageManager.Instance.GetCodeString("msg_162") : LanguageManager.Instance.GetCodeString("text_135");
                                 file.StatusColor = new SolidColorBrush(Colors.Yellow);
                                 file.IsDownloading = true;
                                 file.ButtonText = "✕";  // Show cancel button
@@ -3771,7 +3795,7 @@ namespace VPM.Windows
                                 // Check if this was an update before clearing the flag
                                 bool wasUpdate = file.HasUpdate;
                                 
-                                file.Status = wasUpdate ? "✓ Updated" : "✓ Downloaded";
+                                file.Status = wasUpdate ? LanguageManager.Instance.GetCodeString("msg_163") : LanguageManager.Instance.GetCodeString("msg_164");
                                 file.StatusColor = new SolidColorBrush(Colors.LimeGreen);
                                 file.ButtonText = "✓";
                                 file.IsDownloading = false;
@@ -3861,7 +3885,7 @@ namespace VPM.Windows
                                 break;
                                 
                             case DownloadStatus.Failed:
-                                file.Status = "Download failed";
+                                file.Status = LanguageManager.Instance.GetCodeString("Download_failed");
                                 file.StatusColor = new SolidColorBrush(Colors.Red);
                                 file.IsDownloading = false;
                                 file.CanDownload = true;
@@ -3885,7 +3909,7 @@ namespace VPM.Windows
                                 break;
                                 
                             case DownloadStatus.Cancelled:
-                                file.Status = "Cancelled";
+                                file.Status = LanguageManager.Instance.GetCodeString("Cancelled");
                                 file.StatusColor = new SolidColorBrush(Colors.Gray);
                                 file.IsDownloading = false;
                                 file.CanDownload = true;
@@ -3914,8 +3938,8 @@ namespace VPM.Windows
                         if (queuedDownload.Status == DownloadStatus.Downloading)
                         {
                             file.Status = file.HasUpdate 
-                                ? $"Updating... {queuedDownload.ProgressPercentage}%" 
-                                : $"Downloading... {queuedDownload.ProgressPercentage}%";
+                                ? string.Format(LanguageManager.Instance.GetCodeString("msg_165"), queuedDownload.ProgressPercentage) 
+                                : string.Format(LanguageManager.Instance.GetCodeString("msg_166"), queuedDownload.ProgressPercentage);
                         }
                     }
                 }), System.Windows.Threading.DispatcherPriority.Background);
@@ -4563,7 +4587,7 @@ namespace VPM.Windows
 
                 // Show loading spinner
                 StatusLoadingSpinner.Visibility = Visibility.Visible;
-                StatusText.Text = "Checking for updates...";
+                StatusText.Text = LanguageManager.Instance.GetCodeString("msg_167");
                 
                 // Get all package groups that have updates available
                 // Use _localPackageVersions (highest version per base package).
@@ -4587,8 +4611,8 @@ namespace VPM.Windows
                 if (updatesAvailable.Count == 0)
                 {
                     StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                    StatusText.Text = "No updates available";
-                    MessageBox.Show("All your packages are up to date!", "Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("No_Updates_Available");
+                    MessageBox.Show(LanguageManager.Instance.GetCodeString("msg_168"), LanguageManager.Instance.GetCodeString("msg_169"), MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 
@@ -4599,7 +4623,7 @@ namespace VPM.Windows
                 if (hubPackages == null || hubPackages.Count == 0)
                 {
                     StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                    StatusText.Text = "Could not fetch update information";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("msg_170");
                     return;
                 }
                 
@@ -4641,8 +4665,8 @@ namespace VPM.Windows
                         DownloadUrl = downloadUrl,
                         LatestUrl = latestUrl,
                         Status = hasMetadata
-                            ? $"Update {update.localVersion} → {update.hubVersion}"
-                            : $"Update available ({update.localVersion} → {update.hubVersion})",
+                            ? string.Format(LanguageManager.Instance.GetCodeString("msg_147"), update.localVersion, update.hubVersion)
+                            : string.Format(LanguageManager.Instance.GetCodeString("msg_171"), update.localVersion, update.hubVersion),
                         StatusColor = statusColor,
                         CanDownload = !string.IsNullOrEmpty(downloadUrl),
                         ButtonText = "⬆",
@@ -4655,12 +4679,12 @@ namespace VPM.Windows
                 
                 // Update UI
                 SetMissingDepsActionsPanelVisible(false);
-                DetailTitle.Text = $"📦 Available Updates ({updatesAvailable.Count})";
+                DetailTitle.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_172"), updatesAvailable.Count);
                 DetailOpenInBrowserButton.Visibility = Visibility.Collapsed;
                 DetailOpenInBrowserButton.Tag = null;
                 DetailCopyHubLinkButton.Visibility = Visibility.Collapsed;
                 DetailCopyHubLinkButton.Tag = null;
-                DetailCreator.Text = $"Found {updatesAvailable.Count} updates available";
+                DetailCreator.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_173"), updatesAvailable.Count);
                 DetailCreator.Foreground = new SolidColorBrush(Colors.White);  // Normal text, not blue
                 DetailCreator.TextDecorations = null;  // Remove underline
                 DetailCreator.Cursor = Cursors.Arrow;  // Not clickable
@@ -4697,12 +4721,12 @@ namespace VPM.Windows
                 
                 // Hide loading spinner
                 StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                StatusText.Text = $"Found {updatesAvailable.Count} updates";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_174"), updatesAvailable.Count);
             }
             catch (Exception ex)
             {
                 StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                StatusText.Text = $"Error: {ex.Message}";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("err_1"), ex.Message);
             }
         }
         
@@ -4719,17 +4743,16 @@ namespace VPM.Windows
 
                 // Show loading spinner
                 StatusLoadingSpinner.Visibility = Visibility.Visible;
-                StatusText.Text = "Scanning for missing dependencies...";
+                StatusText.Text = LanguageManager.Instance.GetCodeString("msg_175");
                 
                 // Check if we have access to package manager
                 if (_packageManager == null)
                 {
                     StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                    StatusText.Text = "Ready";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("StatusReady");
                     MessageBox.Show(
-                        "Package manager not available.\n\n" +
-                        "Please ensure packages have been scanned in the main window.",
-                        "Missing Dependencies",
+                        LanguageManager.Instance.GetCodeString("msg_177").Replace("\\n", "\n"),
+                        LanguageManager.Instance.GetCodeString("title_18"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
@@ -4790,18 +4813,17 @@ namespace VPM.Windows
                 if (missingDeps.Count == 0)
                 {
                     StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                    StatusText.Text = "Ready";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("StatusReady");
                     MessageBox.Show(
-                        "No missing dependencies found!\n\n" +
-                        "All packages have their dependencies satisfied.",
-                        "Missing Dependencies",
+                        LanguageManager.Instance.GetCodeString("msg_178").Replace("\\n","\n"),
+                        LanguageManager.Instance.GetCodeString("Missing Dependencies").Replace("\\n", "\n"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;
                 }
                 
                 // Search for missing dependencies on Hub
-                StatusText.Text = $"Searching Hub for {missingDeps.Count} missing dependencies...";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_179"), missingDeps.Count);
                 
                 var missingDepsList = missingDeps.ToList();
                 var hubPackages = await _hubService.FindPackagesAsync(missingDepsList);
@@ -4809,11 +4831,10 @@ namespace VPM.Windows
                 if (hubPackages == null || hubPackages.Count == 0)
                 {
                     StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                    StatusText.Text = "Ready";
+                    StatusText.Text = LanguageManager.Instance.GetCodeString("StatusReady");
                     MessageBox.Show(
-                        $"Could not search Hub for {missingDeps.Count} missing dependencies.\n\n" +
-                        "Please check your internet connection and try again.",
-                        "Search Failed",
+                        string.Format(LanguageManager.Instance.GetCodeString("msg_180"), missingDeps.Count).Replace("\\n", "\n"),
+                        LanguageManager.Instance.GetCodeString("Search_Failed"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
@@ -4848,7 +4869,7 @@ namespace VPM.Windows
                             FileSize = hubPackage.FileSize,
                             DownloadUrl = downloadUrl,
                             LatestUrl = hubPackage.LatestUrl,
-                            Status = "Missing Dependency",
+                            Status = LanguageManager.Instance.GetCodeString("msg_181"),
                             StatusColor = new SolidColorBrush(Colors.Red),
                             CanDownload = !string.IsNullOrEmpty(downloadUrl),
                             ButtonText = "⬇",
@@ -4866,12 +4887,12 @@ namespace VPM.Windows
                 
                 // Update UI
                 SetMissingDepsExportList(missingDepsList);
-                DetailTitle.Text = $"🔗 Missing Dependencies ({foundCount} available, {notFoundCount} not found)";
+                DetailTitle.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_182"), foundCount, notFoundCount);
                 DetailOpenInBrowserButton.Visibility = Visibility.Collapsed;
                 DetailOpenInBrowserButton.Tag = null;
                 DetailCopyHubLinkButton.Visibility = Visibility.Collapsed;
                 DetailCopyHubLinkButton.Tag = null;
-                DetailCreator.Text = $"Found {foundCount} of {missingDeps.Count} missing dependencies on Hub";
+                DetailCreator.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_183"), foundCount, missingDeps.Count);
                 SetMissingDepsActionsPanelVisible(true);
                 DetailCreator.Foreground = new SolidColorBrush(Colors.White);  // Normal text, not blue
                 DetailCreator.TextDecorations = null;  // Remove underline
@@ -4909,12 +4930,12 @@ namespace VPM.Windows
                 
                 // Hide loading spinner
                 StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                StatusText.Text = $"Found {foundCount} missing dependencies available for download";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_184"), foundCount);
             }
             catch (Exception ex)
             {
                 StatusLoadingSpinner.Visibility = Visibility.Collapsed;
-                StatusText.Text = $"Error: {ex.Message}";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("err_1"), ex.Message);
             }
         }
         
@@ -4925,7 +4946,7 @@ namespace VPM.Windows
         private void UpdateMissingDepsPanelAfterDownload(string packageName)
         {
             // Check if we're currently viewing the missing dependencies panel
-            if (DetailTitle.Text == null || !DetailTitle.Text.StartsWith("🔗 Missing Dependencies"))
+            if (DetailTitle.Text == null || !DetailTitle.Text.StartsWith(LanguageManager.Instance.GetCodeString("msg_185")))
                 return;
             
             // Count remaining missing dependencies (files that are not yet downloaded)
@@ -4947,13 +4968,13 @@ namespace VPM.Windows
             // Update the title to reflect the new state
             if (remainingCount == 0 && downloadedCount > 0)
             {
-                DetailTitle.Text = $"🔗 Missing Dependencies (All {downloadedCount} downloaded!)";
-                DetailCreator.Text = "All missing dependencies have been downloaded";
+                DetailTitle.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_186"), downloadedCount);
+                DetailCreator.Text = LanguageManager.Instance.GetCodeString("msg_187");
             }
             else
             {
-                DetailTitle.Text = $"🔗 Missing Dependencies ({remainingCount} remaining, {downloadedCount} downloaded)";
-                DetailCreator.Text = $"{downloadedCount} downloaded, {remainingCount} still available for download";
+                DetailTitle.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_188"), remainingCount, downloadedCount);
+                DetailCreator.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_189"), downloadedCount, remainingCount);
             }
             
             // Keep text styling consistent (white, not blue, not clickable)
@@ -4990,7 +5011,7 @@ namespace VPM.Windows
         {
             if (_missingDepsExportList.Count == 0)
             {
-                StatusText.Text = "No missing dependencies to save";
+                StatusText.Text = LanguageManager.Instance.GetCodeString("msg_190");
                 return;
             }
 
@@ -4998,7 +5019,7 @@ namespace VPM.Windows
             {
                 var dialog = new SaveFileDialog
                 {
-                    Title = "Save Missing Dependencies List",
+                    Title = LanguageManager.Instance.GetCodeString("msg_191"),
                     FileName = $"missing_dependencies_{DateTime.Now:yyyy-MM-dd}.txt",
                     Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
                     DefaultExt = ".txt"
@@ -5008,12 +5029,12 @@ namespace VPM.Windows
                     return;
 
                 File.WriteAllText(dialog.FileName, GetMissingDepsExportText());
-                StatusText.Text = $"Saved {_missingDepsExportList.Count} missing dependencies to file";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_192"), _missingDepsExportList.Count);
             }
             catch (Exception ex)
             {
-                StatusText.Text = $"Failed to save list: {ex.Message}";
-                MessageBox.Show($"Failed to save list:\n\n{ex.Message}", "Save Failed",
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_193"), ex.Message);
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_194"), ex.Message).Replace("\\n", "\n"), LanguageManager.Instance.GetCodeString("msg_195"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -5022,14 +5043,14 @@ namespace VPM.Windows
         {
             if (_missingDepsExportList.Count == 0)
             {
-                StatusText.Text = "No missing dependencies to copy";
+                StatusText.Text = LanguageManager.Instance.GetCodeString("msg_196");
                 return;
             }
 
             try
             {
                 Clipboard.SetText(GetMissingDepsExportText());
-                StatusText.Text = $"Copied {_missingDepsExportList.Count} missing dependencies to clipboard";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_197"), _missingDepsExportList.Count);
 
                 if (MissingDepsCopyListButton != null)
                 {
@@ -5037,7 +5058,7 @@ namespace VPM.Windows
                     var oldBg = MissingDepsCopyListButton.Background;
                     var oldBorder = MissingDepsCopyListButton.BorderBrush;
 
-                    MissingDepsCopyListButton.Content = " ✓ Copied! ";
+                    MissingDepsCopyListButton.Content = LanguageManager.Instance.GetCodeString("msg_198");
                     MissingDepsCopyListButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF2E7D32"));
                     MissingDepsCopyListButton.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF4CAF50"));
                     MissingDepsCopyListButton.IsEnabled = false;
@@ -5052,8 +5073,8 @@ namespace VPM.Windows
             }
             catch (Exception ex)
             {
-                StatusText.Text = $"Failed to copy list: {ex.Message}";
-                MessageBox.Show($"Failed to copy list:\n\n{ex.Message}", "Copy Failed",
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_199"), ex.Message);
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_200"), ex.Message).Replace("\\n", "\n"), LanguageManager.Instance.GetCodeString("msg_201"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

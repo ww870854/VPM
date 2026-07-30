@@ -6,8 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using VPM.Language;
 using VPM.Models;
 using VPM.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VPM.Windows
 {
@@ -36,19 +38,73 @@ namespace VPM.Windows
         private DateTime _lastCompletedSearchUtc = DateTime.MinValue;
 
         public ObservableCollection<HubResource> Results { get; } = new ObservableCollection<HubResource>();
-
-        public ObservableCollection<string> ScopeOptions { get; } = new ObservableCollection<string>
+        public class I18nFilterOption
         {
-            "Hub And Dependencies",
-            "Hub Only",
-            "All"
+            public string InternalKey { get; set; }
+            public string DisplayText => LanguageManager.Instance[$"{InternalKey}"];
+            public override string ToString() => DisplayText;
+        }
+        public ObservableCollection<I18nFilterOption> ScopeOptions { get; } = new ObservableCollection<I18nFilterOption>
+        {
+            new I18nFilterOption{ InternalKey = "Hub And Dependencies" },
+            new I18nFilterOption{ InternalKey = "Hub Only" },
+            new I18nFilterOption{ InternalKey = "All" }
         };
-
-        public ObservableCollection<string> PayTypeOptions { get; } = new ObservableCollection<string>
+        public ObservableCollection<I18nFilterOption> PayTypeOptions { get; } = new ObservableCollection<I18nFilterOption>
         {
-            "All",
-            "Free",
-            "Paid"
+            new I18nFilterOption{ InternalKey = "All" },
+            new I18nFilterOption{ InternalKey = "Free" },
+            new I18nFilterOption{ InternalKey = "Paid" }
+        };
+        public ObservableCollection<I18nFilterOption> CategoryOptions { get; } = new ObservableCollection<I18nFilterOption>
+        {
+            new I18nFilterOption{ InternalKey = "All" },
+            new I18nFilterOption{ InternalKey = "Assets + Accessories" },
+            new I18nFilterOption{ InternalKey = "Audio" },
+            new I18nFilterOption{ InternalKey = "Blend Shapes" },
+            new I18nFilterOption{ InternalKey = "Clothing" },
+            new I18nFilterOption{ InternalKey = "Comics + Storytelling" },
+            new I18nFilterOption{ InternalKey = "Demo + Lite" },
+            new I18nFilterOption{ InternalKey = "Environments" },
+            new I18nFilterOption{ InternalKey = "Guides" },
+            new I18nFilterOption{ InternalKey = "Hairstyles" },
+            new I18nFilterOption{ InternalKey = "Lighting + HDRI" },
+            new I18nFilterOption{ InternalKey = "Looks" },
+            new I18nFilterOption{ InternalKey = "Mocap + Animation" },
+            new I18nFilterOption{ InternalKey = "Morphs" },
+            new I18nFilterOption{ InternalKey = "Other" },
+            new I18nFilterOption{ InternalKey = "Plugins + Scripts" },
+            new I18nFilterOption{ InternalKey = "Poses" },
+            new I18nFilterOption{ InternalKey = "Scenes" },
+            new I18nFilterOption{ InternalKey = "Skins" },
+            new I18nFilterOption{ InternalKey = "Textures" },
+            new I18nFilterOption{ InternalKey = "Toolkits + Templates" },
+            new I18nFilterOption{ InternalKey = "Voxta Content" }
+        };
+        public ObservableCollection<I18nFilterOption> SortsOptions { get; } = new ObservableCollection<I18nFilterOption>
+        {
+            new I18nFilterOption{ InternalKey = "Latest Update" },
+            new I18nFilterOption{ InternalKey = "Hot Picks" },
+            new I18nFilterOption{ InternalKey = "Rating" },
+            new I18nFilterOption{ InternalKey = "Reaction Score" },
+            new I18nFilterOption{ InternalKey = "Trending Downloads" },
+            new I18nFilterOption{ InternalKey = "Trending Positives" },
+            new I18nFilterOption{ InternalKey = "Downloads" },
+            new I18nFilterOption{ InternalKey = "Most Reviewed" },
+            new I18nFilterOption{ InternalKey = "A-Z" }
+        };
+        public ObservableCollection<I18nFilterOption> Sort2Options { get; } = new ObservableCollection<I18nFilterOption>
+        {
+            new I18nFilterOption{ InternalKey = "None" },
+            new I18nFilterOption{ InternalKey = "Latest Update" },
+            new I18nFilterOption{ InternalKey = "Hot Picks" },
+            new I18nFilterOption{ InternalKey = "Rating" },
+            new I18nFilterOption{ InternalKey = "Reaction Score" },
+            new I18nFilterOption{ InternalKey = "Trending Downloads" },
+            new I18nFilterOption{ InternalKey = "Trending Positives" },
+            new I18nFilterOption{ InternalKey = "Downloads" },
+            new I18nFilterOption{ InternalKey = "Most Reviewed" },
+            new I18nFilterOption{ InternalKey = "A-Z" }
         };
         public ObservableCollection<string> Categories { get; } = new ObservableCollection<string>();
         public ObservableCollection<string> SortOptions { get; } = new ObservableCollection<string>();
@@ -62,7 +118,7 @@ namespace VPM.Windows
             set => SetProperty(ref _selectedResource, value);
         }
 
-        private string _statusText = "Ready";
+        private string _statusText = LanguageManager.Instance.GetCodeString("StatusReady");
         public string StatusText
         {
             get => _statusText;
@@ -235,7 +291,7 @@ namespace VPM.Windows
         }
 
         public string PageDisplay => $"{CurrentPage} / {TotalPages}";
-        public string TotalCountText => $"Total: {TotalResources}";
+        public string TotalCountText => string.Format(LanguageManager.Instance.GetCodeString("msg_138"), TotalResources);
 
         // Filters / query
         private string _searchText;
@@ -473,7 +529,7 @@ namespace VPM.Windows
                     
                     // Show as "Updating..." instead of "Loading..."
                     IsLoading = false; 
-                    StatusText = "Updating...";
+                    StatusText = LanguageManager.Instance.GetCodeString("msg_162");
                 }
 
                 await filterTask;
@@ -531,12 +587,12 @@ namespace VPM.Windows
         {
             try
             {
-                StatusText = "Loading filter options...";
+                StatusText = LanguageManager.Instance.GetCodeString("msg_213");
                 var result = await _hubService.GetFilterOptionsResultAsync();
 
                 if (!result.Success)
                 {
-                    StatusText = result.ErrorMessage ?? "Failed to load filter options.";
+                    StatusText = result.ErrorMessage ?? LanguageManager.Instance.GetCodeString("msg_214");
                 }
 
                 var options = result.Success ? result.Value : await _hubService.GetFilterOptionsAsync();
@@ -566,21 +622,28 @@ namespace VPM.Windows
                     SortSecondaryOptions.Add(s);
 
                 if (result.Success)
-                    StatusText = "Ready";
+                    StatusText = LanguageManager.Instance.GetCodeString("StatusReady");
             }
             catch (Exception ex)
             {
-                StatusText = $"Error loading filter options: {ex.Message}";
+                StatusText = string.Format(LanguageManager.Instance.GetCodeString("msg_210"), ex.Message);
             }
         }
 
         private void LoadCreatorListFromPackages()
         {
             var creators = _hubService.GetAllCreators();
-            Creators.Clear();
-            Creators.Add("All");
-            foreach (var c in creators)
-                Creators.Add(c);
+            App.Current.Dispatcher.InvokeAsync(() =>
+            {
+                Creators.Clear();
+                Creators.Add("All");
+                foreach (var c in creators)
+                    Creators.Add(c);
+
+                var tempSelected = Creator;
+                Creator = null;
+                Creator = tempSelected;
+            });
         }
 
         private HubSearchParams BuildSearchParams()
@@ -626,7 +689,7 @@ namespace VPM.Windows
                 var showOverlay = (explicitSearch && !suppressOverlay) || (!_hasLoadedResultsOnce && !suppressOverlay) || HasError;
                 
                 IsLoading = showOverlay;
-                StatusText = showOverlay ? "Loading..." : "Updating...";
+                StatusText = showOverlay ? LanguageManager.Instance.GetCodeString("text_7") : LanguageManager.Instance.GetCodeString("msg_162");
 
                 var searchParams = BuildSearchParams();
 
@@ -673,14 +736,14 @@ namespace VPM.Windows
                     
                     if (!IsLoading)
                     {
-                        StatusText = "Up to date";
+                        StatusText = LanguageManager.Instance.GetCodeString("text_17");
                     }
                 }
                 else
                 {
                     var error = response?.Error ?? "Unknown error";
                     ErrorText = error;
-                    StatusText = $"Error: {error}";
+                    StatusText = string.Format(LanguageManager.Instance.GetCodeString("err_1"), error);
                 }
             }
             catch (OperationCanceledException)
@@ -690,7 +753,7 @@ namespace VPM.Windows
             catch (Exception ex)
             {
                 ErrorText = ex.Message;
-                StatusText = $"Error: {ex.Message}";
+                StatusText = string.Format(LanguageManager.Instance.GetCodeString("err_1"), ex.Message);
             }
             finally
             {

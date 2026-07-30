@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using VPM.Language;
 
 namespace VPM.Models
 {
@@ -49,8 +50,8 @@ namespace VPM.Models
         {
             get
             {
-                if (IsPayTypeFree) return "🎁 Free";
-                if (IsPayTypePaid) return "💰 Paid";
+                if (IsPayTypeFree) return LanguageManager.Instance.GetCodeString("text_145");
+                if (IsPayTypePaid) return LanguageManager.Instance.GetCodeString("text_146");
                 return PayTypeNormalized ?? "";
             }
         }
@@ -155,13 +156,13 @@ namespace VPM.Models
                 var elapsed = DateTime.Now - LastUpdate;
                 
                 if (elapsed.TotalMinutes < 60)
-                    return $"{(int)elapsed.TotalMinutes}m ago";
+                    return string.Format(LanguageManager.Instance.GetCodeString("text_159"), (int)elapsed.TotalMinutes);
                 if (elapsed.TotalHours < 24)
-                    return $"{(int)elapsed.TotalHours}h ago";
+                    return string.Format(LanguageManager.Instance.GetCodeString("text_160"), (int)elapsed.TotalHours);
                 if (elapsed.TotalDays < 7)
-                    return $"{(int)elapsed.TotalDays}d ago";
+                    return string.Format(LanguageManager.Instance.GetCodeString("text_161"), (int)elapsed.TotalDays);
                 if (elapsed.TotalDays < 30)
-                    return $"{(int)(elapsed.TotalDays / 7)}w ago";
+                    return string.Format(LanguageManager.Instance.GetCodeString("text_162"), (int)elapsed.TotalDays / 7);
                 if (elapsed.TotalDays < 365)
                     return LastUpdate.ToString("MMM d");
                 return LastUpdate.ToString("MMM d, yyyy");
@@ -261,7 +262,7 @@ namespace VPM.Models
         /// <summary>
         /// Dependency count display (e.g., "3 deps") — used before install status is resolved.
         /// </summary>
-        public string DependencyDisplay => DependencyCount > 0 ? $"{DependencyCount} dep{(DependencyCount > 1 ? "s" : "")}" : "";
+        public string DependencyDisplay => DependencyCount > 0 ? string.Format( LanguageManager.Instance.GetCodeString( DependencyCount > 1 ? "dependency_count_plural" : "dependency_count_single" ), DependencyCount ): "";
 
         private int _installedDependencyCount;
         public int InstalledDependencyCount

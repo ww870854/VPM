@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,8 +10,6 @@ using System.Windows.Media;
 using VPM.Language;
 using VPM.Models;
 using VPM.Services;
-using static System.Net.Mime.MediaTypeNames;
-using static VPM.Models.PackageItem;
 
 namespace VPM
 {

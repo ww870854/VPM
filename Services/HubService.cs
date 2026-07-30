@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using VPM.Models;
+using VPM.Language;
 
 namespace VPM.Services
 {
@@ -1141,7 +1142,7 @@ namespace VPM.Services
                 // Try to load from disk cache first (if not already initialized)
                 if (!_cacheInitialized)
                 {
-                    StatusChanged?.Invoke(this, "Loading Hub packages from cache...");
+                    StatusChanged?.Invoke(this, LanguageManager.Instance.GetCodeString("msg_202"));
                     
                     if (await _hubResourcesCache.LoadFromDiskAsync())
                     {
@@ -1149,7 +1150,7 @@ namespace VPM.Services
                         _cacheInitialized = true;
                         
                         sw.Stop();
-                        StatusChanged?.Invoke(this, $"Loaded {_hubResourcesCache.PackageCount} packages from cache ({sw.ElapsedMilliseconds}ms)");
+                        StatusChanged?.Invoke(this, string.Format(LanguageManager.Instance.GetCodeString("msg_203"), _hubResourcesCache.PackageCount, sw.ElapsedMilliseconds));
                         
                         // Check if cache needs refresh in background (non-blocking)
                         if (_hubResourcesCache.NeedsRefresh() || forceRefresh)
@@ -1164,7 +1165,7 @@ namespace VPM.Services
                 }
                 
                 // Fetch from Hub (with conditional request if we have cached data)
-                StatusChanged?.Invoke(this, "Fetching Hub packages index...");
+                StatusChanged?.Invoke(this, LanguageManager.Instance.GetCodeString("msg_204"));
                 
                 var success = await _hubResourcesCache.FetchFromHubAsync(PackagesJsonUrl, cancellationToken);
                 
@@ -1172,8 +1173,8 @@ namespace VPM.Services
                 {
                     sw.Stop();
                     var stats = _hubResourcesCache.GetStatistics();
-                    var cacheInfo = stats.ConditionalHits > 0 ? $" (cached, {stats.ConditionalHitRate:F0}% conditional hits)" : "";
-                    StatusChanged?.Invoke(this, $"Loaded {_hubResourcesCache.PackageCount} packages from Hub index{cacheInfo} ({sw.ElapsedMilliseconds}ms)");
+                    var cacheInfo = stats.ConditionalHits > 0 ? string.Format(LanguageManager.Instance.GetCodeString("msg_205"), stats.ConditionalHitRate) : "";
+                    StatusChanged?.Invoke(this, string.Format(LanguageManager.Instance.GetCodeString("msg_206"), _hubResourcesCache.PackageCount, cacheInfo, sw.ElapsedMilliseconds));
                     
                     return true;
                 }
@@ -1182,17 +1183,17 @@ namespace VPM.Services
                     // Fetch failed, but we might have stale cache data
                     if (_hubResourcesCache.PackageCount > 0)
                     {
-                        StatusChanged?.Invoke(this, $"Using cached Hub index ({_hubResourcesCache.PackageCount} packages) - network unavailable");
+                        StatusChanged?.Invoke(this, string.Format(LanguageManager.Instance.GetCodeString("msg_207"), _hubResourcesCache.PackageCount));
                         return true;
                     }
                     
-                    StatusChanged?.Invoke(this, "Failed to load Hub packages index");
+                    StatusChanged?.Invoke(this, LanguageManager.Instance.GetCodeString("msg_208"));
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                StatusChanged?.Invoke(this, $"Failed to load Hub packages index: {ex.Message}");
+                StatusChanged?.Invoke(this, string.Format(LanguageManager.Instance.GetCodeString("msg_209"), ex.Message));
                 
                 // Return true if we have any cached data
                 return _hubResourcesCache.PackageCount > 0;

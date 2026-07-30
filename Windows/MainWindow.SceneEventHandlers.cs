@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using VPM.Models;
-using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {
@@ -661,7 +660,7 @@ namespace VPM
                     if (items.Length > 0)
                     {
                         Clipboard.SetText(items.ToString().TrimEnd());
-                        SetStatus($"Copied {dataGrid.SelectedItems.Count} item(s) to clipboard");
+                        SetStatus(LanguageManager.Instance.GetCodeString("msg_244", dataGrid.SelectedItems.Count));
                     }
                 }
                 catch { }

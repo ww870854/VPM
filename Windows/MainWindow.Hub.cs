@@ -55,7 +55,7 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to open Hub Browser:\n\n{ex.Message}", "Error",
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_215"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -67,7 +67,7 @@ namespace VPM
         {
             try
             {
-                SetStatus("Checking Hub for updates...");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_216"));
                 
                 using var hubService = new Services.HubService();
                 
@@ -75,7 +75,7 @@ namespace VPM
                 var loaded = await hubService.LoadPackagesJsonAsync();
                 if (!loaded)
                 {
-                    SetStatus("Failed to load Hub package index");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_217"));
                     return;
                 }
                 
@@ -96,22 +96,21 @@ namespace VPM
                 
                 if (updatesFound > 0)
                 {
-                    SetStatus($"Found {updatesFound} package(s) with updates available");
-                    MessageBox.Show($"Found {updatesFound} package(s) with updates available on Hub.\n\n" +
-                        "Use Hub > Browse Hub to download updates.", "Updates Available",
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_218"), updatesFound));
+                    MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_219").Replace("\\n", "\n"), updatesFound), LanguageManager.Instance.GetCodeString("msg_220"),
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    SetStatus("All packages are up to date");
-                    MessageBox.Show("All packages are up to date!", "No Updates",
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_221"));
+                    MessageBox.Show(LanguageManager.Instance.GetCodeString("msg_230"), LanguageManager.Instance.GetCodeString("No_Updates"),
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                SetStatus($"Error checking updates: {ex.Message}");
-                MessageBox.Show($"Failed to check for updates:\n\n{ex.Message}", "Error",
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_231"), ex.Message));
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_232"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -125,20 +124,19 @@ namespace VPM
             {
                 // Get missing dependencies from the current view
                 var missingDeps = Dependencies?
-                    .Where(d => d.Status == "Missing" || d.Status == "Not Found")
+                    .Where(d => d.Status == LanguageManager.Instance.GetCodeString("Missing") || d.Status == LanguageManager.Instance.GetCodeString("Not Found"))
                     .Select(d => d.DisplayName)
                     .Distinct()
                     .ToList();
                 
                 if (missingDeps == null || !missingDeps.Any())
                 {
-                    MessageBox.Show("No missing dependencies found.\n\n" +
-                        "Select a package first to see its dependencies.", "No Missing Dependencies",
+                    MessageBox.Show(LanguageManager.Instance.GetCodeString("msg_233").Replace("\\n","\n"), LanguageManager.Instance.GetCodeString("title_8"),
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 
-                SetStatus($"Searching Hub for {missingDeps.Count} missing dependencies...");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_179"), missingDeps.Count));
                 
                 using var hubService = new Services.HubService();
                 
@@ -150,14 +148,14 @@ namespace VPM
                 
                 if (downloadable.Any())
                 {
-                    var message = $"Found {downloadable.Count} of {missingDeps.Count} missing dependencies on Hub.";
+                    var message = string.Format(LanguageManager.Instance.GetCodeString("msg_234"), downloadable.Count, missingDeps.Count);
                     if (notFound > 0)
                     {
-                        message += $"\n\n{notFound} package(s) are not available on Hub.";
+                        message += string.Format(LanguageManager.Instance.GetCodeString("msg_235"), notFound).Replace("\\n","\n");
                     }
-                    message += "\n\nWould you like to open the Hub Browser to download them?";
+                    message += LanguageManager.Instance.GetCodeString("msg_236");
                     
-                    var result = MessageBox.Show(message, "Missing Dependencies Found",
+                    var result = MessageBox.Show(message, LanguageManager.Instance.GetCodeString("msg_237"),
                         MessageBoxButton.YesNo, MessageBoxImage.Question);
                     
                     if (result == MessageBoxResult.Yes)
@@ -167,17 +165,16 @@ namespace VPM
                 }
                 else
                 {
-                    MessageBox.Show($"None of the {missingDeps.Count} missing dependencies were found on Hub.\n\n" +
-                        "They may be from external sources or no longer available.", "Not Found on Hub",
+                    MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_238"), missingDeps.Count).Replace("\\n","\n"), LanguageManager.Instance.GetCodeString("msg_239"),
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 
-                SetStatus("Ready");
+                SetStatus(LanguageManager.Instance.GetCodeString("StatusReady"));
             }
             catch (Exception ex)
             {
-                SetStatus($"Error finding dependencies: {ex.Message}");
-                MessageBox.Show($"Failed to find missing dependencies:\n\n{ex.Message}", "Error",
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_240"), ex.Message));
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_241"), ex.Message), LanguageManager.Instance.GetCodeString("Error"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -219,13 +216,13 @@ namespace VPM
             // Trigger a refresh to pick up newly downloaded packages
             try
             {
-                SetStatus("Refreshing packages after Hub download...");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_242"));
                 RefreshPackages();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[MainWindow.Hub] Error refreshing after Hub download: {ex.Message}");
-                SetStatus("Ready - refresh to see new packages");
+                SetStatus(LanguageManager.Instance.GetCodeString("msg_243"));
             }
         }
 

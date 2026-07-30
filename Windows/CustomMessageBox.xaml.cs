@@ -1,7 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using VPM.Services;
+using System.Windows.Input;
 using VPM.Language;
+using VPM.Services;
 
 namespace VPM
 {
@@ -29,7 +30,7 @@ namespace VPM
             {
                 Title = title
             };
-
+            dialog.TitleText.Text = title;
             dialog.MessageTextBlock.Text = message;
             dialog.SetIcon(icon);
             dialog.SetButtons(buttons);
@@ -105,6 +106,18 @@ namespace VPM
             };
 
             ButtonPanel.Children.Add(button);
+        }
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            Result = MessageBoxResult.Cancel;
+            Close();
         }
     }
 }

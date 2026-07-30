@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -8,9 +7,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.ComponentModel;
-using System.Windows.Media.Imaging;
 using VPM.Models;
 using VPM.Services;
+using VPM.Language;
 
 namespace VPM.Windows
 {
@@ -52,8 +51,8 @@ namespace VPM.Windows
             var category = _resource.Category ?? "Free";
             CategoryText.Text = category switch
             {
-                "Free" => "🎁 Free",
-                "Paid" => "💰 Paid",
+                "Free" => LanguageManager.Instance.GetCodeString("text_145"),
+                "Paid" => LanguageManager.Instance.GetCodeString("text_146"),
                 _ => category
             };
             DownloadCountRun.Text = _resource.DownloadCount.ToString("N0");
@@ -169,8 +168,8 @@ namespace VPM.Windows
             var downloadableCount = _files?.Count(f => f.CanDownload) ?? 0;
             DownloadAllButton.IsEnabled = downloadableCount > 0;
             DownloadAllButton.Content = downloadableCount > 0 
-                ? $"⬇ Download All ({downloadableCount})" 
-                : "⬇ Download All";
+                ? string.Format(LanguageManager.Instance.GetCodeString("msg_154"), downloadableCount) 
+                : LanguageManager.Instance.GetCodeString("text_122");
         }
 
         private async void DownloadFile_Click(object sender, RoutedEventArgs e)
@@ -199,12 +198,12 @@ namespace VPM.Windows
             try
             {
                 file.IsDownloading = true;
-                StatusText.Text = $"Downloading {file.Filename}...";
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("text_156"), file.Filename);
 
                 var progress = new Progress<HubDownloadProgress>(p =>
                 {
                     file.Progress = p.Progress;
-                    StatusText.Text = $"Downloading {file.Filename}: {p.Progress:P0}";
+                    StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("text_157"), file.Filename, p.Progress);
                 });
 
                 var downloadedPath = await _hubService.DownloadPackageAsync(
@@ -218,12 +217,12 @@ namespace VPM.Windows
                     file.AlreadyHave = true;
                     file.CanDownload = false;
                     file.IsDownloading = false;
-                    StatusText.Text = $"Downloaded {file.Filename}";
+                    StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("text_158"), file.Filename);
                 }
                 else
                 {
                     file.IsDownloading = false;
-                    StatusText.Text = $"Failed to download {file.Filename}";
+                    StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("msg_211"), file.Filename);
                 }
 
                 // Refresh the list
@@ -233,8 +232,8 @@ namespace VPM.Windows
             catch (Exception ex)
             {
                 file.IsDownloading = false;
-                StatusText.Text = $"Error: {ex.Message}";
-                MessageBox.Show($"Failed to download {file.Filename}:\n\n{ex.Message}", "Download Error",
+                StatusText.Text = string.Format(LanguageManager.Instance.GetCodeString("err_1"), ex.Message);
+                MessageBox.Show(string.Format(LanguageManager.Instance.GetCodeString("msg_212"), file.Filename, ex.Message), LanguageManager.Instance.GetCodeString("title_9"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

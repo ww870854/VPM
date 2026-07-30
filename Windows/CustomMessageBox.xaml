@@ -4,13 +4,15 @@
         Title="Message"
         Height="Auto"
         Width="450"
+        WindowStyle="None"
+        AllowsTransparency="True"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         SizeToContent="Height"
         Topmost="True"
-        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-    
+        Background="Transparent">
+
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Padding" Value="20,8"/>
@@ -45,35 +47,101 @@
             </Setter>
         </Style>
     </Window.Resources>
-    
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Message Content -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-            <!-- Icon -->
-            <TextBlock x:Name="IconTextBlock" 
+    <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Normal">
+                        <Setter Property="Margin" Value="8" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="Margin" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Border BorderBrush="#3E3E3E" BorderThickness="1" CornerRadius="5">
+            <Border.Effect>
+                <DropShadowEffect 
+                ShadowDepth="0" 
+                BlurRadius="5" 
+                Opacity="0.6" 
+                Color="#FF2C2C2C" />
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="24 "/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title Bar -->
+                <Grid Grid.Row="0" Background="#1F1F1F" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="TitleText" Grid.Column="0" Text="Message" 
+                           Foreground="#E0E0E0" FontWeight="SemiBold" FontSize="14"
+                           VerticalAlignment="Center" Margin="15,0"/>
+
+                    <Button x:Name="CloseButton" Grid.Column="1" Content="✗" 
+                        Background="Transparent" Foreground="#E0E0E0" 
+                        BorderThickness="0" FontSize="16" FontWeight="Bold"
+                        Click="Close_Click" Width="30" Height="24"
+                        VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E81123"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+                <Grid Margin="20" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Message Content -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                        <!-- Icon -->
+                        <TextBlock x:Name="IconTextBlock" 
                        FontSize="32" 
                        Margin="0,0,15,0"
                        VerticalAlignment="Top"/>
-            
-            <!-- Message Text -->
-            <TextBlock x:Name="MessageTextBlock" 
+
+                        <!-- Message Text -->
+                        <TextBlock x:Name="MessageTextBlock" 
                        TextWrapping="Wrap"
                        VerticalAlignment="Center"
                        MaxWidth="350"
                        Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-        </StackPanel>
-        
-        <!-- Buttons -->
-        <StackPanel Grid.Row="1" 
+                    </StackPanel>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="1" 
                     x:Name="ButtonPanel"
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center">
-        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
 

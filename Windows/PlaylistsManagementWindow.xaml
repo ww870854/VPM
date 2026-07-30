@@ -8,7 +8,7 @@
     Title="{Binding [title_17], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
     Width="1000"
     Height="700"
-    Background="{DynamicResource WindowBackgroundBrush}"
+    Background="Transparent"
     Foreground="{DynamicResource TextBrush}"
     ResizeMode="CanResizeWithGrip"
     WindowStyle="None"
@@ -18,21 +18,65 @@
         <SolidColorBrush x:Key="WindowTitleBrush" Color="#202020" />
     </Window.Resources>
     <shell:WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="0" ResizeBorderThickness="0" />
+        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="-1" ResizeBorderThickness="6" />
     </shell:WindowChrome.WindowChrome>
-    <Grid UseLayoutRounding="True" SnapsToDevicePixels="True">
-        <Border BorderBrush="#FF005494" BorderThickness="1" CornerRadius="5" Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Normal">
+                        <Setter Property="Margin" Value="8" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="Margin" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Border x:Name="WindowRootBorder" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" CornerRadius="5" BorderBrush="#FF676767" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="5" Opacity="0.6" Color="#FF2C2C2C" />
+            </Border.Effect>
             <DockPanel Margin="1" Background="{DynamicResource WindowBackgroundBrush}">
                 <Border
-            Height="32"
-            Padding="12,4,12,4"
-            Background="{DynamicResource ControlBackgroundBrush}"
-            DockPanel.Dock="Top">
-                    <TextBlock
-                VerticalAlignment="Center"
-                FontWeight="Bold"
-                Foreground="{DynamicResource TextBrush}"
-                Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
+                    Height="32"
+                    Padding="12,4,12,4"
+                    Background="{DynamicResource ControlBackgroundBrush}"
+                    DockPanel.Dock="Top">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="✗" HorizontalAlignment="Right" VerticalAlignment="Center" Width="32" Height="24" Background="Transparent" BorderThickness="0" Foreground="#999999" FontSize="14" Cursor="Hand" Click="Close_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border 
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="0,8,0,0">
+                                                    <ContentPresenter 
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#E0E0E0"/>
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                            <WindowChrome.IsHitTestVisibleInChrome>True</WindowChrome.IsHitTestVisibleInChrome>
+                        </Button>
+                        <Grid Background="Transparent" />
+                        <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource TextBrush}"
+                        Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}" />
+                    </DockPanel>
                 </Border>
 
                 <Grid>
@@ -44,10 +88,10 @@
 
                         <!--  Sidebar  -->
                         <Border
-                    Grid.Column="0"
-                    Background="{DynamicResource ControlBackgroundBrush}"
-                    BorderBrush="{DynamicResource ControlBorderBrush}"
-                    BorderThickness="0,0,1,0">
+                            Grid.Column="0"
+                            Background="{DynamicResource ControlBackgroundBrush}"
+                            BorderBrush="{DynamicResource ControlBorderBrush}"
+                            BorderThickness="0,0,1,0">
                             <Grid Margin="12">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -58,50 +102,50 @@
 
                                 <!--  Header  -->
                                 <DockPanel
-                        Grid.Row="0"
-                        Margin="0,0,0,12"
-                        LastChildFill="False">
+                                    Grid.Row="0"
+                                    Margin="0,0,0,12"
+                                    LastChildFill="False">
                                     <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Text="{Binding [text_24], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                        VerticalAlignment="Center"
+                                        FontSize="18"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding [text_24], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                     <Button
-                            x:Name="NewPlaylistBtn"
-                            Height="32"
-                            Width="70"
-                            Padding="10,5"
-                            Click="NewPlaylist_Click"
-                            Content="{Binding [text_25], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                            DockPanel.Dock="Right"
-                            FontSize="14" />
+                                        x:Name="NewPlaylistBtn"
+                                        Height="32"
+                                        Width="70"
+                                        Padding="10,5"
+                                        Click="NewPlaylist_Click"
+                                        Content="{Binding [text_25], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                        DockPanel.Dock="Right"
+                                        FontSize="14" />
                                 </DockPanel>
 
                                 <!--  Search  -->
                                 <TextBox
-                        x:Name="PlaylistSearchBox"
-                        Grid.Row="1"
-                        Height="32"
-                        Margin="0,0,0,12"
-                        VerticalContentAlignment="Center"
-                        FontSize="14"
-                        Tag="{Binding [text_26], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                        TextChanged="PlaylistSearchBox_TextChanged" />
+                                    x:Name="PlaylistSearchBox"
+                                    Grid.Row="1"
+                                    Height="32"
+                                    Margin="0,0,0,12"
+                                    VerticalContentAlignment="Center"
+                                    FontSize="14"
+                                    Tag="{Binding [text_26], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                    TextChanged="PlaylistSearchBox_TextChanged" />
 
                                 <!--  List  -->
                                 <ListBox
-                        x:Name="PlaylistsListBox"
-                        Grid.Row="2"
-                        AllowDrop="True"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                        PreviewMouseLeftButtonDown="PlaylistsListBox_PreviewMouseLeftButtonDown"
-                        MouseMove="PlaylistsListBox_MouseMove"
-                        DragOver="PlaylistsListBox_DragOver"
-                        DragLeave="PlaylistsListBox_DragLeave"
-                        Drop="PlaylistsListBox_Drop"
-                        SelectionChanged="PlaylistsListBox_SelectionChanged">
+                                    x:Name="PlaylistsListBox"
+                                    Grid.Row="2"
+                                    AllowDrop="True"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                    PreviewMouseLeftButtonDown="PlaylistsListBox_PreviewMouseLeftButtonDown"
+                                    MouseMove="PlaylistsListBox_MouseMove"
+                                    DragOver="PlaylistsListBox_DragOver"
+                                    DragLeave="PlaylistsListBox_DragLeave"
+                                    Drop="PlaylistsListBox_Drop"
+                                    SelectionChanged="PlaylistsListBox_SelectionChanged">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,6">
@@ -111,14 +155,14 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <Border
-                                        Margin="0,0,8,0"
-                                        Padding="4,1"
-                                        VerticalAlignment="Center"
-                                        Background="{DynamicResource ControlBorderBrush}"
-                                        CornerRadius="3">
+                                                    Margin="0,0,8,0"
+                                                    Padding="4,1"
+                                                    VerticalAlignment="Center"
+                                                    Background="{DynamicResource ControlBorderBrush}"
+                                                    CornerRadius="3">
                                                     <TextBlock
-                                            FontSize="11"
-                                            Foreground="{DynamicResource SecondaryTextBrush}">
+                                                        FontSize="11"
+                                                        Foreground="{DynamicResource SecondaryTextBrush}">
                                                         <TextBlock.Text>
                                                             <MultiBinding StringFormat="#{0}">
                                                                 <Binding Path="SortOrder" Converter="{StaticResource AddOneConverter}" />
@@ -127,37 +171,37 @@
                                                     </TextBlock>
                                                 </Border>
                                                 <TextBlock
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        FontWeight="Medium"
-                                        Text="{Binding Name}"
-                                        TextTrimming="CharacterEllipsis" />
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis" />
                                                 <Button
-                                        Grid.Column="2"
-                                        Width="28"
-                                        Height="24"
-                                        Padding="0"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Click="DeletePlaylistInline_Click"
-                                        Content="🗑️"
-                                        FontSize="12"
-                                        Foreground="{DynamicResource SecondaryTextBrush}"
-                                        ToolTip="{Binding [text_27], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                                    Grid.Column="2"
+                                                    Width="28"
+                                                    Height="24"
+                                                    Padding="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Click="DeletePlaylistInline_Click"
+                                                    Content="🗑️"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                                    ToolTip="{Binding [text_27], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                             </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
 
                                 <TextBlock
-                        Grid.Row="3"
-                        Margin="0,10,0,0"
-                        HorizontalAlignment="Center"
-                        FontSize="12"
-                        Foreground="{DynamicResource SecondaryTextBrush}"
-                        Opacity="0.7"
-                        Text="{Binding [text_28], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    Grid.Row="3"
+                                    Margin="0,10,0,0"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    Opacity="0.7"
+                                    Text="{Binding [text_28], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                             </Grid>
                         </Border>
 
@@ -179,77 +223,77 @@
 
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock
-                            Margin="0,0,0,4"
-                            FontSize="11"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Opacity="0.7"
-                            Text="{Binding [text_29], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                        Margin="0,0,0,4"
+                                        FontSize="11"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        Opacity="0.7"
+                                        Text="{Binding [text_29], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                     <TextBox
-                            x:Name="PlaylistNameTextBox"
-                            Padding="0,0,0,0"
-                            Background="Transparent"
-                            BorderThickness="1"
-                            CaretBrush="{DynamicResource TextBrush}"
-                            FontSize="22"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource TextBrush}"
-                            TextChanged="PlaylistName_Changed" />
+                                        x:Name="PlaylistNameTextBox"
+                                        Padding="0,0,0,0"
+                                        Background="Transparent"
+                                        BorderThickness="1"
+                                        CaretBrush="{DynamicResource TextBrush}"
+                                        FontSize="22"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource TextBrush}"
+                                        TextChanged="PlaylistName_Changed" />
                                 </StackPanel>
 
                                 <StackPanel
-                        Grid.Column="1"
-                        Margin="0,0,0,0"
-                        VerticalAlignment="Bottom"
-                        Orientation="Horizontal">
+                                    Grid.Column="1"
+                                    Margin="0,0,0,0"
+                                    VerticalAlignment="Bottom"
+                                    Orientation="Horizontal">
                                     <Button
-                            x:Name="ActivatePlaylistBtn"
-                            Width="90"
-                            Height="36"
-                            Margin="12,0,12,0"
-                            Padding="16,0"
-                            Background="{DynamicResource ButtonBackgroundBrush}"
-                            Click="ActivatePlaylist_Click"
-                            Content="{Binding [text_30], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                            FontSize="14"
-                            FontWeight="SemiBold" />
+                                        x:Name="ActivatePlaylistBtn"
+                                        Width="90"
+                                        Height="36"
+                                        Margin="12,0,12,0"
+                                        Padding="16,0"
+                                        Background="{DynamicResource ButtonBackgroundBrush}"
+                                        Click="ActivatePlaylist_Click"
+                                        Content="{Binding [text_30], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                        FontSize="14"
+                                        FontWeight="SemiBold" />
                                     <Button
-                            x:Name="SavePlaylistBtn"
-                            Width="80"
-                            Height="36"
-                            Padding="16,0"
-                            Click="SavePlaylist_Click"
-                            Content="{Binding [Save_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                            FontSize="14" />
+                                        x:Name="SavePlaylistBtn"
+                                        Width="80"
+                                        Height="36"
+                                        Padding="16,0"
+                                        Click="SavePlaylist_Click"
+                                        Content="{Binding [Save_Button], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                        FontSize="14" />
                                 </StackPanel>
                             </Grid>
 
                             <!--  Details  -->
                             <StackPanel Grid.Row="1" Margin="0,0,0,24">
                                 <TextBlock
-                        Margin="0,0,0,6"
-                        FontSize="11"
-                        FontWeight="Bold"
-                        Foreground="{DynamicResource SecondaryTextBrush}"
-                        Opacity="0.7"
-                        Text="{Binding [text_31], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    Margin="0,0,0,6"
+                                    FontSize="11"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    Opacity="0.7"
+                                    Text="{Binding [text_31], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 <TextBox
-                        x:Name="PlaylistDescriptionTextBox"
-                        Height="80"
-                        Padding="8"
-                        AcceptsReturn="True"
-                        FontSize="14"
-                        TextChanged="PlaylistDescription_Changed"
-                        TextWrapping="Wrap"
-                        VerticalScrollBarVisibility="Auto" />
+                                    x:Name="PlaylistDescriptionTextBox"
+                                    Height="80"
+                                    Padding="8"
+                                    AcceptsReturn="True"
+                                    FontSize="14"
+                                    TextChanged="PlaylistDescription_Changed"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
 
                                 <CheckBox
-                        x:Name="UnloadOthersCheckBox"
-                        Margin="0,12,0,0"
-                        Checked="UnloadOthers_Changed"
-                        Content="{Binding [text_32], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                        FontSize="14"
-                        Unchecked="UnloadOthers_Changed" />
+                                    x:Name="UnloadOthersCheckBox"
+                                    Margin="0,12,0,0"
+                                    Checked="UnloadOthers_Changed"
+                                    Content="{Binding [text_32], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                    FontSize="14"
+                                    Unchecked="UnloadOthers_Changed" />
                             </StackPanel>
 
                             <!--  Packages List  -->
@@ -262,19 +306,19 @@
 
                                 <DockPanel Margin="0,0,0,10" LastChildFill="False">
                                     <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Opacity="0.7"
-                            Text="{Binding [text_33], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                        VerticalAlignment="Center"
+                                        FontSize="11"
+                                        FontWeight="Bold"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        Opacity="0.7"
+                                        Text="{Binding [text_33], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                     <TextBlock
-                            x:Name="PackageCountTextBlock"
-                            Margin="10,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="12"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="{Binding [text_34], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                        x:Name="PackageCountTextBlock"
+                                        Margin="10,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        Text="{Binding [text_34], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 </DockPanel>
 
                                 <Grid Grid.Row="1" Margin="0,0,0,10">
@@ -283,32 +327,32 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBox
-                            x:Name="PlaylistPackagesSearchBox"
-                            Height="28"
-                            VerticalContentAlignment="Center"
-                            FontSize="13"
-                            Tag="{Binding [text_35], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                            TextChanged="PlaylistPackagesSearchBox_TextChanged" />
+                                        x:Name="PlaylistPackagesSearchBox"
+                                        Height="28"
+                                        VerticalContentAlignment="Center"
+                                        FontSize="13"
+                                        Tag="{Binding [text_35], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                        TextChanged="PlaylistPackagesSearchBox_TextChanged" />
                                     <Button
-                            x:Name="PlaylistPackagesSortToggleBtn"
-                            Grid.Column="1"
-                            Height="36"
-                            Width="50"
-                            Margin="10,0,0,0"
-                            Padding="10,0"
-                            Click="PlaylistPackagesSortToggle_Click"
-                            Content="A–Z"
-                            FontSize="13"
-                            ToolTip="{Binding [text_36], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                        x:Name="PlaylistPackagesSortToggleBtn"
+                                        Grid.Column="1"
+                                        Height="36"
+                                        Width="50"
+                                        Margin="10,0,0,0"
+                                        Padding="10,0"
+                                        Click="PlaylistPackagesSortToggle_Click"
+                                        Content="A–Z"
+                                        FontSize="13"
+                                        ToolTip="{Binding [text_36], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 </Grid>
 
                                 <ListBox
-                        x:Name="PlaylistPackagesListBox"
-                        Grid.Row="2"
-                        Background="{DynamicResource ControlBackgroundBrush}"
-                        BorderBrush="{DynamicResource ControlBorderBrush}"
-                        BorderThickness="1"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    x:Name="PlaylistPackagesListBox"
+                                    Grid.Row="2"
+                                    Background="{DynamicResource ControlBackgroundBrush}"
+                                    BorderBrush="{DynamicResource ControlBorderBrush}"
+                                    BorderThickness="1"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,4">
@@ -317,30 +361,30 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Text="{Binding Display}"
-                                        TextTrimming="CharacterEllipsis"
-                                        ToolTip="{Binding Key}" />
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    Text="{Binding Display}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip="{Binding Key}" />
                                                 <Button
-                                        Grid.Column="1"
-                                        Width="24"
-                                        Height="24"
-                                        Padding="0"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Click="RemovePackage_Click"
-                                        Content="✕"
-                                        Foreground="{DynamicResource SecondaryTextBrush}"
-                                        ToolTip="{Binding [text_37], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                                    Grid.Column="1"
+                                                    Width="24"
+                                                    Height="24"
+                                                    Padding="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Click="RemovePackage_Click"
+                                                    Content="✕"
+                                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                                    ToolTip="{Binding [text_37], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                             </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                     <ListBox.ContextMenu>
                                         <ContextMenu>
                                             <MenuItem
-                                    Click="CopySelectedPlaylistPackageKey_Click"
-                                    Header="{Binding [text_38], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                                Click="CopySelectedPlaylistPackageKey_Click"
+                                                Header="{Binding [text_38], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                 </ListBox>
@@ -348,57 +392,57 @@
 
                             <!--  Footer  -->
                             <StackPanel
-                    Grid.Row="3"
-                    Margin="0,24,0,0"
-                    HorizontalAlignment="Right"
-                    Orientation="Horizontal">
+                                Grid.Row="3"
+                                Margin="0,24,0,0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
                                 <Button
-                        Width="100"
-                        Height="32"
-                        Padding="0,0"
-                        Click="Close_Click"
-                        Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                        FontSize="14" />
+                                    Width="100"
+                                    Height="32"
+                                    Padding="0,0"
+                                    Click="Close_Click"
+                                    Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                                    FontSize="14" />
                             </StackPanel>
                         </Grid>
                     </Grid>
 
                     <Grid
-                x:Name="ActivationBusyOverlay"
-                Background="#80000000"
-                Visibility="Collapsed">
+                        x:Name="ActivationBusyOverlay"
+                        Background="#80000000"
+                        Visibility="Collapsed">
                         <Border
-                    Width="320"
-                    Padding="16"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource ControlBackgroundBrush}"
-                    BorderBrush="{DynamicResource ControlBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8">
+                            Width="320"
+                            Padding="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource ControlBackgroundBrush}"
+                            BorderBrush="{DynamicResource ControlBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
                             <StackPanel>
                                 <TextBlock
-                            Margin="0,0,0,12"
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource TextBrush}"
-                            Text="{Binding [text_39], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                                    Margin="0,0,0,12"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextBrush}"
+                                    Text="{Binding [text_39], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
                                 <TextBlock
-                            x:Name="ActivationBusyStatusText"
-                            Margin="0,0,0,6"
-                            FontSize="12"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="{Binding [text_40], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}" />
+                                    x:Name="ActivationBusyStatusText"
+                                    Margin="0,0,0,6"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    Text="{Binding [text_40], Source={x:Static Language:LanguageManager.Instance},Mode=OneWay}" />
                                 <TextBlock
-                            x:Name="ActivationBusyProgressText"
-                            Margin="0,0,0,10"
-                            FontSize="12"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="0 / 0" />
+                                    x:Name="ActivationBusyProgressText"
+                                    Margin="0,0,0,10"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    Text="0 / 0" />
                                 <ProgressBar
-                            x:Name="ActivationBusyProgressBar"
-                            Height="10"
-                            IsIndeterminate="True" />
+                                    x:Name="ActivationBusyProgressBar"
+                                    Height="10"
+                                    IsIndeterminate="True" />
                             </StackPanel>
                         </Border>
                     </Grid>

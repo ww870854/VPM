@@ -6,11 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using SharpCompress.Archives;
 using VPM.Models;
 using VPM.Services;
 using VPM.Language;
@@ -29,7 +27,13 @@ namespace VPM
         private readonly LinkedList<string> _packageFilesCacheLru = new LinkedList<string>();
         private readonly Dictionary<string, LinkedListNode<string>> _packageFilesCacheLruNodes = new Dictionary<string, LinkedListNode<string>>(StringComparer.OrdinalIgnoreCase);
         private const int MAX_PACKAGE_FILES_CACHE = 20;
-
+        private static readonly string[] OrderedCategoryKeys = new[]
+        {
+            "Category_Morphs", "Category_Hair", "Category_Clothing", "Category_Looks",
+            "Category_Scenes", "Category_Poses","Category_Pose", "Category_Assets", "Category_Textures",
+            "Category_Scripts", "Category_Plugins", "Category_Skins", "Category_Morph Pack",
+            "Category_SubScene","Category_Atom","Category_","Category_Person","Category_Appearanance"
+        };
         private string ResolvePackageVarPath(PackageItem packageItem, VarMetadata metadata)
         {
             try
@@ -266,17 +270,8 @@ namespace VPM
                 }
             }
 
-            // 定义资源Key数组（优先级顺序）
-            var orderedCategoryKeys = new[]
-            {
-               "Category_Morphs", "Category_Hair", "Category_Clothing", "Category_Looks",
-               "Category_Scenes", "Category_Poses","Category_Pose", "Category_Assets", "Category_Textures",
-               "Category_Scripts", "Category_Plugins", "Category_Skins", "Category_Morph_Pack",
-               "Category_SubScene","Category_Atom","Category_","Category_Person","Category_Appearanance"
-            };
-
             // 优先按照资源Key数组的顺序创建标签页
-            foreach (var key in orderedCategoryKeys)
+            foreach (var key in OrderedCategoryKeys)
             {
                 if (categoryFiles.TryGetValue(key, out var files)) // 更简洁的 TryGetValue 用法
                 {
@@ -286,7 +281,7 @@ namespace VPM
             }
 
             // 处理不在资源Key数组中的分类
-            var orderedCategoriesSet = new HashSet<string>(orderedCategoryKeys, StringComparer.OrdinalIgnoreCase);
+            var orderedCategoriesSet = new HashSet<string>(OrderedCategoryKeys, StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in categoryFiles.Where(c => !orderedCategoriesSet.Contains(c.Key))
                                              .OrderBy(c => c.Key, StringComparer.OrdinalIgnoreCase)) // 按字母顺序排序
             {
@@ -473,24 +468,26 @@ namespace VPM
         //}
         private void CreateCategoryTab(string category, List<string> files, PackageItem packageItem, VarMetadata packageMetadata, string localizedCategoryName = null)
         {
+            var matchedKey = OrderedCategoryKeys.FirstOrDefault(k => k.EndsWith($"_{category}") || k == category );
+            if (string.IsNullOrEmpty(matchedKey)){ matchedKey = $"Category_{category.Replace("Category_", "")}"; }
+            string displayName = localizedCategoryName;
+            if (string.IsNullOrEmpty(displayName)){ var rawLangValue = LanguageManager.Instance.GetCodeString(matchedKey); displayName = rawLangValue.Replace("Category_", ""); }
+            var pureCategoryName = matchedKey.Replace("Category_", "");
             // Use actual count from metadata for categories that have been counted
             int displayCount = files.Count;
-            // 所有硬编码对比逻辑继续使用不变的英文分类标识，完全不受国际化影响
-            if (category == "Clothing" && packageMetadata?.ClothingCount > 0)
+            if (pureCategoryName == "Clothing" && packageMetadata?.ClothingCount > 0)
                 displayCount = packageMetadata.ClothingCount;
-            else if (category == "Hair" && packageMetadata?.HairCount > 0)
+            else if (pureCategoryName == "Hair" && packageMetadata?.HairCount > 0)
                 displayCount = packageMetadata.HairCount;
-            else if (category == "Morphs" && packageMetadata?.MorphCount > 0)
+            else if (pureCategoryName == "Morphs" && packageMetadata?.MorphCount > 0)
                 displayCount = packageMetadata.MorphCount;
-            else if (category == "Scenes" && packageMetadata?.SceneCount > 0)
+            else if (pureCategoryName == "Scenes" && packageMetadata?.SceneCount > 0)
                 displayCount = packageMetadata.SceneCount;
-            else if (category == "Looks" && packageMetadata?.LooksCount > 0)
+            else if (pureCategoryName == "Looks" && packageMetadata?.LooksCount > 0)
                 displayCount = packageMetadata.LooksCount;
-            else if (category == "Poses" && packageMetadata?.PosesCount > 0)
+            else if (pureCategoryName == "Poses" && packageMetadata?.PosesCount > 0)
                 displayCount = packageMetadata.PosesCount;
 
-            // 优先使用传入的国际化文本显示Tab头，兜底兼容旧调用逻辑，无传入值时自动从LanguageManager拉取对应翻译
-            string displayName = localizedCategoryName ?? LanguageManager.Instance.GetCodeString($"Category_{category}");
             var tabItem = new TabItem
             {
                 Header = $"{displayName} ({displayCount})",
@@ -671,7 +668,7 @@ namespace VPM
                     if (paths.Length > 0)
                     {
                         Clipboard.SetText(paths.ToString().TrimEnd());
-                        SetStatus($"Copied {dataGrid.SelectedItems.Count} path(s) to clipboard");
+                        SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_223"), dataGrid.SelectedItems.Count));
                     }
                 }
                 catch { }
@@ -684,7 +681,7 @@ namespace VPM
             {
                 if (string.IsNullOrEmpty(_settingsManager?.Settings?.SelectedFolder))
                 {
-                    SetStatus("VAM folder not configured");
+                    SetStatus(LanguageManager.Instance.GetCodeString("msg_222"));
                     return;
                 }
 
@@ -712,7 +709,7 @@ namespace VPM
                 
                 if (string.IsNullOrEmpty(packageVarPath))
                 {
-                    SetStatus($"Package file not found for: {packageItem.Name}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_224"), packageItem.Name));
                     return;
                 }
                 
@@ -730,7 +727,7 @@ namespace VPM
                         
                         if (entry == null)
                         {
-                            SetStatus($"File not found in archive: {filePath}");
+                            SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_225"),filePath));
                             return;
                         }
                         
@@ -749,7 +746,7 @@ namespace VPM
                                 Arguments = $"\"{extractedPath}\"",
                                 UseShellExecute = false
                             });
-                            SetStatus($"Opening: {Path.GetFileName(filePath)}");
+                            SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_226"), Path.GetFileName(filePath)));
                         }
                         else if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
                         {
@@ -758,7 +755,7 @@ namespace VPM
                                 FileName = extractedPath,
                                 UseShellExecute = true
                             });
-                            SetStatus($"Opening: {Path.GetFileName(filePath)}");
+                            SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_226"), Path.GetFileName(filePath)));
                         }
                         else
                         {
@@ -767,18 +764,18 @@ namespace VPM
                                 FileName = extractedPath,
                                 UseShellExecute = true
                             });
-                            SetStatus($"Opening: {Path.GetFileName(filePath)}");
+                            SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_226"), Path.GetFileName(filePath)));
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    SetStatus($"Error extracting file: {ex.Message}");
+                    SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_227"), ex.Message));
                 }
             }
             catch (Exception ex)
             {
-                SetStatus($"Error opening file: {ex.Message}");
+                SetStatus(string.Format(LanguageManager.Instance.GetCodeString("msg_228"), ex.Message));
             }
         }
         
@@ -848,51 +845,51 @@ namespace VPM
                 }
             }
 
-            var info = $"📦 SELECTION SUMMARY ({totalPackages} packages)\n\n";
+            var info = string.Format(LanguageManager.Instance.GetCodeString("msg_229"), totalPackages).Replace("\\n","\n");
 
             // Status breakdown
-            info += "📊 Status:\n";
+            info += LanguageManager.Instance.GetCodeString("text_163").Replace("\\n","\n");
             foreach (var status in statusCounts.OrderByDescending(s => s.Value))
             {
                 info += $"  • {status.Key}: {status.Value}\n";
             }
 
             // Creator breakdown (top 5)
-            info += "\n👤 Creators:\n";
+            info += LanguageManager.Instance.GetCodeString("text_164").Replace("\\n","\n");
             foreach (var creator in creatorCounts.OrderByDescending(c => c.Value).Take(5))
             {
                 info += $"  • {creator.Key}: {creator.Value}\n";
             }
             if (creatorCounts.Count > 5)
             {
-                info += $"  • ... and {creatorCounts.Count - 5} more\n";
+                info += string.Format(LanguageManager.Instance.GetCodeString("text_165"), creatorCounts.Count -5).Replace("\\n","\n");
             }
 
             // Category breakdown
-            info += "\n🏷️ Categories:\n";
+            info += LanguageManager.Instance.GetCodeString("text_166").Replace("\\n","\n");
             foreach (var category in categoryCounts.OrderByDescending(c => c.Value))
             {
                 info += $"  • {category.Key}: {category.Value}\n";
             }
 
             // License breakdown
-            info += "\n⚖️ Licenses:\n";
+            info += LanguageManager.Instance.GetCodeString("text_167").Replace("\\n","\n");
             foreach (var license in licenseCounts.OrderByDescending(l => l.Value))
             {
                 info += $"  • {license.Key}: {license.Value}\n";
             }
 
             // Totals
-            info += $"\n📊 Totals:\n";
-            info += $"  • Total Size: {FormatHelper.FormatFileSize(totalSize)}\n";
-            info += $"  • Total Files: {totalFileCount:N0}\n";
-            info += $"  • Total Dependencies: {totalDependencies}\n";
-            info += $"  • Unique Dependencies: {Dependencies.Count}\n";
+            info += LanguageManager.Instance.GetCodeString("text_168").Replace("\\n","\n");
+            info += string.Format(LanguageManager.Instance.GetCodeString("text_169"), FormatHelper.FormatFileSize(totalSize)).Replace("\\n", "\n");
+            info += string.Format(LanguageManager.Instance.GetCodeString("text_170"), totalFileCount).Replace("\\n","\n");
+            info += string.Format(LanguageManager.Instance.GetCodeString("text_171"),totalDependencies).Replace("\\n", "\n");
+            info += string.Format(LanguageManager.Instance.GetCodeString("text_172"), Dependencies.Count).Replace("\\n", "\n");
 
             // Date range
             if (oldestDate != DateTime.MaxValue && newestDate != DateTime.MinValue)
             {
-                info += $"  • Date Range: {oldestDate:MMM dd, yyyy} - {newestDate:MMM dd, yyyy}\n";
+                info += string.Format(LanguageManager.Instance.GetCodeString("text_173"), oldestDate, newestDate).Replace("\\n","\n");
             }
 
             PackageInfoTextBlock.Text = info;

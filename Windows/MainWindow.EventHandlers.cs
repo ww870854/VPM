@@ -29,7 +29,6 @@ namespace VPM
         
         private void ApplyPaneVisibility(AppSettings settings)
         {
-            LanguageManager.Instance.InitLanguageAtAppStart();
             if (settings == null)
                 return;
 
@@ -984,7 +983,6 @@ namespace VPM
         }
         public class LanguageOption
         {
-            //public string DisplayName { get; set; } // 界面上显示的文字，如 "日本語"
             public string ResourceKey { get; set; } // 例如: "Lang_Chinese", "Lang_English"
 
             // 辅助属性，用于其他地方非动态绑定的场景
@@ -1004,7 +1002,7 @@ namespace VPM
         {
             new LanguageOption { ResourceKey = "Chinese", CultureCode = "zh-CN" },
             new LanguageOption { ResourceKey = "English", CultureCode = "en-US" },
-            new LanguageOption { ResourceKey = "Japanese", CultureCode = "ja-JP" }, // 新增日语
+            new LanguageOption { ResourceKey = "Russian", CultureCode = "ru-RU" },  // 新增俄语
             new LanguageOption { ResourceKey = "French", CultureCode = "fr-FR" }, // 新增法语
             new LanguageOption { ResourceKey = "German", CultureCode = "de-DE" },  // 新增德语
             new LanguageOption { ResourceKey = "Spanish", CultureCode = "es-ES" },  // 新增西班牙语
@@ -1013,6 +1011,8 @@ namespace VPM
             new LanguageOption { ResourceKey = "Dutch", CultureCode = "nl-NL" },  // 新增荷兰语
             new LanguageOption { ResourceKey = "Polish", CultureCode = "pl-PL" },  // 新增波兰语
             new LanguageOption { ResourceKey = "Portuguese", CultureCode = "pt-PT" },  // 新增葡萄牙语
+            new LanguageOption { ResourceKey = "Arabic", CultureCode = "ar-SA" },  // 新增阿拉伯语
+            new LanguageOption { ResourceKey = "Japanese", CultureCode = "ja-JP" } // 新增日语
         };
         private void Language_ClickFromMenu()
         {
@@ -1055,7 +1055,7 @@ namespace VPM
 
                         selectWindow.Close();
 
-                        // 你的主界面刷新机制
+                        // 主界面刷新机制
                         PerformRefresh(isFullRefresh: true);
                     }
                 };
@@ -1098,7 +1098,11 @@ namespace VPM
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"语言资源加载失败，已自动保留当前语言：{ex.Message}");
+                CustomMessageBox.Show(
+                    string.Format(LanguageManager.Instance.GetCodeString("msg_131"), ex.Message),
+                    LanguageManager.Instance.GetCodeString("Error"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 return;
             }
 
@@ -1108,49 +1112,11 @@ namespace VPM
             // 👇 新增：语言资源更新完成后，递归刷新所有依赖动态资源的 UI 元素
             if (Application.Current.MainWindow != null)
             {
-                UpdateAllDependencyObjects(Application.Current.MainWindow);
+                LanguageManager.Instance.UpdateAllDependencyObjects(Application.Current.MainWindow);
             }
-
-            //AppConfig.SelectedLanguage = cultureCode;
             this._settingsManager.Settings.SelectedLanguage = cultureCode;
         }
 
-
-        // 新增递归刷新方法，触发所有元素的动态资源重载
-        private void UpdateAllDependencyObjects(DependencyObject parent)
-        {
-            if (parent == null) return;
-
-            // 用OfType过滤出所有UI元素，避免非元素类型调用方法报错
-            var children = LogicalTreeHelper.GetChildren(parent).OfType<DependencyObject>().ToList();
-            for (int i = 0; i < children.Count; i++)
-            {
-                var child = children[i];
-                if (child is not FrameworkElement fe)
-                {
-                    UpdateAllDependencyObjects(child);
-                    continue;
-                }
-
-                // 遍历元素的所有依赖属性，重新绑定动态资源
-                var properties = fe.GetLocalValueEnumerator();
-                while (properties.MoveNext())
-                {
-                    var prop = properties.Current.Property;
-                    if (prop.ReadOnly) continue;
-
-                    // 移除对内部私有类型ResourceReferenceExpression的依赖，完全规避CS0246报错
-                    var value = fe.ReadLocalValue(prop);
-                    if (value is DynamicResourceExtension)
-                    {
-                        fe.ClearValue(prop);
-                        // 从资源字典中重新拉取资源值，替代旧的SetResourceReference逻辑
-                        fe.SetValue(prop, Application.Current.Resources[prop.Name]);
-                    }
-                }
-                UpdateAllDependencyObjects(fe);
-            }
-        }
         private async Task ArchiveOldVersionsFromMenu()
         {
             try

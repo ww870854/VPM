@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using VPM.Models;
-using VPM.Services;
+using VPM.Language;
 
 namespace VPM
 {

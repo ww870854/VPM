@@ -1,182 +1,225 @@
-<Window
+﻿<Window
     x:Class="VPM.Windows.UpdateOverviewWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:VPM"
     xmlns:Language="clr-namespace:VPM.Language;assembly=VPM"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     Title="{Binding [title_28], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-    Width="500"
-    Height="460"
-    Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+    Width="500" Height="460"
+    Background="Transparent"
     Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
-    ResizeMode="NoResize"
+    ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
     WindowStartupLocation="CenterOwner">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32" GlassFrameThickness="-1" ResizeBorderThickness="6" />
+    </shell:WindowChrome.WindowChrome>
     <Window.Resources>
         <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
             <Setter Property="Padding" Value="10,5" />
             <Setter Property="Margin" Value="5" />
         </Style>
     </Window.Resources>
+    <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Normal">
+                        <Setter Property="Margin" Value="8" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="Maximized">
+                        <Setter Property="Margin" Value="0" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Border x:Name="WindowRootBorder" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" CornerRadius="5" BorderBrush="#FF676767" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="5" Opacity="0.6" Color="#FF2C2C2C" />
+            </Border.Effect>
+            <Grid Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!--  Header  -->
+                    <RowDefinition Height="Auto" />
+                    <!--  VPM Status  -->
+                    <RowDefinition Height="Auto" />
+                    <!--  VPM International Section  -->
+                    <RowDefinition Height="Auto" />
+                    <!--  VPB Status  -->
+                    <RowDefinition Height="*" />
+                    <!--  Spacer  -->
+                    <RowDefinition Height="Auto" />
+                    <!--  Update Settings  -->
+                    <RowDefinition Height="Auto" />
+                    <!--  Footer  -->
+                </Grid.RowDefinitions>
+                <Button Content="✗" HorizontalAlignment="Right" VerticalAlignment="Top" Width="32" Height="24" Background="Transparent" BorderThickness="0" Foreground="#999999" FontSize="14" Cursor="Hand" Click="CloseButton_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border 
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="0,8,0,0">
+                                            <ContentPresenter 
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#E0E0E0"/>
+                                                <Setter Property="Foreground" Value="Red"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <WindowChrome.IsHitTestVisibleInChrome>True</WindowChrome.IsHitTestVisibleInChrome>
+                </Button>
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="0,0,0,20"
+                    HorizontalAlignment="Center"
+                    FontSize="20"
+                    FontWeight="Bold"
+                    Text="{Binding [text_10], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
 
-    <Grid Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <!--  Header  -->
-            <RowDefinition Height="Auto" />
-            <!--  VPM Status  -->
-            <RowDefinition Height="Auto" />
-            <!--  VPM International Section  -->
-            <RowDefinition Height="Auto" />
-            <!--  VPB Status  -->
-            <RowDefinition Height="*" />
-            <!--  Spacer  -->
-            <RowDefinition Height="Auto" />
-            <!--  Update Settings  -->
-            <RowDefinition Height="Auto" />
-            <!--  Footer  -->
-        </Grid.RowDefinitions>
+                <!--  VPM Section  -->
+                <Border
+                    Grid.Row="1" Margin="0,0,0,10" Padding="10"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                    BorderThickness="1" CornerRadius="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Text="{Binding [text_11], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            <TextBlock
+                                x:Name="VpmStatusText"
+                                Margin="0,5,0,0"
+                                Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            <TextBlock
+                                x:Name="VpmVersionText"
+                                Margin="0,2,0,0"
+                                Opacity="0.7"
+                                Text="v1.0.0 -&gt; v1.0.1" />
+                        </StackPanel>
+                        <Button
+                            x:Name="VpmUpdateButton"
+                            Grid.Column="1"
+                            Width="100"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            Click="VpmUpdateButton_Click"
+                            Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                            Visibility="Collapsed" />
+                    </Grid>
+                </Border>
+                <!--  VPM International Section  -->
+                <Border
+                    Grid.Row="2"
+                    Margin="0,0,0,10"
+                    Padding="10"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Text="{Binding [text_23], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            <TextBlock
+                                x:Name="VpmInternationalStatusText"
+                                Margin="0,5,0,0"
+                                Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            <TextBlock
+                                x:Name="VpmInternationalVersionText"
+                                Margin="0,2,0,0"
+                                Opacity="0.7"
+                                Text="v1.0.0 -&gt; v1.0.1" />
+                        </StackPanel>
+                        <Button
+                            x:Name="VpmInternationalUpdateButton"
+                            Grid.Column="1"
+                            Width="100"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            Click="VpmInternationalUpdateButton_Click"
+                            Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                            Visibility="Collapsed" />
+                    </Grid>
+                </Border>
+                <!--  VPB Section  -->
+                <Border
+                    Grid.Row="3"
+                    Margin="0,0,0,10"
+                    Padding="10"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Text="{Binding [text_14], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            <TextBlock
+                                x:Name="VpbStatusText"
+                                Margin="0,5,0,0"
+                                Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                            <TextBlock
+                                x:Name="VpbDetailsText"
+                                Margin="0,2,0,0"
+                                Opacity="0.7"
+                                Text=""
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button
+                            x:Name="VpbUpdateButton"
+                            Grid.Column="1"
+                            Width="100"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            Click="VpbUpdateButton_Click"
+                            Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                            Visibility="Collapsed" />
+                    </Grid>
+                </Border>
 
-        <TextBlock
-            Grid.Row="0"
-            Margin="0,0,0,20"
-            HorizontalAlignment="Center"
-            FontSize="20"
-            FontWeight="Bold"
-            Text="{Binding [text_10], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
+                <CheckBox
+                    x:Name="CheckForUpdatesOnStartupCheckBox"
+                    Grid.Row="4"
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Center"
+                    Content="{Binding [text_15], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
+                    IsChecked="{Binding CheckForAppUpdates, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-        <!--  VPM Section  -->
-        <Border
-            Grid.Row="1"
-            Margin="0,0,0,10"
-            Padding="10"
-            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-            BorderThickness="1"
-            CornerRadius="4">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                    <TextBlock
-                        FontSize="14"
-                        FontWeight="Bold"
-                        Text="{Binding [text_11], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                    <TextBlock
-                        x:Name="VpmStatusText"
-                        Margin="0,5,0,0"
-                        Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                    <TextBlock
-                        x:Name="VpmVersionText"
-                        Margin="0,2,0,0"
-                        Opacity="0.7"
-                        Text="v1.0.0 -&gt; v1.0.1" />
-                </StackPanel>
                 <Button
-                    x:Name="VpmUpdateButton"
-                    Grid.Column="1"
+                    Grid.Row="5"
                     Width="100"
                     Height="32"
-                    VerticalAlignment="Center"
-                    Click="VpmUpdateButton_Click"
-                    Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                    Visibility="Collapsed" />
+                    HorizontalAlignment="Center"
+                    Click="CloseButton_Click"
+                    Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
             </Grid>
         </Border>
-        <!--  VPM International Section  -->
-        <Border
-            Grid.Row="2"
-            Margin="0,0,0,10"
-            Padding="10"
-            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-            BorderThickness="1"
-            CornerRadius="4">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                    <TextBlock
-                        FontSize="14"
-                        FontWeight="Bold"
-                        Text="{Binding [text_23], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                    <TextBlock
-                        x:Name="VpmInternationalStatusText"
-                        Margin="0,5,0,0"
-                        Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                    <TextBlock
-                        x:Name="VpmInternationalVersionText"
-                        Margin="0,2,0,0"
-                        Opacity="0.7"
-                        Text="v1.0.0 -&gt; v1.0.1" />
-                </StackPanel>
-                <Button
-                    x:Name="VpmInternationalUpdateButton"
-                    Grid.Column="1"
-                    Width="100"
-                    Height="32"
-                    VerticalAlignment="Center"
-                    Click="VpmInternationalUpdateButton_Click"
-                    Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                    Visibility="Collapsed" />
-            </Grid>
-        </Border>
-        <!--  VPB Section  -->
-        <Border
-            Grid.Row="3"
-            Margin="0,0,0,10"
-            Padding="10"
-            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-            BorderThickness="1"
-            CornerRadius="4">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                    <TextBlock
-                        FontSize="14"
-                        FontWeight="Bold"
-                        Text="{Binding [text_14], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                    <TextBlock
-                        x:Name="VpbStatusText"
-                        Margin="0,5,0,0"
-                        Text="{Binding [text_12], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
-                    <TextBlock
-                        x:Name="VpbDetailsText"
-                        Margin="0,2,0,0"
-                        Opacity="0.7"
-                        Text=""
-                        TextWrapping="Wrap" />
-                </StackPanel>
-                <Button
-                    x:Name="VpbUpdateButton"
-                    Grid.Column="1"
-                    Width="100"
-                    Height="32"
-                    VerticalAlignment="Center"
-                    Click="VpbUpdateButton_Click"
-                    Content="{Binding [text_13], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-                    Visibility="Collapsed" />
-            </Grid>
-        </Border>
-
-        <CheckBox
-            x:Name="CheckForUpdatesOnStartupCheckBox"
-            Grid.Row="4"
-            Margin="0,0,0,8"
-            HorizontalAlignment="Center"
-            Content="{Binding [text_15], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}"
-            IsChecked="{Binding CheckForAppUpdates, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-        <Button
-            Grid.Row="5"
-            Width="100"
-            Height="32"
-            HorizontalAlignment="Center"
-            Click="CloseButton_Click"
-            Content="{Binding [Close_Tip], Source={x:Static Language:LanguageManager.Instance}, Mode=OneWay}" />
     </Grid>
 </Window>
