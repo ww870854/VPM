@@ -1,10 +1,11 @@
 ## Join Our Discord Community
+[English](README.md) | [简体中文](README_CN.md)
 [![Discord](https://img.shields.io/badge/Chat-Discord-blue?logo=discord)](https://discord.gg/TekWBVsa73)
 
 # VPM - Virt-A-Mate Package Manager
 
-<img width="700" height="500" alt="image" src="https://www.imageoss.com/images/2026/07/19/VPM.exe_20260719_2214460065e6fce745e68c.png" />
-<img width="1539" height="800" alt="image" src="https://www.imageoss.com/images/2026/07/19/VPM.exe_20260719_221421ce49b4e582859b9c.png" />
+<img width="700" height="677" alt="1" src="https://github.com/user-attachments/assets/eb70fbc3-a9b7-4a21-a915-e18e6179b11d" />
+<img width="1360" height="860" alt="VPM exe_20260727_124255" src="https://github.com/user-attachments/assets/84a45035-2853-4285-a5ec-00a8c5f3345d" />
 
 A fast, modern and open source package manager for Virt-A-Mate. Browse, organize, and optimize your content library without the clutter.
 
