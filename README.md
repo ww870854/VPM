@@ -4,8 +4,7 @@
 
 # VPM - Virt-A-Mate Package Manager
 
-<img width="700" height="677" alt="1" src="https://github.com/user-attachments/assets/eb70fbc3-a9b7-4a21-a915-e18e6179b11d" />
-<img width="1360" height="860" alt="VPM exe_20260727_124255" src="https://github.com/user-attachments/assets/84a45035-2853-4285-a5ec-00a8c5f3345d" />
+<img width="3268" height="1876" alt="image" src="https://github.com/user-attachments/assets/3c700666-794b-48bf-9200-d1859ee61641" />
 
 A fast, modern and open source package manager for Virt-A-Mate. Browse, organize, and optimize your content library without the clutter.
 
