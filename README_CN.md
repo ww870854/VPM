@@ -3,8 +3,8 @@
 
 # VPM - Virt-A-Mate 包管理器
 
-<img width="700" height="500" alt="图片" src="https://www.imageoss.com/images/2026/07/19/VPM.exe_20260719_2214460065e6fce745e68c.png" />
-<img width="1539" height="800" alt="图片" src="https://www.imageoss.com/images/2026/07/19/VPM.exe_20260719_221421ce49b4e582859b9c.png" />
+<img width="700" height="677" alt="1" src="https://github.com/user-attachments/assets/eb70fbc3-a9b7-4a21-a915-e18e6179b11d" />
+<img width="1360" height="860" alt="VPM exe_20260727_124255" src="https://github.com/user-attachments/assets/84a45035-2853-4285-a5ec-00a8c5f3345d" />
 
 一款专为 Virt-A-Mate 设计的快速、现代且开源的软件包管理器。助您轻松浏览、整理和优化内容库，告别杂乱无章。
 
