@@ -1,4 +1,5 @@
 ## 加入我们的 Discord 社区
+[English](README.md) | [简体中文](README_CN.md)
 [![Discord](https://img.shields.io/badge/Chat-Discord-blue?logo=discord)](https://discord.gg/TekWBVsa73)
 
 # VPM - Virt-A-Mate 包管理器
