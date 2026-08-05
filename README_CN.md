@@ -33,6 +33,8 @@ VPM 助您轻松管理数千个 VAR 软件包，无需为此烦恼。它会扫�
 
 ### 优化包
 
+**此功能已被作者移除**
+
 <img width="2378" height="1389" alt="image" src="https://github.com/user-attachments/assets/19b2a98d-cc6a-4b5d-9c63-b489c66d5fe9" />
 
 使用更小的纹理或调整后的设置重新打包资源包：
