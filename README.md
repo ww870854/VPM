@@ -3,9 +3,9 @@
 [![Discord](https://img.shields.io/badge/Chat-Discord-blue?logo=discord)](https://discord.gg/TekWBVsa73)
 
 # VPM - Virt-A-Mate Package Manager
+This project is an international branch of VPM.（此项目乃 VPM 一个国际化分支。）
 
 <img width="3268" height="1876" alt="image" src="https://github.com/user-attachments/assets/3c700666-794b-48bf-9200-d1859ee61641" />
-
 A fast, modern and open source package manager for Virt-A-Mate. Browse, organize, and optimize your content library without the clutter.
 
 ---
